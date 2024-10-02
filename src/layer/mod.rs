@@ -7,6 +7,7 @@ use bevy::render::{
     texture::BevyDefault,
     view::RenderLayers,
 };
+use bevy::sprite::Mesh2dHandle;
 use bevy::window::WindowResized;
 
 pub trait Layer: Into<RenderLayers> + Default {
@@ -88,6 +89,7 @@ impl Default for LayerClearColors {
 struct CameraTargets {
     bg_target: Handle<Image>,
     main_target: Handle<Image>,
+    palette_target: Handle<Image>,
     fg_target: Handle<Image>,
     menu_target: Handle<Image>,
     transition_target: Handle<Image>,
@@ -98,6 +100,7 @@ impl Default for CameraTargets {
         Self {
             bg_target: Handle::weak_from_u128(thread_rng().gen()),
             main_target: Handle::weak_from_u128(thread_rng().gen()),
+            palette_target: Handle::weak_from_u128(thread_rng().gen()),
             fg_target: Handle::weak_from_u128(thread_rng().gen()),
             menu_target: Handle::weak_from_u128(thread_rng().gen()),
             transition_target: Handle::weak_from_u128(thread_rng().gen()),
@@ -139,6 +142,7 @@ impl CameraTargets {
 
         make_layer_image!("bg_target", self.bg_target);
         make_layer_image!("main_target", self.main_target);
+        make_layer_image!("palette_target", self.palette_target);
         make_layer_image!("fg_target", self.fg_target);
         make_layer_image!("menu_target", self.menu_target);
         make_layer_image!("transition_target", self.transition_target);
@@ -148,10 +152,16 @@ impl CameraTargets {
 
 fn setup_layer_materials(
     root: Res<LayerRoot>,
+    palette: Res<Palette>,
     mut commands: Commands,
     camera_targets: Res<CameraTargets>,
     mut images: ResMut<Assets<Image>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut palette_mats: ResMut<Assets<PaletteMat>>,
 ) {
+    let palette_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+    let palette_mesh: Mesh2dHandle = meshes.add(palette_mesh).into();
+    let palette_mat = PaletteMat::new(camera_targets.main_target.clone(), palette.clone());
     let squash_layer = RenderLayers::from_layers(&[29]);
     let final_layer = RenderLayers::from_layers(&[30]);
 
@@ -173,13 +183,23 @@ fn setup_layer_materials(
         };
     }
     setup_layer!("bg_image", camera_targets.bg_target.clone(), 1);
-    setup_layer!("main_image", camera_targets.main_target.clone(), 2);
-    setup_layer!("fg_image", camera_targets.fg_target.clone(), 3);
-    setup_layer!("menu_image", camera_targets.menu_target.clone(), 4);
+    // NOTE: Don't add because palette mat reads it, edits it, and then renders it
+    // setup_layer!("main_image", camera_targets.main_target.clone(), 2);
+    commands
+        .spawn((
+            Name::new("palette_image"),
+            palette_mesh,
+            palette_mats.add(palette_mat),
+            SpatialBundle::from_transform(Transform::from_translation(Vec3::Z * 3.0)),
+            squash_layer.clone(),
+        ))
+        .set_parent(root.eid());
+    setup_layer!("fg_image", camera_targets.fg_target.clone(), 4);
+    setup_layer!("menu_image", camera_targets.menu_target.clone(), 5);
     setup_layer!(
         "transition_image",
         camera_targets.transition_target.clone(),
-        5
+        6
     );
 
     // This is the camera that sees all of the layer quads and squashes them into one image
@@ -188,7 +208,7 @@ fn setup_layer_materials(
             Name::new("squash_camera"),
             Camera2dBundle {
                 camera: Camera {
-                    order: 6,
+                    order: 7,
                     clear_color: ClearColorConfig::Custom(COLOR_NONE),
                     target: RenderTarget::Image(camera_targets.final_target.clone()),
                     ..default()

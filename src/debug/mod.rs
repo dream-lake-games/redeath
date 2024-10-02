@@ -1,9 +1,22 @@
-macro_rules! debug_resource {
-    ($app:expr, $resource:ty) => {{
-        $app.add_plugins(
-            bevy_inspector_egui::quick::ResourceInspectorPlugin::<$resource>::new()
-                .run_if(input_toggle_active(false, KeyCode::Tab)),
-        );
-    }};
+use crate::prelude::*;
+
+fn debug_startup(mut commands: Commands, ass: Res<AssetServer>) {
+    commands.spawn((
+        Name::new("scene3"),
+        SpriteBundle {
+            texture: ass.load("play/scene3.png"),
+            ..default()
+        },
+        MainLayer::to_render_layers(),
+    ));
 }
-pub(crate) use debug_resource;
+
+fn debug_update() {}
+
+pub(super) struct DebugPlugin;
+impl Plugin for DebugPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Startup, debug_startup);
+        app.add_systems(Update, debug_update);
+    }
+}

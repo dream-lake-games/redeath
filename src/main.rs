@@ -54,7 +54,9 @@ fn main() {
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)));
 
     // Our plugins
-    app.add_plugins(LayerPlugin)
+    app.add_plugins(debug::DebugPlugin)
+        .add_plugins(LayerPlugin)
+        .add_plugins(PalettePlugin)
         .add_plugins(RootPlugin)
         .add_plugins(StatePlugin);
 
