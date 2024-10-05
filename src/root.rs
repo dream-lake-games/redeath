@@ -1,8 +1,14 @@
 //! It's pet peeve of mine to have a disorganized hierarchy in the debugger.
 //! It looks bad, and when stuff goes wrong it makes it much harder to actually
 //! figure out what's wrong.
+//! Also it's good to have invariants like: Everything that should be despawned when going back to menu
+//! exists under the same ancestor, so .despawn_descendents works fine
 
 use crate::prelude::*;
+
+pub trait RootKind: Resource {
+    fn eid(&self) -> Entity;
+}
 
 macro_rules! impl_root_types {
     ($name:ident) => {
@@ -30,8 +36,8 @@ macro_rules! impl_root_types {
             pub struct $name {
                 eid: Entity,
             }
-            impl $name {
-                pub fn eid(&self) -> Entity {
+            impl RootKind for $name {
+                fn eid(&self) -> Entity {
                     self.eid
                 }
             }
@@ -86,6 +92,7 @@ macro_rules! impl_root_init {
 
 impl_root_init!(
     LayerRoot,
+    WorldRoot,
     MenuRoot(ZIX_MENU),
     TransitionRoot(ZIX_TRANSITION)
 );

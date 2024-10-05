@@ -1,13 +1,21 @@
+pub mod anim;
 pub mod consts;
 pub mod debug;
 pub mod layer;
 pub mod lazy;
+pub mod my_ldtk;
 pub mod palette;
+pub mod physics;
 pub mod root;
 pub mod state;
+pub mod transition;
+pub mod types;
 
 pub mod prelude {
-    pub use super::{consts::*, layer::*, lazy::*, palette::*, root::*, state::*};
+    pub use super::{
+        anim::*, consts::*, layer::*, lazy::*, my_ldtk::*, palette::*, physics::*, root::*,
+        state::*, transition::*, types::*,
+    };
     pub use bevy::{
         color::palettes::tailwind,
         ecs::component::StorageType,
@@ -18,6 +26,7 @@ pub mod prelude {
         render::view::RenderLayers,
         utils::{HashMap, HashSet},
     };
+    pub use bevy_2delight_anims::prelude::*;
     pub use bevy_ecs_ldtk::ldtk::FieldInstance;
     pub use bevy_ecs_ldtk::prelude::*;
     pub use bevy_inspector_egui::quick::WorldInspectorPlugin;
@@ -54,11 +63,16 @@ fn main() {
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)));
 
     // Our plugins
+
     app.add_plugins(debug::DebugPlugin)
         .add_plugins(LayerPlugin)
+        .add_plugins(MyAnimPlugin)
+        .add_plugins(MyLdtkPlugin)
         .add_plugins(PalettePlugin)
+        .add_plugins(PhysicsPlugin)
         .add_plugins(RootPlugin)
-        .add_plugins(StatePlugin);
+        .add_plugins(StatePlugin)
+        .add_plugins(TransitionPlugin);
 
     // Have fun!
     app.run();

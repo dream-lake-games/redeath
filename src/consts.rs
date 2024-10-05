@@ -31,5 +31,14 @@ pub const ZIX_MENU: i32 = 100;
 pub const ZIX_TRANSITION: i32 = 200;
 pub const ZIX_MIN: f32 = -600.0; // Anything further back than this gets culled by the camera(s)
 
-// Colors are easy!
 pub const COLOR_NONE: Color = Color::linear_rgba(0.0, 0.0, 0.0, 0.0);
+
+// Anim timeclasses
+/// Animations that play only when unpaused, beholden to bullet time
+pub const ANIM_TIME_BULLET: AnimTimeClass = 0;
+/// Animations that play only when unpaused, beholden to real time
+pub const ANIM_TIME_REAL: AnimTimeClass = 1;
+/// Animations that always play, beholden to bullet time
+pub const ANIM_TIME_BULLET_ALWAYS: AnimTimeClass = 2;
+/// Animations that always play, beholden to real time
+pub const ANIM_TIME_REAL_ALWAYS: AnimTimeClass = 2;
