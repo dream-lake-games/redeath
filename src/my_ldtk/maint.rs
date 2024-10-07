@@ -30,6 +30,7 @@ fn handle_spawned_lids(
 fn handle_physical_lids(
     mut commands: Commands,
     mut ents: Query<(Entity, &mut PhysicalLid, &Pos, &SpawnedLid)>,
+    mut level_rects: ResMut<LevelRects>,
     selection: Option<Res<LevelSelection>>,
     levels: Query<(&LevelIid, &GlobalTransform)>,
     ldtk_projects: Query<&Handle<LdtkProject>>,
@@ -39,8 +40,10 @@ fn handle_physical_lids(
         return;
     };
     // Fetch the level rects (probably cache this at some point)
-    let mut level_rects = HashMap::new();
     for (level_iid, level_transform) in levels.iter() {
+        if level_rects.get(level_iid.as_str()).is_some() {
+            continue;
+        }
         let level = ldtk_project
             .get_raw_level_by_iid(level_iid.get())
             .expect("level should exist in only project");
@@ -54,8 +57,9 @@ fn handle_physical_lids(
                 level_transform.translation().y + level.px_hei as f32,
             ),
         };
-        level_rects.insert(level_iid.to_string(), level_bounds);
+        level_rects.set(level_iid.to_string(), level_bounds);
     }
+    let level_rects = level_rects.into_inner();
     // Update PhysicalLid
     for (_, mut plid, pos, slid) in &mut ents {
         if plid.last_known_iid == None {

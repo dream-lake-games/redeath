@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 use crate::prelude::*;
 
 mod maint;
@@ -42,6 +44,28 @@ pub struct PhysicalLidInactive;
 #[derive(Component, Clone, Debug, Reflect)]
 pub struct PhysicalLidOob;
 
+/// Rect bounds of all levels. Grows with time (i.e. only ever includes levels that have been spawned)
+/// Never shrinks because it probably is fine
+#[derive(Resource, Clone, Debug, Default, Reflect)]
+pub struct LevelRects {
+    pub map: HashMap<String, Rect>,
+}
+impl LevelRects {
+    pub fn get(&self, key: &str) -> Option<&Rect> {
+        self.map.get(key)
+    }
+    pub fn set(&mut self, key: String, rect: Rect) {
+        self.map.insert(key, rect);
+    }
+}
+impl Deref for LevelRects {
+    type Target = HashMap<String, Rect>;
+    fn deref(&self) -> &Self::Target {
+        &self.map
+    }
+}
+
+/// A "fake" child relationship, so that when ldtk automatically deloads stuff it translates to despawning entities
 #[derive(Reflect)]
 struct MyLdtkChild {
     child_eid: Entity,
@@ -73,6 +97,7 @@ impl Plugin for MyLdtkPlugin {
 
         maint::register_my_ldtk_maint(app);
 
+        app.insert_resource(LevelRects::default());
         app.add_plugins(LdtkPlugin)
             .insert_resource(LdtkSettings {
                 level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
