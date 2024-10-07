@@ -24,21 +24,45 @@ pub trait CoreState: Sized {
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
-pub struct PauseState;
+pub enum PauseState {
+    Paused,
+    Unpaused,
+}
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
-pub struct PlayerExistsState;
+pub enum PlayerExistsState {
+    Exists,
+    DoesNotExist,
+}
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
-pub struct TransState {
-    exiting: Option<MetaState>,
-    entering: MetaState,
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Reflect, States)]
+pub struct TransitionState {
+    pub exiting: Option<MetaState>,
+    pub entering: Option<MetaState>,
+}
+impl TransitionState {
+    pub fn is_active(&self) -> bool {
+        match (&self.entering, &self.exiting) {
+            (Some(_), Some(_)) => true,
+            _ => false,
+        }
+    }
 }
 
 pub(super) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_state(MetaState::Menu(MenuState::Bevy));
         debug_resource!(app, State<MetaState>);
+        app.insert_state(MetaState::Menu(MenuState::Bevy));
+        app.insert_state(TransitionState::default());
+        app.insert_state(PauseState::Unpaused);
+
+        app.add_computed_state::<LevelState>();
+        app.add_computed_state::<PhysicsState>();
+        app.add_computed_state::<TransitionActiveState>();
+        app.add_computed_state::<MenuState>();
+        app.add_computed_state::<MenuStateKind>();
+        app.add_computed_state::<WorldLoadingState>();
+        app.add_computed_state::<WorldState>();
     }
 }

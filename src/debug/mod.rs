@@ -30,20 +30,12 @@ impl MyLdtkEntity for TestEntity {
 
 fn debug_startup(mut commands: Commands, ass: Res<AssetServer>) {
     // commands.spawn((
-    //     Name::new("scene3"),
-    //     SpriteBundle {
-    //         texture: ass.load("play/scene3.png"),
+    //     Name::new("ldtk_world"),
+    //     LdtkWorldBundle {
+    //         ldtk_handle: ass.load("play/test.ldtk"),
     //         ..default()
     //     },
-    //     MainLayer::to_render_layers(),
     // ));
-    commands.spawn((
-        Name::new("ldtk_world"),
-        LdtkWorldBundle {
-            ldtk_handle: ass.load("play/test.ldtk"),
-            ..default()
-        },
-    ));
 }
 
 fn debug_update() {}

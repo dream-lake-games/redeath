@@ -36,7 +36,10 @@ fn handle_physical_lids(
     ldtk_projects: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
-    let Some(ldtk_project) = ldtk_project_assets.get(ldtk_projects.single()) else {
+    let Ok(project) = ldtk_projects.get_single() else {
+        return;
+    };
+    let Some(ldtk_project) = ldtk_project_assets.get(project) else {
         return;
     };
     // Fetch the level rects (probably cache this at some point)

@@ -17,20 +17,24 @@ impl AnimTimeProvider for AnimTimeRes {
 
 fn drive_anim_time_res(
     mut anim_time: ResMut<AnimTimeRes>,
+    bullet_time: Res<BulletTime>,
     time: Res<Time>,
-    paused: Option<Res<State<PauseState>>>,
+    paused: Res<State<PauseState>>,
 ) {
-    anim_time.class_map.insert(
-        ANIM_TIME_BULLET,
-        paused.as_ref().map(|_| 0.0).unwrap_or(time.delta_seconds()),
-    );
-    anim_time.class_map.insert(
-        ANIM_TIME_REAL,
-        paused.as_ref().map(|_| 0.0).unwrap_or(time.delta_seconds()),
-    );
+    let paused_delta = match paused.get() {
+        PauseState::Paused => 0.0,
+        PauseState::Unpaused => 1.0,
+    };
+
     anim_time
         .class_map
-        .insert(ANIM_TIME_BULLET_ALWAYS, time.delta_seconds());
+        .insert(ANIM_TIME_BULLET, paused_delta * bullet_time.delta_seconds());
+    anim_time
+        .class_map
+        .insert(ANIM_TIME_REAL, paused_delta * time.delta_seconds());
+    anim_time
+        .class_map
+        .insert(ANIM_TIME_BULLET_ALWAYS, bullet_time.delta_seconds());
     anim_time
         .class_map
         .insert(ANIM_TIME_REAL_ALWAYS, time.delta_seconds());

@@ -14,21 +14,28 @@ pub enum PhysicsState {
     Inactive,
 }
 impl ComputedStates for PhysicsState {
-    type SourceStates = (LevelState, Option<PauseState>, Option<TransState>);
+    type SourceStates = (LevelState, PauseState);
     fn compute(sources: Self::SourceStates) -> Option<Self> {
         match sources {
-            (LevelState { .. }, None, None) => Some(PhysicsState::Active),
+            (LevelState { .. }, PauseState::Unpaused) => Some(PhysicsState::Active),
             _ => Some(PhysicsState::Inactive),
         }
     }
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
-pub struct TransActiveState;
-impl ComputedStates for TransActiveState {
-    type SourceStates = TransState;
-    fn compute(_: Self::SourceStates) -> Option<Self> {
-        Some(Self)
+pub enum TransitionActiveState {
+    Active,
+    Inactive,
+}
+impl ComputedStates for TransitionActiveState {
+    type SourceStates = TransitionState;
+    fn compute(transition: Self::SourceStates) -> Option<Self> {
+        Some(if transition.is_active() {
+            Self::Active
+        } else {
+            Self::Inactive
+        })
     }
 }
 

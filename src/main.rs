@@ -1,8 +1,10 @@
 pub mod anim;
 pub mod consts;
 pub mod debug;
+pub mod input;
 pub mod layer;
 pub mod lazy;
+pub mod menu;
 pub mod my_ldtk;
 pub mod palette;
 pub mod physics;
@@ -13,8 +15,8 @@ pub mod types;
 
 pub mod prelude {
     pub use super::{
-        anim::*, consts::*, layer::*, lazy::*, my_ldtk::*, palette::*, physics::*, root::*,
-        state::*, transition::*, types::*,
+        anim::*, consts::*, input::*, layer::*, lazy::*, my_ldtk::*, palette::*, physics::*,
+        root::*, state::*, transition::*, types::*,
     };
     pub use bevy::{
         color::palettes::tailwind,
@@ -35,6 +37,7 @@ pub mod prelude {
     pub use std::time::Duration;
 }
 use bevy::window::{WindowMode, WindowResolution};
+use menu::MenuPlugin;
 use prelude::*;
 
 fn main() {
@@ -63,9 +66,10 @@ fn main() {
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)));
 
     // Our plugins
-
     app.add_plugins(debug::DebugPlugin)
+        .add_plugins(InputPlugin)
         .add_plugins(LayerPlugin)
+        .add_plugins(MenuPlugin)
         .add_plugins(MyAnimPlugin)
         .add_plugins(MyLdtkPlugin)
         .add_plugins(PalettePlugin)

@@ -46,7 +46,7 @@ macro_rules! impl_root_types {
 }
 
 macro_rules! impl_root_init {
-    ($($name:ident$(($zix:expr))?),*) => {
+    ($($name:ident$(($zix:expr))?),* $(,)?) => {
         $(
             impl_root_types!($name);
         )*
@@ -75,6 +75,16 @@ macro_rules! impl_root_init {
         #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
         pub struct RootInit;
 
+        fn cleanup_observes(
+            mut commands: Commands,
+            ents: Query<Entity, (With<bevy::ecs::observer::ObserverState>, Without<Parent>)>,
+            root: Res<ObserveRoot>,
+        ) {
+            for eid in &ents {
+                commands.entity(eid).set_parent(root.eid());
+            }
+        }
+
         pub(super) struct RootPlugin;
         impl Plugin for RootPlugin {
             fn build(&self, app: &mut App) {
@@ -85,6 +95,7 @@ macro_rules! impl_root_init {
                 )*
 
                 app.add_systems(Startup, setup_roots.in_set(RootInit));
+                app.add_systems(PreUpdate, cleanup_observes);
             }
         }
     };
@@ -94,5 +105,6 @@ impl_root_init!(
     LayerRoot,
     WorldRoot,
     MenuRoot(ZIX_MENU),
-    TransitionRoot(ZIX_TRANSITION)
+    TransitionRoot(ZIX_TRANSITION),
+    ObserveRoot,
 );
