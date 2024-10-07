@@ -346,6 +346,7 @@ pub(super) fn register_logic(app: &mut App) {
             .in_set(PhysicsSet)
             .in_set(super::CollSet)
             .before(super::PosSet)
+            .before(MyLdtkMaintSet)
             .run_if(in_state(PhysicsState::Active)),
     );
 

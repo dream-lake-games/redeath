@@ -5,10 +5,12 @@ struct TestEntity {
     name: Name,
     sprite: SpriteBundle,
     render_layers: RenderLayers,
+    pos: Pos,
+    plid: PhysicalLid,
 }
 impl MyLdtkEntity for TestEntity {
     type Root = WorldRoot;
-    fn from_ldtk(gt: &GlobalTransform, _fields: &HashMap<String, FieldValue>) -> Self {
+    fn from_ldtk(pos: Pos, _fields: &HashMap<String, FieldValue>) -> Self {
         Self {
             name: Name::new("test_entity"),
             sprite: SpriteBundle {
@@ -16,10 +18,12 @@ impl MyLdtkEntity for TestEntity {
                     custom_size: Some(Vec2::new(8.0, 8.0)),
                     ..default()
                 },
-                transform: gt.compute_transform(),
+                transform: pos.to_spatial(0.0).transform,
                 ..default()
             },
             render_layers: MainLayer::to_render_layers(),
+            pos,
+            plid: default(),
         }
     }
 }

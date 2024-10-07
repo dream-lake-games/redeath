@@ -6,8 +6,7 @@ use super::MyLdtkChild;
 
 pub trait MyLdtkEntity: Bundle {
     type Root: RootKind;
-
-    fn from_ldtk(gt: &GlobalTransform, fields: &HashMap<String, FieldValue>) -> Self;
+    fn from_ldtk(pos: Pos, fields: &HashMap<String, FieldValue>) -> Self;
 }
 
 #[derive(Component, Default)]
@@ -39,12 +38,32 @@ impl<B: MyLdtkEntity> LdtkEntity for MyLdtkEntityWrapper<B> {
 fn post_ldtk_entity_blessing<B: MyLdtkEntity>(
     mut commands: Commands,
     wrappers: Query<(Entity, &GlobalTransform, &MyLdtkEntityWrapper<B>)>,
+    parents: Query<&Parent>,
+    level_iids: Query<&LevelIid>,
     root: Res<B::Root>,
 ) {
     for (ldtk_eid, gt, wrapper) in &wrappers {
-        let bund = B::from_ldtk(gt, &wrapper.fields);
-        let child_eid = commands.spawn(bund).set_parent(root.eid()).id();
-        commands.entity(ldtk_eid).insert(MyLdtkChild { child_eid });
+        // First get the level iid
+        let granddad = parents
+            .get(parents.get(ldtk_eid).expect("dad").get())
+            .expect("granddad")
+            .get();
+        let level_iid = level_iids.get(granddad).expect("granddad has no leveliid");
+        // Then spawn the thing
+        let pos = Pos::new(gt.translation().x, gt.translation().y);
+        let bund = B::from_ldtk(pos, &wrapper.fields);
+        let child_eid = commands
+            .spawn(bund)
+            .insert(SpawnedLid {
+                iid: level_iid.to_string(),
+            })
+            .set_parent(root.eid())
+            .id();
+        // Remember our child, but remove wrapper
+        commands
+            .entity(ldtk_eid)
+            .insert(MyLdtkChild { child_eid })
+            .remove::<MyLdtkEntityWrapper<B>>();
     }
 }
 
