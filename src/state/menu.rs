@@ -5,6 +5,7 @@ pub enum MenuState {
     Bevy,
     DreamLake,
     Title,
+    Savefile,
 }
 impl_core_computed_state!(Menu, MenuState);
-impl_kind_computed_state!(MenuState, Bevy, DreamLake, Title);
+impl_kind_computed_state!(MenuState, Bevy, DreamLake, Title, Savefile);

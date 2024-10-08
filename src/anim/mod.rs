@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+mod menu_anim;
 mod transition_anim;
 
 pub use transition_anim::TransitionAnim;
@@ -52,6 +53,7 @@ impl Plugin for MyAnimPlugin {
         );
         app.add_systems(PostUpdate, drive_anim_time_res.before(AnimSet));
 
+        menu_anim::register(app);
         app.add_plugins(TransitionAnimPlugin::default());
     }
 }
