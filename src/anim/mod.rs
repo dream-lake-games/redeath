@@ -1,8 +1,9 @@
 use crate::prelude::*;
 
 mod menu_anim;
-mod transition_anim;
+pub use menu_anim::*;
 
+mod transition_anim;
 pub use transition_anim::TransitionAnim;
 use transition_anim::TransitionAnimPlugin;
 

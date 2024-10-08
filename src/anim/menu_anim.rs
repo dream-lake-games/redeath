@@ -1,12 +1,12 @@
 use crate::prelude::*;
 
 derive_anim!(
-    pub enum MenuAnim {
+    pub enum SavefileButtonAnim {
         #[default]
         #[file("menu/savefile_button_idle.png")]
         #[size(180, 48)]
         #[render_layers(MenuLayer)]
-        Clear,
+        Idle,
         #[file("menu/savefile_button_activate.png")]
         #[size(180, 48)]
         #[length(2)]
@@ -19,8 +19,8 @@ derive_anim!(
         Active,
     }
 );
-type MenuAnimPlugin = AnimDefnPlugin<MenuAnim, AnimTimeRes>;
+type SavefileButtonAnimPlugin = AnimDefnPlugin<SavefileButtonAnim, AnimTimeRes>;
 
 pub(super) fn register(app: &mut App) {
-    app.add_plugins(MenuAnimPlugin::default());
+    app.add_plugins(SavefileButtonAnimPlugin::default());
 }

@@ -9,6 +9,7 @@ pub mod my_ldtk;
 pub mod palette;
 pub mod physics;
 pub mod root;
+pub mod savefile;
 pub mod state;
 pub mod transition;
 pub mod types;
@@ -16,7 +17,7 @@ pub mod types;
 pub mod prelude {
     pub use super::{
         anim::*, consts::*, input::*, layer::*, lazy::*, my_ldtk::*, palette::*, physics::*,
-        root::*, state::*, transition::*, types::*,
+        root::*, savefile::*, state::*, transition::*, types::*,
     };
     pub use bevy::{
         color::palettes::tailwind,
@@ -75,6 +76,7 @@ fn main() {
         .add_plugins(PalettePlugin)
         .add_plugins(PhysicsPlugin)
         .add_plugins(RootPlugin)
+        .add_plugins(SavefilePlugin)
         .add_plugins(StatePlugin)
         .add_plugins(TransitionPlugin);
 
