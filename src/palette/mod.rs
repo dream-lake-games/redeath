@@ -75,7 +75,7 @@ pub const WAVERATOR: Palette = Palette {
 pub(super) struct PalettePlugin;
 impl Plugin for PalettePlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(WAVERATOR.clone());
+        app.insert_resource(BERRY_NEBULA.clone());
         app.add_plugins(Material2dPlugin::<PaletteMat>::default());
     }
 }

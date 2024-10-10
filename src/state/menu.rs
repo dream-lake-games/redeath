@@ -6,6 +6,16 @@ pub enum MenuState {
     DreamLake,
     Title,
     Savefile,
+    OverworldLoading,
+    Overworld,
 }
 impl_core_computed_state!(Menu, MenuState);
-impl_kind_computed_state!(MenuState, Bevy, DreamLake, Title, Savefile);
+impl_kind_computed_state!(
+    MenuState,
+    Bevy,
+    DreamLake,
+    Title,
+    Savefile,
+    OverworldLoading,
+    Overworld
+);

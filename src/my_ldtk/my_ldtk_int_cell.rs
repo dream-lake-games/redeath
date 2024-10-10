@@ -6,7 +6,7 @@ use super::MyLdtkChild;
 
 pub trait MyLdtkIntCell: Bundle {
     type Root: RootKind;
-    type RenderLayers: Into<RenderLayers>;
+    type RenderLayers: Layer;
     fn from_ldtk(pos: Pos, value: i32) -> Self;
 }
 
@@ -14,12 +14,14 @@ pub trait MyLdtkIntCell: Bundle {
 struct MyLdtkIntCellWrapper<B: MyLdtkIntCell> {
     _pd: PhantomComponent<B>,
     value: i32,
+    _blocker: BlockMyLdtkLoad,
 }
 impl<B: MyLdtkIntCell> LdtkIntCell for MyLdtkIntCellWrapper<B> {
     fn bundle_int_cell(int_grid_cell: IntGridCell, _layer_instance: &LayerInstance) -> Self {
         Self {
             _pd: default(),
             value: int_grid_cell.value,
+            _blocker: BlockMyLdtkLoad::ticks(10),
         }
     }
 }
@@ -33,10 +35,8 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
 ) {
     for (ldtk_eid, gt, wrapper) in &wrappers {
         // First get the level iid
-        let granddad = parents
-            .get(parents.get(ldtk_eid).expect("dad").get())
-            .expect("granddad")
-            .get();
+        let dad = parents.get(ldtk_eid).expect("dad").get();
+        let granddad = parents.get(dad).expect("granddad").get();
         let level_iid = level_iids.get(granddad).expect("granddad has no leveliid");
         // Then spawn the thing
         let pos = Pos::new(gt.translation().x, gt.translation().y);
@@ -49,6 +49,8 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
             .set_parent(root.eid())
             .id();
         // Remember our child, but remove wrapper
+        let rl: RenderLayers = B::RenderLayers::to_render_layers();
+        commands.entity(dad).insert(rl.clone());
         commands
             .entity(ldtk_eid)
             .insert(MyLdtkChild { child_eid })

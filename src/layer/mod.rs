@@ -76,7 +76,7 @@ impl LayerClearColors {
 impl Default for LayerClearColors {
     fn default() -> Self {
         Self {
-            bg_clear_color: ClearColorConfig::Custom(BERRY_NEBULA[0]),
+            bg_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             main_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             fg_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             menu_clear_color: ClearColorConfig::Custom(COLOR_NONE),
@@ -253,9 +253,6 @@ fn setup_layer_materials(
         ))
         .set_parent(root.eid());
 }
-
-#[derive(Component)]
-struct FollowDynamicCamera;
 
 fn setup_layer_cameras(
     mut commands: Commands,

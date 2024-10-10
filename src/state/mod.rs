@@ -53,16 +53,20 @@ pub(super) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         debug_resource!(app, State<MetaState>);
-        app.insert_state(MetaState::Menu(MenuState::Bevy));
+        debug_resource!(app, State<MetaStateKind>);
+
+        // app.insert_state(MetaState::Menu(MenuState::Bevy));
+        app.insert_state(MetaState::Menu(MenuState::Savefile));
         app.insert_state(TransitionState::default());
         app.insert_state(PauseState::Unpaused);
 
-        app.add_computed_state::<LevelState>();
+        app.add_computed_state::<MetaStateKind>();
         app.add_computed_state::<PhysicsState>();
         app.add_computed_state::<TransitionActiveState>();
         app.add_computed_state::<MenuState>();
         app.add_computed_state::<MenuStateKind>();
         app.add_computed_state::<WorldLoadingState>();
         app.add_computed_state::<WorldState>();
+        app.add_computed_state::<LevelState>();
     }
 }

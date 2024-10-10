@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::common::*;
+use super::menu_common::*;
 
 #[derive(Resource)]
 struct SavefileInput {
@@ -85,7 +85,9 @@ fn watch_input(
     }
     // Go forward if we can
     if butts.pressed(ButtKind::Enter) || butts.pressed(ButtKind::A) {
-        commands.trigger(StartTransition::to(MenuState::Bevy.to_meta_state()));
+        commands.trigger(StartTransition::to(
+            MenuState::OverworldLoading.to_meta_state(),
+        ));
         commands.remove_resource::<Savefile>();
         commands.insert_resource(Savefile::change_me(input.selected));
     }

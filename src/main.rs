@@ -1,4 +1,5 @@
 pub mod anim;
+pub mod camera;
 pub mod consts;
 pub mod debug;
 pub mod input;
@@ -13,11 +14,12 @@ pub mod savefile;
 pub mod state;
 pub mod transition;
 pub mod types;
+pub mod world;
 
 pub mod prelude {
     pub use super::{
-        anim::*, consts::*, input::*, layer::*, lazy::*, my_ldtk::*, palette::*, physics::*,
-        root::*, savefile::*, state::*, transition::*, types::*,
+        anim::*, camera::*, consts::*, input::*, layer::*, lazy::*, my_ldtk::*, palette::*,
+        physics::*, root::*, savefile::*, state::*, transition::*, types::*, world::*,
     };
     pub use bevy::{
         color::palettes::tailwind,
@@ -67,7 +69,8 @@ fn main() {
     .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)));
 
     // Our plugins
-    app.add_plugins(debug::DebugPlugin)
+    app.add_plugins(CameraPlugin)
+        .add_plugins(debug::DebugPlugin)
         .add_plugins(InputPlugin)
         .add_plugins(LayerPlugin)
         .add_plugins(MenuPlugin)
@@ -78,7 +81,8 @@ fn main() {
         .add_plugins(RootPlugin)
         .add_plugins(SavefilePlugin)
         .add_plugins(StatePlugin)
-        .add_plugins(TransitionPlugin);
+        .add_plugins(TransitionPlugin)
+        .add_plugins(WorldPlugin);
 
     // Have fun!
     app.run();

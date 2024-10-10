@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::common::*;
+use super::menu_common::*;
 
 fn on_enter(mut commands: Commands) {
     commands.spawn(MenuImage::new("menu/bevy.png"));

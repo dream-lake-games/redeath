@@ -13,6 +13,7 @@ pub trait MyLdtkEntity: Bundle {
 struct MyLdtkEntityWrapper<B: MyLdtkEntity> {
     _pd: PhantomComponent<B>,
     fields: HashMap<String, FieldValue>,
+    _blocker: BlockMyLdtkLoad,
 }
 impl<B: MyLdtkEntity> LdtkEntity for MyLdtkEntityWrapper<B> {
     fn bundle_entity(
@@ -31,6 +32,7 @@ impl<B: MyLdtkEntity> LdtkEntity for MyLdtkEntityWrapper<B> {
                 .into_iter()
                 .map(|fi| (fi.identifier, fi.value))
                 .collect(),
+            _blocker: BlockMyLdtkLoad::ticks(10),
         }
     }
 }

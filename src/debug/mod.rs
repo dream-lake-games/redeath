@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+mod draw_hitboxes;
+
 #[derive(Bundle)]
 struct TestEntity {
     name: Name,
@@ -28,14 +30,11 @@ impl MyLdtkEntity for TestEntity {
     }
 }
 
-fn debug_startup(mut commands: Commands, ass: Res<AssetServer>) {
-    // commands.spawn((
-    //     Name::new("ldtk_world"),
-    //     LdtkWorldBundle {
-    //         ldtk_handle: ass.load("play/test.ldtk"),
-    //         ..default()
-    //     },
-    // ));
+fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>) {
+    // Gizmo config
+    let (config, _) = gizmo_config_store.config_mut::<DefaultGizmoConfigGroup>();
+    config.line_width = 2.0;
+    config.render_layers = MainLayer::to_render_layers();
 }
 
 fn debug_update() {}
@@ -49,5 +48,6 @@ impl Plugin for DebugPlugin {
             "Entities",
             "TestEntity",
         ));
+        draw_hitboxes::register_draw_hitboxes(app);
     }
 }

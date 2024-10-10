@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 // Often nice to have the size of the screen in these formats
 pub const SCREEN_WIDTH: u32 = 240;
-pub const SCREEN_HEIGHT: u32 = 180;
+pub const SCREEN_HEIGHT: u32 = 184;
 pub const SCREEN_UVEC: UVec2 = UVec2::new(SCREEN_WIDTH, SCREEN_HEIGHT);
 #[allow(nonstandard_style)]
 pub const SCREEN_WIDTH_f32: f32 = SCREEN_WIDTH as f32;

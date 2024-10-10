@@ -8,13 +8,9 @@ pub struct WorldState {
 impl_core_computed_state!(World, WorldState);
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
-pub struct LevelState {
-    pub iid: String,
-    pub lower_left: IVec2,
-    pub upper_right: IVec2,
-}
+pub struct LevelState {}
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum WorldKind {
     Lake,
 }

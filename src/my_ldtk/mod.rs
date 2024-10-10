@@ -2,12 +2,14 @@ use std::ops::Deref;
 
 use crate::prelude::*;
 
-mod maint;
 pub mod my_ldtk_entity;
 pub mod my_ldtk_int_cell;
+pub mod my_ldtk_load;
+mod my_ldtk_maint;
 
 pub use my_ldtk_entity::*;
 pub use my_ldtk_int_cell::*;
+pub use my_ldtk_load::*;
 
 /// The set that contains all weird ldtk maintenence
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -95,16 +97,27 @@ impl Plugin for MyLdtkPlugin {
             MyLdtkChild
         );
 
-        maint::register_my_ldtk_maint(app);
+        my_ldtk_maint::register_my_ldtk_maint(app);
 
         app.insert_resource(LevelRects::default());
-        app.add_plugins(LdtkPlugin)
-            .insert_resource(LdtkSettings {
-                level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
-                    load_level_neighbors: true,
-                },
-                ..default()
-            })
-            .insert_resource(LevelSelection::iid("8502fb20-73f0-11ef-a7cc-51ce498506c2"));
+        app.add_plugins(LdtkPlugin).insert_resource(LdtkSettings {
+            level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
+                load_level_neighbors: true,
+            },
+            ..default()
+        });
+        register_my_ldtk_load(app);
+    }
+}
+
+pub trait UnfuckLevelSelection {
+    fn to_iid(&self) -> String;
+}
+impl UnfuckLevelSelection for LevelSelection {
+    fn to_iid(&self) -> String {
+        let LevelSelection::Iid(iid) = self else {
+            panic!("can't unfuck level selection");
+        };
+        iid.to_string()
     }
 }
