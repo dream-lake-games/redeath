@@ -1,4 +1,8 @@
+use bevy::ecs::query::QuerySingleError;
+
 use crate::prelude::*;
+
+use super::scratch::ScratchPlayerBundle;
 
 #[derive(Component)]
 struct SpawnPoint;
@@ -64,11 +68,36 @@ fn set_spawn_point_on_level_change(
         commands.entity(eid).remove::<SpawnPointActive>();
     }
     if let Some(eid) = calculate_new_spawn_point(&potential) {
-        println!("yay! according to plan");
         commands.entity(eid).insert(SpawnPointActive);
     } else {
         warn!("Unable to find new spawn point to make active after changing level");
     }
+}
+
+fn spawn_player(
+    mut commands: Commands,
+    active_spawn_pos: Query<&Pos, With<SpawnPointActive>>,
+    world_state: Res<State<WorldState>>,
+    mut next_meta_state: ResMut<NextState<MetaState>>,
+    root: Res<WorldRoot>,
+) {
+    let spawn_pos = match active_spawn_pos.get_single() {
+        Ok(pos) => pos,
+        Err(QuerySingleError::NoEntities(_)) => {
+            warn!("no spawn points");
+            return;
+        }
+        Err(QuerySingleError::MultipleEntities(_)) => {
+            warn!("multiple spawn points");
+            return;
+        }
+    };
+    commands
+        .spawn(ScratchPlayerBundle::new(spawn_pos.clone()))
+        .set_parent(root.eid());
+    let mut world_state = world_state.get().clone();
+    world_state.player_meta_state = PlayerMetaState::Playing;
+    next_meta_state.set(world_state.to_meta_state());
 }
 
 pub(super) fn register_spawn(app: &mut App) {
@@ -77,4 +106,11 @@ pub(super) fn register_spawn(app: &mut App) {
         "SpawnPoint",
     ));
     app.observe(set_spawn_point_on_level_change);
+
+    app.add_systems(
+        PreUpdate,
+        spawn_player
+            .run_if(in_state(PlayerMetaState::Spawning))
+            .run_if(in_state(MetaStateKind::World)),
+    );
 }

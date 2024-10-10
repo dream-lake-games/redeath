@@ -115,12 +115,12 @@ macro_rules! impl_subroot_init {
                     #[allow(nonstandard_style)]
                     mut [<$name _res>]: ResMut<$name>,
                     #[allow(nonstandard_style)]
-                    [<$parent _res>]: Res<$parent>,
+                    [<$parent $name _res>]: Res<$parent>,
                 )*
             ) {
                 $(
                     #[allow(nonstandard_style)]
-                    let [<$name _eid>] = commands.spawn([<$name Bundle>]::new(0.0)).set_parent([<$parent _res>].eid()).id();
+                    let [<$name _eid>] = commands.spawn([<$name Bundle>]::new(0.0)).set_parent([<$parent $name _res>].eid()).id();
                     [<$name _res>].eid = [<$name _eid>];
                 )*
             }

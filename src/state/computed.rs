@@ -8,11 +8,11 @@ impl ComputedStates for LevelState {
     }
 }
 
-impl ComputedStates for PlayerState {
+impl ComputedStates for PlayerMetaState {
     type SourceStates = WorldState;
 
     fn compute(sources: Self::SourceStates) -> Option<Self> {
-        Some(sources.player_state)
+        Some(sources.player_meta_state)
     }
 }
 
