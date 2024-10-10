@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-/// The set that contains all physics related systems
+/// The set that contains all ldtk level maintainence
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct MyLdtkLevelMaint;
 

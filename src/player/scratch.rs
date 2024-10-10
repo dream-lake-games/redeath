@@ -6,6 +6,7 @@ pub(super) struct ScratchPlayerBundle {
     player: Player,
     pos: Pos,
     dyno: Dyno,
+    gravity: Gravity,
     static_rx: StaticRx,
     sprite: SpriteBundle,
     render_layers: RenderLayers,
@@ -18,6 +19,7 @@ impl ScratchPlayerBundle {
             player: Player,
             pos,
             dyno: default(),
+            gravity: default(),
             static_rx: StaticRx::single(
                 StaticRxKind::Default,
                 HBox::new(size.x as u32, size.y as u32),
@@ -35,4 +37,25 @@ impl ScratchPlayerBundle {
     }
 }
 
-pub(super) fn register_scratch(app: &mut App) {}
+fn simple_movement(
+    mut player_q: Query<&mut Dyno, With<Player>>,
+    dir_input: Res<DirInput>,
+    butt_input: Res<ButtInput>,
+) {
+    let mut dyno = player_q.single_mut();
+    dyno.vel.x = dir_input.x * 100.0;
+    if butt_input.just_pressed(ButtKind::A) {
+        dyno.vel.y = 200.0;
+    }
+}
+
+pub(super) fn register_scratch(app: &mut App) {
+    app.add_systems(
+        Update,
+        simple_movement
+            .run_if(in_state(PlayerMetaState::Playing))
+            .after(InputSet)
+            .after(PhysicsSet)
+            .in_set(PlayerSet),
+    );
+}

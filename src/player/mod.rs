@@ -4,6 +4,10 @@ mod player_invariants;
 mod scratch;
 mod spawn;
 
+/// The set that contains all player related systems
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PlayerSet;
+
 #[derive(Component)]
 pub struct Player;
 
