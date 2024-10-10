@@ -68,5 +68,6 @@ impl Plugin for StatePlugin {
         app.add_computed_state::<WorldLoadingState>();
         app.add_computed_state::<WorldState>();
         app.add_computed_state::<LevelState>();
+        app.add_computed_state::<PlayerState>();
     }
 }

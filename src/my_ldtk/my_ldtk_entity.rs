@@ -6,13 +6,14 @@ use super::MyLdtkChild;
 
 pub trait MyLdtkEntity: Bundle {
     type Root: RootKind;
-    fn from_ldtk(pos: Pos, fields: &HashMap<String, FieldValue>) -> Self;
+    fn from_ldtk(pos: Pos, fields: &HashMap<String, FieldValue>, iid: String) -> Self;
 }
 
 #[derive(Component, Default)]
 struct MyLdtkEntityWrapper<B: MyLdtkEntity> {
     _pd: PhantomComponent<B>,
     fields: HashMap<String, FieldValue>,
+    iid: String,
     _blocker: BlockMyLdtkLoad,
 }
 impl<B: MyLdtkEntity> LdtkEntity for MyLdtkEntityWrapper<B> {
@@ -32,6 +33,7 @@ impl<B: MyLdtkEntity> LdtkEntity for MyLdtkEntityWrapper<B> {
                 .into_iter()
                 .map(|fi| (fi.identifier, fi.value))
                 .collect(),
+            iid: entity_instance.iid.clone(),
             _blocker: BlockMyLdtkLoad::ticks(10),
         }
     }
@@ -53,7 +55,7 @@ fn post_ldtk_entity_blessing<B: MyLdtkEntity>(
         let level_iid = level_iids.get(granddad).expect("granddad has no leveliid");
         // Then spawn the thing
         let pos = Pos::new(gt.translation().x, gt.translation().y);
-        let bund = B::from_ldtk(pos, &wrapper.fields);
+        let bund = B::from_ldtk(pos, &wrapper.fields, wrapper.iid.clone());
         let child_eid = commands
             .spawn(bund)
             .insert(SpawnedLid {

@@ -1,5 +1,44 @@
 use crate::prelude::*;
 
+/// The set that contains all physics related systems
+#[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+pub struct MyLdtkLevelMaint;
+
+/// Updates the map of known level bounds
+fn update_my_level_rects(
+    levels: Query<(&LevelIid, &GlobalTransform)>,
+    mut level_rects: ResMut<LevelRects>,
+    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_project_assets: Res<Assets<LdtkProject>>,
+) {
+    let Ok(project) = ldtk_projects.get_single() else {
+        return;
+    };
+    let Some(ldtk_project) = ldtk_project_assets.get(project) else {
+        return;
+    };
+    for (level_iid, level_transform) in levels.iter() {
+        if level_rects.get(level_iid.as_str()).is_some() {
+            continue;
+        }
+        let level = ldtk_project
+            .get_raw_level_by_iid(level_iid.get())
+            .expect("level should exist in only project");
+        let level_bounds = Rect {
+            min: Vec2::new(
+                level_transform.translation().x,
+                level_transform.translation().y,
+            ),
+            max: Vec2::new(
+                level_transform.translation().x + level.px_wid as f32,
+                level_transform.translation().y + level.px_hei as f32,
+            ),
+        };
+        level_rects.set(level_iid.to_string(), level_bounds);
+    }
+}
+
+/// Updates the `SpawnLid(In)Active` components
 fn handle_spawned_lids(
     mut commands: Commands,
     ents: Query<(Entity, &SpawnedLid)>,
@@ -27,42 +66,13 @@ fn handle_spawned_lids(
     }
 }
 
+/// Updates the `PhysicalLid(In)Active` components
 fn handle_physical_lids(
     mut commands: Commands,
     mut ents: Query<(Entity, &mut PhysicalLid, &Pos, &SpawnedLid)>,
-    mut level_rects: ResMut<LevelRects>,
+    level_rects: Res<LevelRects>,
     selection: Option<Res<LevelSelection>>,
-    levels: Query<(&LevelIid, &GlobalTransform)>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
-    ldtk_project_assets: Res<Assets<LdtkProject>>,
 ) {
-    let Ok(project) = ldtk_projects.get_single() else {
-        return;
-    };
-    let Some(ldtk_project) = ldtk_project_assets.get(project) else {
-        return;
-    };
-    // Fetch the level rects (probably cache this at some point)
-    for (level_iid, level_transform) in levels.iter() {
-        if level_rects.get(level_iid.as_str()).is_some() {
-            continue;
-        }
-        let level = ldtk_project
-            .get_raw_level_by_iid(level_iid.get())
-            .expect("level should exist in only project");
-        let level_bounds = Rect {
-            min: Vec2::new(
-                level_transform.translation().x,
-                level_transform.translation().y,
-            ),
-            max: Vec2::new(
-                level_transform.translation().x + level.px_wid as f32,
-                level_transform.translation().y + level.px_hei as f32,
-            ),
-        };
-        level_rects.set(level_iid.to_string(), level_bounds);
-    }
-    let level_rects = level_rects.into_inner();
     // Update PhysicalLid
     for (_, mut plid, pos, slid) in &mut ents {
         if plid.last_known_iid == None {
@@ -122,9 +132,57 @@ fn handle_physical_lids(
     }
 }
 
-pub(super) fn register_my_ldtk_maint(app: &mut App) {
+/// This event gets fired whenever the LevelSelection changes, in Update
+/// NOTE: You CAN assume that this is fired only after all things in that level spawn
+/// NOTE: You CAN assume that when this is called, SpawnedLid(In)Active and PhysicalLid(In)Active are correct
+#[derive(Event)]
+pub struct LevelChangeEvent;
+#[derive(Resource)]
+pub(super) struct LastLevelSelection(String);
+fn watch_level_selection(
+    mut commands: Commands,
+    level_selection: Option<Res<LevelSelection>>,
+    mut last_level_selection: Option<ResMut<LastLevelSelection>>,
+    my_ldtk_load: Res<MyLdtkLoadState>,
+) {
+    match (level_selection.as_ref(), last_level_selection.as_mut()) {
+        (Some(ls), Some(lls)) => {
+            if ls.to_iid() != lls.0 {
+                commands.trigger(LevelChangeEvent);
+                lls.0 = ls.to_iid();
+            }
+        }
+        (Some(ls), None) => match my_ldtk_load.into_inner() {
+            MyLdtkLoadState::Loaded => {
+                commands.trigger(LevelChangeEvent);
+                commands.insert_resource(LastLevelSelection(ls.to_iid()));
+            }
+            _ => {
+                // Do nothing, wait until load finishes to trigger
+            }
+        },
+        (None, Some(_)) => {
+            commands.remove_resource::<LastLevelSelection>();
+        }
+        (None, None) => (),
+    }
+}
+
+pub(super) fn register_my_ldtk_levels(app: &mut App) {
+    app.insert_resource(LevelRects::default());
+
+    app.add_systems(Update, update_my_level_rects.in_set(MyLdtkLevelMaint));
     app.add_systems(
         Update,
-        (handle_spawned_lids, handle_physical_lids).in_set(PhysicsSet),
+        (handle_spawned_lids, handle_physical_lids)
+            .after(update_my_level_rects)
+            .in_set(MyLdtkLevelMaint),
+    );
+    app.add_systems(
+        Update,
+        watch_level_selection
+            .after(handle_spawned_lids)
+            .after(handle_physical_lids)
+            .in_set(MyLdtkLevelMaint),
     );
 }

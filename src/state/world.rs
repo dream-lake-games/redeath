@@ -4,11 +4,21 @@ use crate::prelude::*;
 pub struct WorldState {
     pub kind: WorldKind,
     pub level_state: LevelState,
+    pub player_state: PlayerState,
 }
 impl_core_computed_state!(World, WorldState);
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
 pub struct LevelState {}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
+pub enum PlayerState {
+    NoneOk,
+    Spawning,
+    Puppet,
+    Playing,
+    Dying,
+}
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum WorldKind {

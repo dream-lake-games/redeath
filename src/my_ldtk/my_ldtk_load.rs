@@ -1,3 +1,4 @@
+use super::my_ldtk_level_maint::LastLevelSelection;
 use crate::prelude::*;
 
 #[derive(Resource, Clone, Debug, Default, Reflect, PartialEq, Eq)]
@@ -46,6 +47,8 @@ fn handle_unload_my_ldtk(
     }
     *level_rects = default();
     *my_ldtk_load_state = MyLdtkLoadState::Unloaded;
+    commands.remove_resource::<LevelSelection>();
+    commands.remove_resource::<LastLevelSelection>();
 }
 
 fn is_loading(res: Res<MyLdtkLoadState>) -> bool {

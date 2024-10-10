@@ -8,6 +8,14 @@ impl ComputedStates for LevelState {
     }
 }
 
+impl ComputedStates for PlayerState {
+    type SourceStates = WorldState;
+
+    fn compute(sources: Self::SourceStates) -> Option<Self> {
+        Some(sources.player_state)
+    }
+}
+
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum PhysicsState {
     Active,

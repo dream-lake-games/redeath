@@ -28,6 +28,7 @@ fn update_loading(
         WorldState {
             kind: world_loading.get().kind,
             level_state: LevelState {},
+            player_state: PlayerState::Spawning,
         }
         .to_meta_state(),
     );
