@@ -30,9 +30,10 @@ macro_rules! decl_layer {
 }
 decl_layer!(BgLayer, 1);
 decl_layer!(MainLayer, 2);
-decl_layer!(FgLayer, 3);
-decl_layer!(MenuLayer, 4);
-decl_layer!(TransitionLayer, 5);
+decl_layer!(LightLayer, 3);
+decl_layer!(FgLayer, 4);
+decl_layer!(MenuLayer, 5);
+decl_layer!(TransitionLayer, 6);
 
 /// Grows all of the layers by a given scale.
 /// Makes it easy for the game to fill the screen in a satisfying way.
@@ -55,6 +56,7 @@ impl Default for LayerGrowth {
 pub struct LayerClearColors {
     bg_clear_color: ClearColorConfig,
     main_clear_color: ClearColorConfig,
+    light_clear_color: ClearColorConfig,
     fg_clear_color: ClearColorConfig,
     menu_clear_color: ClearColorConfig,
     transition_clear_color: ClearColorConfig,
@@ -69,6 +71,7 @@ macro_rules! impl_clear_color_config_field {
 impl LayerClearColors {
     impl_clear_color_config_field!(bg_clear_color);
     impl_clear_color_config_field!(main_clear_color);
+    impl_clear_color_config_field!(light_clear_color);
     impl_clear_color_config_field!(fg_clear_color);
     impl_clear_color_config_field!(menu_clear_color);
     impl_clear_color_config_field!(transition_clear_color);
@@ -78,6 +81,7 @@ impl Default for LayerClearColors {
         Self {
             bg_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             main_clear_color: ClearColorConfig::Custom(COLOR_NONE),
+            light_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             fg_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             menu_clear_color: ClearColorConfig::Custom(COLOR_NONE),
             transition_clear_color: ClearColorConfig::Custom(COLOR_NONE),
@@ -89,6 +93,7 @@ impl Default for LayerClearColors {
 struct CameraTargets {
     bg_target: Handle<Image>,
     main_target: Handle<Image>,
+    light_target: Handle<Image>,
     palette_target: Handle<Image>,
     fg_target: Handle<Image>,
     menu_target: Handle<Image>,
@@ -100,6 +105,7 @@ impl Default for CameraTargets {
         Self {
             bg_target: Handle::weak_from_u128(thread_rng().gen()),
             main_target: Handle::weak_from_u128(thread_rng().gen()),
+            light_target: Handle::weak_from_u128(thread_rng().gen()),
             palette_target: Handle::weak_from_u128(thread_rng().gen()),
             fg_target: Handle::weak_from_u128(thread_rng().gen()),
             menu_target: Handle::weak_from_u128(thread_rng().gen()),
@@ -142,6 +148,7 @@ impl CameraTargets {
 
         make_layer_image!("bg_target", self.bg_target);
         make_layer_image!("main_target", self.main_target);
+        make_layer_image!("light_target", self.light_target);
         make_layer_image!("palette_target", self.palette_target);
         make_layer_image!("fg_target", self.fg_target);
         make_layer_image!("menu_target", self.menu_target);
@@ -161,7 +168,11 @@ fn setup_layer_materials(
 ) {
     let palette_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
     let palette_mesh: Mesh2dHandle = meshes.add(palette_mesh).into();
-    let palette_mat = PaletteMat::new(camera_targets.main_target.clone(), palette.clone());
+    let palette_mat = PaletteMat::new(
+        camera_targets.main_target.clone(),
+        camera_targets.light_target.clone(),
+        palette.clone(),
+    );
     let squash_layer = RenderLayers::from_layers(&[29]);
     let final_layer = RenderLayers::from_layers(&[30]);
 
@@ -305,9 +316,17 @@ fn setup_layer_cameras(
         true
     );
     spawn_layer_camera!(
+        LightLayer,
+        "light_camera",
+        3,
+        camera_targets.light_target.clone(),
+        layer_colors.light_clear_color,
+        true
+    );
+    spawn_layer_camera!(
         FgLayer,
         "fg_camera",
-        3,
+        4,
         camera_targets.fg_target.clone(),
         layer_colors.fg_clear_color,
         false
@@ -315,7 +334,7 @@ fn setup_layer_cameras(
     spawn_layer_camera!(
         MenuLayer,
         "menu_camera",
-        4,
+        5,
         camera_targets.menu_target.clone(),
         layer_colors.menu_clear_color,
         false
@@ -323,7 +342,7 @@ fn setup_layer_cameras(
     spawn_layer_camera!(
         TransitionLayer,
         "transition_camera",
-        5,
+        6,
         camera_targets.transition_target.clone(),
         layer_colors.transition_clear_color,
         false

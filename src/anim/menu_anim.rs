@@ -21,6 +21,6 @@ derive_anim!(
 );
 type SavefileButtonAnimPlugin = AnimDefnPlugin<SavefileButtonAnim, AnimTimeRes>;
 
-pub(super) fn register(app: &mut App) {
+pub(super) fn register_menu_anim(app: &mut App) {
     app.add_plugins(SavefileButtonAnimPlugin::default());
 }

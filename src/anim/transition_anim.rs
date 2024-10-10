@@ -26,4 +26,8 @@ derive_anim!(
         CircleOut,
     }
 );
-pub type TransitionAnimPlugin = AnimDefnPlugin<TransitionAnim, AnimTimeRes>;
+type TransitionAnimPlugin = AnimDefnPlugin<TransitionAnim, AnimTimeRes>;
+
+pub(super) fn register_transition_anim(app: &mut App) {
+    app.add_plugins(TransitionAnimPlugin::default());
+}

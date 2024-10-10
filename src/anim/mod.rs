@@ -1,11 +1,12 @@
 use crate::prelude::*;
 
 mod menu_anim;
-pub use menu_anim::*;
-
+mod player_anim;
 mod transition_anim;
+
+pub use menu_anim::*;
+pub use player_anim::*;
 pub use transition_anim::TransitionAnim;
-use transition_anim::TransitionAnimPlugin;
 
 #[derive(Resource, Clone, Debug, Default, Reflect)]
 pub struct AnimTimeRes {
@@ -54,7 +55,8 @@ impl Plugin for MyAnimPlugin {
         );
         app.add_systems(PostUpdate, drive_anim_time_res.before(AnimSet));
 
-        menu_anim::register(app);
-        app.add_plugins(TransitionAnimPlugin::default());
+        menu_anim::register_menu_anim(app);
+        player_anim::register_player_anim(app);
+        transition_anim::register_transition_anim(app);
     }
 }

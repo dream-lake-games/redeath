@@ -10,21 +10,24 @@ pub struct PaletteMat {
     #[texture(1)]
     #[sampler(2)]
     input: Handle<Image>,
-    #[uniform(3)]
-    zero: Vec4,
-    #[uniform(4)]
-    one: Vec4,
+    #[texture(3)]
+    #[sampler(4)]
+    light: Handle<Image>,
     #[uniform(5)]
-    two: Vec4,
+    zero: Vec4,
     #[uniform(6)]
-    three: Vec4,
+    one: Vec4,
     #[uniform(7)]
-    four: Vec4,
+    two: Vec4,
     #[uniform(8)]
-    five: Vec4,
+    three: Vec4,
     #[uniform(9)]
-    six: Vec4,
+    four: Vec4,
     #[uniform(10)]
+    five: Vec4,
+    #[uniform(11)]
+    six: Vec4,
+    #[uniform(12)]
     seven: Vec4,
 }
 impl Material2d for PaletteMat {
@@ -33,9 +36,10 @@ impl Material2d for PaletteMat {
     }
 }
 impl PaletteMat {
-    pub fn new(hand: Handle<Image>, palette: Palette) -> Self {
+    pub fn new(input: Handle<Image>, light: Handle<Image>, palette: Palette) -> Self {
         Self {
-            input: hand,
+            input,
+            light,
             zero: color_as_vec4(palette.zero),
             one: color_as_vec4(palette.one),
             two: color_as_vec4(palette.two),
