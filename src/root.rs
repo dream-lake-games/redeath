@@ -93,10 +93,46 @@ macro_rules! impl_root_init {
                         eid: Entity::PLACEHOLDER,
                     });
                 )*
+                insert_subroots(app);
 
-                app.add_systems(Startup, setup_roots.in_set(RootInit));
+                app.add_systems(Startup, (setup_roots, setup_subroots).chain().in_set(RootInit));
                 app.add_systems(PreUpdate, cleanup_observes);
             }
+        }
+    };
+}
+
+macro_rules! impl_subroot_init {
+    ($($name:ident($parent:ident)$(,)?)*) => {
+        $(
+            impl_root_types!($name);
+        )*
+
+        paste::paste! {
+            fn setup_subroots(
+                mut commands: Commands,
+                $(
+                    #[allow(nonstandard_style)]
+                    mut [<$name _res>]: ResMut<$name>,
+                    #[allow(nonstandard_style)]
+                    [<$parent _res>]: Res<$parent>,
+                )*
+            ) {
+                $(
+                    #[allow(nonstandard_style)]
+                    let [<$name _eid>] = commands.spawn([<$name Bundle>]::new(0.0)).set_parent([<$parent _res>].eid()).id();
+                    [<$name _res>].eid = [<$name _eid>];
+                )*
+            }
+        }
+
+
+        fn insert_subroots(app: &mut App) {
+            $(
+                app.insert_resource($name {
+                    eid: Entity::PLACEHOLDER,
+                });
+            )*
         }
     };
 }
@@ -108,3 +144,5 @@ impl_root_init!(
     TransitionRoot(ZIX_TRANSITION),
     ObserveRoot,
 );
+
+impl_subroot_init!(PlatformRoot(WorldRoot), WorldDetailRoot(WorldRoot));

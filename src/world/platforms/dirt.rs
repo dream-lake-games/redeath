@@ -5,7 +5,7 @@ struct BackgroundDirtBundle {
     name: Name,
 }
 impl MyLdtkIntCell for BackgroundDirtBundle {
-    type Root = WorldRoot;
+    type Root = WorldDetailRoot;
     type RenderLayers = MainLayer;
     fn from_ldtk(_pos: Pos, _value: i32) -> Self {
         Self {
@@ -21,7 +21,7 @@ struct DirtBundle {
     static_tx: StaticTx,
 }
 impl MyLdtkIntCell for DirtBundle {
-    type Root = WorldRoot;
+    type Root = PlatformRoot;
     type RenderLayers = MainLayer;
     fn from_ldtk(pos: Pos, _value: i32) -> Self {
         Self {
