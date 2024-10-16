@@ -38,29 +38,31 @@ const ref_seven = vec3<f32>(108.0 / 255.0, 237.0 / 255.0, 237.0 / 255.0);
 
 // This is fucky for reasons I don't understand (non-linear colors?)
 // _but_ _it_ _works_
-fn quantize(color: vec3<f32>) -> f32 {
+fn quantize(color: vec3<f32>) -> i32 {
     if (color.y < 0.1 / 255.0) {
-        return 0.0;
+        return 0;
     }
-    if (color.y < 1.0 / 255.0) {
-        return 1.0;
+    else if (color.y < 1.0 / 255.0) {
+        return 1;
     }
-    if (color.y < 3.0 / 255.0) {
-        return 2.0;
+    else if (color.y < 3.0 / 255.0) {
+        return 2;
     }
-    if (color.y < 5.0 / 255.0) {
-        return 3.0;
+    else if (color.y < 5.0 / 255.0) {
+        return 3;
     }
-    if (color.y < 40.0 / 255.0) {
-        return 4.0;
+    else if (color.y < 40.0 / 255.0) {
+        return 4;
     }
-    if (color.y < 80.0 / 255.0) {
-        return 5.0;
+    else if (color.y < 80.0 / 255.0) {
+        return 5;
     }
-    if (color.y < 160.0 / 255.0) {
-        return 6.0;
+    else if (color.y < 160.0 / 255.0) {
+        return 6;
     }
-    return 7.0;
+    else {
+        return 7;
+    }
 }
 
 // wgsl is annoying and/or i am bad at it
@@ -84,10 +86,16 @@ fn hacky_to_int(val: f32) -> i32 {
     }
 }
 
-fn get_shift(shift: vec4<f32>) -> f32 {
-    let up = hacky_to_int(shift.x);
-    let down = hacky_to_int(shift.y);
-    return up - down;
+fn get_shift(shift: vec4<f32>) -> i32 {
+    if (shift.x > 0.0) {
+        return 1;
+    } else {
+        return 0;
+    }
+    // let up = hacky_to_int(shift.x);
+    // let down = hacky_to_int(shift.y);
+    // // return up - down;
+    // return up;
 }
 
 fn as_final_palette(quantized: i32) -> vec4<f32> {

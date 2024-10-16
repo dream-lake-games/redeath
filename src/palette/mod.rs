@@ -76,7 +76,6 @@ pub(super) struct PalettePlugin;
 impl Plugin for PalettePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BERRY_NEBULA.clone());
-        // app.insert_resource(WAVERATOR.clone());
         app.add_plugins(Material2dPlugin::<SimplePaletteMat>::default());
         app.add_plugins(Material2dPlugin::<ShiftedPaletteMat>::default());
     }

@@ -55,7 +55,7 @@ pub struct ShiftedPaletteMat {
     input: Handle<Image>,
     #[texture(3)]
     #[sampler(4)]
-    light: Handle<Image>,
+    shift: Handle<Image>,
     #[uniform(5)]
     zero: Vec4,
     #[uniform(6)]
@@ -79,10 +79,10 @@ impl Material2d for ShiftedPaletteMat {
     }
 }
 impl ShiftedPaletteMat {
-    pub fn new(input: Handle<Image>, light: Handle<Image>, palette: Palette) -> Self {
+    pub fn new(input: Handle<Image>, shift: Handle<Image>, palette: Palette) -> Self {
         Self {
             input,
-            light,
+            shift,
             zero: color_as_vec4(palette.zero),
             one: color_as_vec4(palette.one),
             two: color_as_vec4(palette.two),

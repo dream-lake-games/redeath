@@ -5,7 +5,7 @@ derive_anim!(
         #[default]
         #[file("play/circle_light.png")]
         #[size(128, 128)]
-        #[render_layers(LightLayer)]
+        #[render_layers(PaletteLayer)]
         Circle,
     }
 );

@@ -62,7 +62,9 @@ impl Default for LayerGrowth {
 struct CameraTargets {
     bg_target: Handle<Image>,
     ambience_target: Handle<Image>,
+    ambience_shifted_target: Handle<Image>,
     main_target: Handle<Image>,
+    main_shifted_target: Handle<Image>,
     palette_target: Handle<Image>,
     light_target: Handle<Image>,
     fg_target: Handle<Image>,
@@ -75,7 +77,9 @@ impl Default for CameraTargets {
         Self {
             bg_target: Handle::weak_from_u128(thread_rng().gen()),
             ambience_target: Handle::weak_from_u128(thread_rng().gen()),
+            ambience_shifted_target: Handle::weak_from_u128(thread_rng().gen()),
             main_target: Handle::weak_from_u128(thread_rng().gen()),
+            main_shifted_target: Handle::weak_from_u128(thread_rng().gen()),
             palette_target: Handle::weak_from_u128(thread_rng().gen()),
             light_target: Handle::weak_from_u128(thread_rng().gen()),
             fg_target: Handle::weak_from_u128(thread_rng().gen()),
@@ -118,7 +122,9 @@ impl CameraTargets {
         }
         make_layer_image!("bg_target", self.bg_target);
         make_layer_image!("ambience_target", self.ambience_target);
+        make_layer_image!("ambience_shifted_target", self.ambience_shifted_target);
         make_layer_image!("main_target", self.main_target);
+        make_layer_image!("main_shifted_target", self.main_shifted_target);
         make_layer_image!("palette_target", self.palette_target);
         make_layer_image!("light_target", self.light_target);
         make_layer_image!("fg_target", self.fg_target);
@@ -136,7 +142,11 @@ fn setup_layer_materials(
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut simple_palette_mats: ResMut<Assets<SimplePaletteMat>>,
+    mut shifted_palette_mats: ResMut<Assets<ShiftedPaletteMat>>,
 ) {
+    // For the juicy palette shifting and lighting work
+    let ambience_layer = RenderLayers::from_layers(&[27]);
+    let main_layer = RenderLayers::from_layers(&[28]);
     let squash_layer = RenderLayers::from_layers(&[29]);
     let final_layer = RenderLayers::from_layers(&[30]);
 
@@ -209,6 +219,102 @@ fn setup_layer_materials(
         &mut commands,
         meshes.as_mut(),
         simple_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+
+    /// Sets up a layer that applies both shifting and lighting
+    fn setup_complex_layer(
+        name: &str,
+        image: Handle<Image>,
+        shift: Handle<Image>,
+        _light: Handle<Image>,
+        intermediate_image: Handle<Image>,
+        zix: i32,
+        palette: Palette,
+        commands: &mut Commands,
+        meshes: &mut Assets<Mesh>,
+        shifted_palette_mats: &mut Assets<ShiftedPaletteMat>,
+        intermediate_layer: RenderLayers,
+        squash_layer: RenderLayers,
+        root: Entity,
+    ) {
+        // First apply the palette shift
+        let shifted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+        let shifted_mesh: Mesh2dHandle = meshes.add(shifted_mesh).into();
+        let shifted_mat = shifted_palette_mats.add(ShiftedPaletteMat::new(image, shift, palette));
+        // Then draw this
+        commands
+            .spawn((
+                Name::new(format!("{name}_intermediate_image")),
+                shifted_mesh,
+                shifted_mat,
+                SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
+                intermediate_layer.clone(),
+            ))
+            .set_parent(root);
+        commands
+            .spawn((
+                Name::new(format!("{name}_intermediate_camera")),
+                Camera2dBundle {
+                    camera: Camera {
+                        order: zix as isize,
+                        target: RenderTarget::Image(intermediate_image.clone()),
+                        clear_color: ClearColorConfig::Custom(COLOR_NONE),
+                        ..default()
+                    },
+                    projection: OrthographicProjection {
+                        near: ZIX_MIN,
+                        far: ZIX_MAX,
+                        scale: 1.0,
+                        ..default()
+                    },
+                    ..default()
+                },
+                intermediate_layer.clone(),
+            ))
+            .set_parent(root);
+        // TODO: Then apply light
+        commands
+            .spawn((
+                Name::new(format!("{name}_image")),
+                SpriteBundle {
+                    texture: intermediate_image.clone(),
+                    transform: Transform::from_translation(Vec3::Z * zix as f32),
+                    ..default()
+                },
+                squash_layer,
+            ))
+            .set_parent(root);
+    }
+
+    setup_complex_layer(
+        "ambience",
+        camera_targets.ambience_target.clone(),
+        camera_targets.palette_target.clone(),
+        camera_targets.light_target.clone(),
+        camera_targets.ambience_shifted_target.clone(),
+        AmbienceLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        shifted_palette_mats.as_mut(),
+        ambience_layer.clone(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+    setup_complex_layer(
+        "main",
+        camera_targets.main_target.clone(),
+        camera_targets.palette_target.clone(),
+        camera_targets.main_shifted_target.clone(),
+        camera_targets.ambience_shifted_target.clone(),
+        MainLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        shifted_palette_mats.as_mut(),
+        main_layer.clone(),
         squash_layer.clone(),
         root.eid(),
     );
@@ -307,7 +413,7 @@ fn setup_layer_cameras(
     );
     spawn_layer_camera!(
         AmbienceLayer,
-        "main_camera",
+        "ambience_camera",
         camera_targets.ambience_target.clone(),
         true
     );
@@ -320,7 +426,7 @@ fn setup_layer_cameras(
     spawn_layer_camera!(
         PaletteLayer,
         "palette_camera",
-        camera_targets.light_target.clone(),
+        camera_targets.palette_target.clone(),
         true
     );
     spawn_layer_camera!(
