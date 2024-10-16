@@ -2,9 +2,9 @@ use bevy::sprite::Material2dPlugin;
 
 use crate::prelude::*;
 
-pub mod palette_mat;
+pub mod palette_mats;
 
-pub use palette_mat::*;
+pub use palette_mats::*;
 
 pub fn color_as_vec4(color: Color) -> Vec4 {
     let linear = color.to_linear();
@@ -76,6 +76,8 @@ pub(super) struct PalettePlugin;
 impl Plugin for PalettePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BERRY_NEBULA.clone());
-        app.add_plugins(Material2dPlugin::<PaletteMat>::default());
+        // app.insert_resource(WAVERATOR.clone());
+        app.add_plugins(Material2dPlugin::<SimplePaletteMat>::default());
+        app.add_plugins(Material2dPlugin::<ShiftedPaletteMat>::default());
     }
 }

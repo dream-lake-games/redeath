@@ -6,9 +6,9 @@ var input_texture: texture_2d<f32>;
 var input_splr: sampler;
 
 @group(2) @binding(3)
-var light_texture: texture_2d<f32>;
+var shift_texture: texture_2d<f32>;
 @group(2) @binding(4)
-var light_splr: sampler;
+var shift_splr: sampler;
 
 @group(2) @binding(5)
 var<uniform> zero: vec4<f32>;
@@ -36,8 +36,6 @@ const ref_five = vec3<f32>(109.0 / 255.0, 133.0 / 255.0, 165.0 / 255.0);
 const ref_six = vec3<f32>(108.0 / 255.0, 185.0 / 255.0, 201.0 / 255.0);
 const ref_seven = vec3<f32>(108.0 / 255.0, 237.0 / 255.0, 237.0 / 255.0);
 
-const warning_yellow = vec4<f32>(1.0, 1.0, 0.0, 1.0);
-
 // This is fucky for reasons I don't understand (non-linear colors?)
 // _but_ _it_ _works_
 fn quantize(color: vec3<f32>) -> f32 {
@@ -63,90 +61,54 @@ fn quantize(color: vec3<f32>) -> f32 {
         return 6.0;
     }
     return 7.0;
-    // if (color.y < 250.0 / 255.0) {
-    //     return 7;
-    // }
-    // return -1;
 }
 
-fn get_light_diff(light: vec4<f32>) -> f32 {
-    return light.x;
-    // if light.x > 0.0 {
-    //     return 1;
-    // }
-    // return 0;
-}
-
-fn as_final_palette(quantized: f32) -> vec4<f32> {
-    if (quantized < 0.0) {
-        return zero;
+// wgsl is annoying and/or i am bad at it
+fn hacky_to_int(val: f32) -> i32 {
+    if (val < 0.1) {
+        return 0;
+    } else if (val < 0.2) {
+        return 1;
+    } else if (val < 0.3) {
+        return 2;
+    } else if (val < 0.4) {
+        return 3;
+    } else if (val < 0.5) {
+        return 4;
+    } else if (val < 0.6) {
+        return 5;
+    } else if (val < 0.7) {
+        return 6;
+    } else {
+        return 7;
     }
-    var base = zero;
-    var diff = zero;
-    var mult = 0.0;
-    if (quantized < 1.0) {
-        base = zero;
-        diff = one - zero;
-        mult = quantized;
-    } else if (quantized < 2.0) {
-        base = one;
-        diff = two - one;
-        mult = quantized - 1.0;
-    } else if (quantized < 3.0) {
-        base = two;
-        diff = three - two;
-        mult = quantized - 2.0;
-    } else if (quantized < 4.0) {
-        base = three;
-        diff = four - three;
-        mult = quantized - 3.0;
-    } else if (quantized < 5.0) {
-        base = four;
-        diff = five - four;
-        mult = quantized - 4.0;
-    } else if (quantized < 6.0) {
-        base = five;
-        diff = six - five;
-        mult = quantized - 5.0;
-    } else if (quantized < 7.0) {
-        base = six;
-        diff = seven - six;
-        mult = quantized - 6.0;
+}
+
+fn get_shift(shift: vec4<f32>) -> f32 {
+    let up = hacky_to_int(shift.x);
+    let down = hacky_to_int(shift.y);
+    return up - down;
+}
+
+fn as_final_palette(quantized: i32) -> vec4<f32> {
+    if (quantized <= 0) {
+        return zero;
+    } else if (quantized == 1) {
+        return one;
+    } else if (quantized == 2) {
+        return two;
+    } else if (quantized == 3) {
+        return three;
+    } else if (quantized == 4) {
+        return four;
+    } else if (quantized == 5) {
+        return five;
+    } else if (quantized == 6) {
+        return six;
     } else {
         return seven;
     }
-    return base + diff * mult;
 }
-
-// fn as_final_palette(quantized: i32) -> vec4<f32> {
-//     if (quantized <= 0) {
-//         return zero;
-//     }
-//     if (quantized == 1) {
-//         return one;
-//     }
-//     if (quantized == 2) {
-//         return two;
-//     }
-//     if (quantized == 3) {
-//         return three;
-//     }
-//     if (quantized == 4) {
-//         return four;
-//     }
-//     if (quantized == 5) {
-//         return five;
-//     }
-//     if (quantized == 6) {
-//         return six;
-//     }
-//     if (quantized >= 7) {
-//         return seven;
-//     }
-//     // NOTE: Taking this (the logic giving this teeth a.k.a min/max checking) out because lighting may push below/beyond max
-//     // This is a warning bright yellow. Should not happen
-//     return warning_yellow;
-// }
 
 fn to_linear(nonlinear: vec4<f32>) -> vec4<f32> {
     let cutoff = step(nonlinear, vec4<f32>(0.04045));
@@ -158,11 +120,11 @@ fn to_linear(nonlinear: vec4<f32>) -> vec4<f32> {
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let original = textureSample(input_texture, input_splr, in.uv);
-    let light = textureSample(light_texture, light_splr, in.uv);
+    let shiftRaw = textureSample(shift_texture, shift_splr, in.uv);
 
     let quantized = quantize(vec3<f32>(original.x, original.y, original.z));
-    let light_diff = get_light_diff(light);
+    let shift = get_shift(shiftRaw);
 
-    let finalized = as_final_palette(quantized + light_diff - 1.0);
+    let finalized = as_final_palette(quantized + shift);
     return to_linear(finalized);
 }

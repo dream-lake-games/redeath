@@ -14,6 +14,7 @@ pub trait Layer: Into<RenderLayers> + Default {
     fn to_render_layers() -> RenderLayers {
         Self::default().into()
     }
+    fn to_i32() -> i32;
 }
 
 macro_rules! decl_layer {
@@ -25,15 +26,21 @@ macro_rules! decl_layer {
                 RenderLayers::from_layers(&[$order])
             }
         }
-        impl Layer for $name {}
+        impl Layer for $name {
+            fn to_i32() -> i32 {
+                $order
+            }
+        }
     };
 }
 decl_layer!(BgLayer, 1);
-decl_layer!(MainLayer, 2);
-decl_layer!(LightLayer, 3);
-decl_layer!(FgLayer, 4);
-decl_layer!(MenuLayer, 5);
-decl_layer!(TransitionLayer, 6);
+decl_layer!(AmbienceLayer, 2);
+decl_layer!(MainLayer, 3);
+decl_layer!(PaletteLayer, 4);
+decl_layer!(LightLayer, 5);
+decl_layer!(FgLayer, 6);
+decl_layer!(MenuLayer, 7);
+decl_layer!(TransitionLayer, 8);
 
 /// Grows all of the layers by a given scale.
 /// Makes it easy for the game to fill the screen in a satisfying way.
@@ -51,50 +58,13 @@ impl Default for LayerGrowth {
     }
 }
 
-/// Configures the clear colors and ambient light of the layers.
-#[derive(Debug, Resource, Clone)]
-pub struct LayerClearColors {
-    bg_clear_color: ClearColorConfig,
-    main_clear_color: ClearColorConfig,
-    light_clear_color: ClearColorConfig,
-    fg_clear_color: ClearColorConfig,
-    menu_clear_color: ClearColorConfig,
-    transition_clear_color: ClearColorConfig,
-}
-macro_rules! impl_clear_color_config_field {
-    ($name:ident) => {
-        impl_get_copy!($name, ClearColorConfig);
-        impl_set!($name, ClearColorConfig);
-        impl_with!($name, ClearColorConfig);
-    };
-}
-impl LayerClearColors {
-    impl_clear_color_config_field!(bg_clear_color);
-    impl_clear_color_config_field!(main_clear_color);
-    impl_clear_color_config_field!(light_clear_color);
-    impl_clear_color_config_field!(fg_clear_color);
-    impl_clear_color_config_field!(menu_clear_color);
-    impl_clear_color_config_field!(transition_clear_color);
-}
-impl Default for LayerClearColors {
-    fn default() -> Self {
-        Self {
-            bg_clear_color: ClearColorConfig::Custom(COLOR_NONE),
-            main_clear_color: ClearColorConfig::Custom(COLOR_NONE),
-            light_clear_color: ClearColorConfig::Custom(COLOR_NONE),
-            fg_clear_color: ClearColorConfig::Custom(COLOR_NONE),
-            menu_clear_color: ClearColorConfig::Custom(COLOR_NONE),
-            transition_clear_color: ClearColorConfig::Custom(COLOR_NONE),
-        }
-    }
-}
-
 #[derive(Debug, Resource, Clone)]
 struct CameraTargets {
     bg_target: Handle<Image>,
+    ambience_target: Handle<Image>,
     main_target: Handle<Image>,
-    light_target: Handle<Image>,
     palette_target: Handle<Image>,
+    light_target: Handle<Image>,
     fg_target: Handle<Image>,
     menu_target: Handle<Image>,
     transition_target: Handle<Image>,
@@ -104,9 +74,10 @@ impl Default for CameraTargets {
     fn default() -> Self {
         Self {
             bg_target: Handle::weak_from_u128(thread_rng().gen()),
+            ambience_target: Handle::weak_from_u128(thread_rng().gen()),
             main_target: Handle::weak_from_u128(thread_rng().gen()),
-            light_target: Handle::weak_from_u128(thread_rng().gen()),
             palette_target: Handle::weak_from_u128(thread_rng().gen()),
+            light_target: Handle::weak_from_u128(thread_rng().gen()),
             fg_target: Handle::weak_from_u128(thread_rng().gen()),
             menu_target: Handle::weak_from_u128(thread_rng().gen()),
             transition_target: Handle::weak_from_u128(thread_rng().gen()),
@@ -145,11 +116,11 @@ impl CameraTargets {
                 images.insert($handle.id(), image);
             }};
         }
-
         make_layer_image!("bg_target", self.bg_target);
+        make_layer_image!("ambience_target", self.ambience_target);
         make_layer_image!("main_target", self.main_target);
-        make_layer_image!("light_target", self.light_target);
         make_layer_image!("palette_target", self.palette_target);
+        make_layer_image!("light_target", self.light_target);
         make_layer_image!("fg_target", self.fg_target);
         make_layer_image!("menu_target", self.menu_target);
         make_layer_image!("transition_target", self.transition_target);
@@ -164,53 +135,82 @@ fn setup_layer_materials(
     camera_targets: Res<CameraTargets>,
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut palette_mats: ResMut<Assets<PaletteMat>>,
+    mut simple_palette_mats: ResMut<Assets<SimplePaletteMat>>,
 ) {
-    let palette_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
-    let palette_mesh: Mesh2dHandle = meshes.add(palette_mesh).into();
-    let palette_mat = PaletteMat::new(
-        camera_targets.main_target.clone(),
-        camera_targets.light_target.clone(),
-        palette.clone(),
-    );
     let squash_layer = RenderLayers::from_layers(&[29]);
     let final_layer = RenderLayers::from_layers(&[30]);
 
     camera_targets.initialize(&mut images);
 
-    macro_rules! setup_layer {
-        ($name:literal, $image:expr, $zix:literal) => {
-            commands
-                .spawn((
-                    Name::new($name),
-                    SpriteBundle {
-                        transform: Transform::from_translation(Vec3::Z * $zix as f32),
-                        texture: $image,
-                        ..default()
-                    },
-                    squash_layer.clone(),
-                ))
-                .set_parent(root.eid());
-        };
+    /// Sets up a layer that applies palette transform but no shifting or lighting
+    fn setup_simple_layer(
+        name: &str,
+        image: Handle<Image>,
+        zix: i32,
+        palette: Palette,
+        commands: &mut Commands,
+        meshes: &mut Assets<Mesh>,
+        simple_palette_mats: &mut Assets<SimplePaletteMat>,
+        squash_layer: RenderLayers,
+        root: Entity,
+    ) {
+        let paletted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+        let paletted_mesh: Mesh2dHandle = meshes.add(paletted_mesh).into();
+        let paletted_mat = simple_palette_mats.add(SimplePaletteMat::new(image, palette));
+        commands
+            .spawn((
+                Name::new(name.to_string()),
+                paletted_mesh,
+                paletted_mat,
+                SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
+                squash_layer,
+            ))
+            .set_parent(root);
     }
-    setup_layer!("bg_image", camera_targets.bg_target.clone(), 1);
-    // NOTE: Don't add because palette mat reads it, edits it, and then renders it
-    // setup_layer!("main_image", camera_targets.main_target.clone(), 2);
-    commands
-        .spawn((
-            Name::new("palette_image"),
-            palette_mesh,
-            palette_mats.add(palette_mat),
-            SpatialBundle::from_transform(Transform::from_translation(Vec3::Z * 3.0)),
-            squash_layer.clone(),
-        ))
-        .set_parent(root.eid());
-    setup_layer!("fg_image", camera_targets.fg_target.clone(), 4);
-    setup_layer!("menu_image", camera_targets.menu_target.clone(), 5);
-    setup_layer!(
+
+    setup_simple_layer(
+        "bg_image",
+        camera_targets.bg_target.clone(),
+        BgLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        simple_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+    setup_simple_layer(
+        "fg_image",
+        camera_targets.fg_target.clone(),
+        FgLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        simple_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+    setup_simple_layer(
+        "menu_image",
+        camera_targets.menu_target.clone(),
+        MenuLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        simple_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+    setup_simple_layer(
         "transition_image",
         camera_targets.transition_target.clone(),
-        6
+        TransitionLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        simple_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
     );
 
     // This is the camera that sees all of the layer quads and squashes them into one image
@@ -219,7 +219,7 @@ fn setup_layer_materials(
             Name::new("squash_camera"),
             Camera2dBundle {
                 camera: Camera {
-                    order: 7,
+                    order: TransitionLayer::to_i32() as isize + 1,
                     clear_color: ClearColorConfig::Custom(COLOR_NONE),
                     target: RenderTarget::Image(camera_targets.final_target.clone()),
                     ..default()
@@ -227,10 +227,11 @@ fn setup_layer_materials(
                 ..default()
             },
             InheritedVisibility::VISIBLE,
-            squash_layer,
+            squash_layer.clone(),
         ))
         .set_parent(root.eid());
 
+    // This sprite just scales up and down to fill the screen
     commands
         .spawn((
             Name::new("final_sprite"),
@@ -247,13 +248,13 @@ fn setup_layer_materials(
         ))
         .set_parent(root.eid());
 
-    // This is currently the final camera
+    // This is currently the final camera, seeing the scaled output
     commands
         .spawn((
             Name::new("final_camera"),
             Camera2dBundle {
                 camera: Camera {
-                    order: 7,
+                    order: TransitionLayer::to_i32() as isize + 2,
                     clear_color: ClearColorConfig::Custom(COLOR_NONE),
                     ..default()
                 },
@@ -268,18 +269,17 @@ fn setup_layer_materials(
 fn setup_layer_cameras(
     mut commands: Commands,
     camera_targets: Res<CameraTargets>,
-    layer_colors: Res<LayerClearColors>,
     layer_root: Res<LayerRoot>,
 ) {
     macro_rules! spawn_layer_camera {
-        ($comp:ty, $name:literal, $order:literal, $image:expr, $clear_color:expr, $follow_dynamic:expr) => {{
+        ($comp:ty, $name:literal, $image:expr, $follow_dynamic:expr) => {{
             let mut comms = commands.spawn((
                 Name::new($name),
                 Camera2dBundle {
                     camera: Camera {
-                        order: $order,
+                        order: <$comp>::to_i32() as isize,
                         target: RenderTarget::Image($image),
-                        clear_color: $clear_color,
+                        clear_color: ClearColorConfig::Custom(COLOR_NONE),
                         ..default()
                     },
                     projection: OrthographicProjection {
@@ -302,49 +302,49 @@ fn setup_layer_cameras(
     spawn_layer_camera!(
         BgLayer,
         "bg_camera",
-        1,
         camera_targets.bg_target.clone(),
-        layer_colors.bg_clear_color,
         false
+    );
+    spawn_layer_camera!(
+        AmbienceLayer,
+        "main_camera",
+        camera_targets.ambience_target.clone(),
+        true
     );
     spawn_layer_camera!(
         MainLayer,
         "main_camera",
-        2,
         camera_targets.main_target.clone(),
-        layer_colors.main_clear_color,
+        true
+    );
+    spawn_layer_camera!(
+        PaletteLayer,
+        "palette_camera",
+        camera_targets.light_target.clone(),
         true
     );
     spawn_layer_camera!(
         LightLayer,
         "light_camera",
-        3,
         camera_targets.light_target.clone(),
-        layer_colors.light_clear_color,
         true
     );
     spawn_layer_camera!(
         FgLayer,
         "fg_camera",
-        4,
         camera_targets.fg_target.clone(),
-        layer_colors.fg_clear_color,
         false
     );
     spawn_layer_camera!(
         MenuLayer,
         "menu_camera",
-        5,
         camera_targets.menu_target.clone(),
-        layer_colors.menu_clear_color,
         false
     );
     spawn_layer_camera!(
         TransitionLayer,
         "transition_camera",
-        6,
         camera_targets.transition_target.clone(),
-        layer_colors.transition_clear_color,
         false
     );
 }
@@ -383,7 +383,6 @@ fn resize_canvases(
 pub struct LayerPlugin;
 impl Plugin for LayerPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(LayerClearColors::default());
         app.insert_resource(LayerGrowth::default());
         app.insert_resource(CameraTargets::default());
         app.insert_resource(OverScreenMult(1.0));
