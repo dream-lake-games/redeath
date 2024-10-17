@@ -10,7 +10,7 @@ pub(super) struct ScratchPlayerBundle {
     static_rx: StaticRx,
     sprite: SpriteBundle,
     render_layers: RenderLayers,
-    circle_light: AnimMan<PlayerCircleLightAnim>,
+    light: Light,
 }
 impl ScratchPlayerBundle {
     pub(super) fn new(pos: Pos) -> Self {
@@ -34,7 +34,7 @@ impl ScratchPlayerBundle {
                 ..default()
             },
             render_layers: MainLayer.into(),
-            circle_light: default(),
+            light: Light::new(LightAnim::Static128),
         }
     }
 }

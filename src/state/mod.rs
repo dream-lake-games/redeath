@@ -55,8 +55,8 @@ impl Plugin for StatePlugin {
         debug_resource!(app, State<MetaState>);
         debug_resource!(app, State<MetaStateKind>);
 
-        app.insert_state(MetaState::Menu(MenuState::Bevy));
-        // app.insert_state(MetaState::Menu(MenuState::Savefile));
+        // app.insert_state(MetaState::Menu(MenuState::Bevy));
+        app.insert_state(MetaState::Menu(MenuState::Savefile));
         app.insert_state(TransitionState::default());
         app.insert_state(PauseState::Unpaused);
 

@@ -10,10 +10,6 @@ use bevy::render::{
 use bevy::sprite::Mesh2dHandle;
 use bevy::window::WindowResized;
 
-pub mod light;
-
-pub use light::*;
-
 pub trait Layer: Into<RenderLayers> + Default {
     fn to_render_layers() -> RenderLayers {
         Self::default().into()
@@ -64,6 +60,34 @@ impl Default for LayerGrowth {
     }
 }
 
+/// Creates a new blank image the size of the screen
+pub fn blank_screen_image() -> Image {
+    let target_extent = Extent3d {
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT,
+        ..default()
+    };
+    // Makes the image
+    let mut image = Image {
+        texture_descriptor: TextureDescriptor {
+            label: None,
+            size: target_extent,
+            dimension: TextureDimension::D2,
+            format: TextureFormat::bevy_default(),
+            mip_level_count: 1,
+            sample_count: 1,
+            usage: TextureUsages::TEXTURE_BINDING
+                | TextureUsages::COPY_DST
+                | TextureUsages::RENDER_ATTACHMENT,
+            view_formats: &[],
+        },
+        ..default()
+    };
+    // Fills it with zeros
+    image.resize(target_extent);
+    image
+}
+
 #[derive(Debug, Resource, Clone)]
 struct CameraTargets {
     bg_target: Handle<Image>,
@@ -105,47 +129,25 @@ impl CameraTargets {
     /// Creates actual images that the various layers can write to to place on quads.
     pub fn initialize(&self, images: &mut Assets<Image>) {
         macro_rules! make_layer_image {
-            ($label:expr, $handle:expr) => {{
-                let target_extent = Extent3d {
-                    width: SCREEN_WIDTH,
-                    height: SCREEN_HEIGHT,
-                    ..default()
-                };
-                // Makes the image
-                let mut image = Image {
-                    texture_descriptor: TextureDescriptor {
-                        label: Some($label),
-                        size: target_extent,
-                        dimension: TextureDimension::D2,
-                        format: TextureFormat::bevy_default(),
-                        mip_level_count: 1,
-                        sample_count: 1,
-                        usage: TextureUsages::TEXTURE_BINDING
-                            | TextureUsages::COPY_DST
-                            | TextureUsages::RENDER_ATTACHMENT,
-                        view_formats: &[],
-                    },
-                    ..default()
-                };
-                // Fills it with zeros
-                image.resize(target_extent);
+            ($handle:expr) => {{
+                let image = blank_screen_image();
                 images.insert($handle.id(), image);
             }};
         }
-        make_layer_image!("bg_target", self.bg_target);
-        make_layer_image!("main_ambience_target", self.main_ambience_target);
-        make_layer_image!("main_ambience_shifted", self.main_ambience_shifted);
-        make_layer_image!("main_detail_target", self.main_detail_target);
-        make_layer_image!("main_detail_shifted", self.main_detail_shifted);
-        make_layer_image!("main_target", self.main_target);
-        make_layer_image!("main_shifted", self.main_shifted);
-        make_layer_image!("palette_target", self.palette_target);
-        make_layer_image!("light_target", self.light_target);
-        make_layer_image!("static_target", self.static_target);
-        make_layer_image!("fg_target", self.fg_target);
-        make_layer_image!("menu_target", self.menu_target);
-        make_layer_image!("transition_target", self.transition_target);
-        make_layer_image!("final_target", self.final_target);
+        make_layer_image!(self.bg_target);
+        make_layer_image!(self.main_ambience_target);
+        make_layer_image!(self.main_ambience_shifted);
+        make_layer_image!(self.main_detail_target);
+        make_layer_image!(self.main_detail_shifted);
+        make_layer_image!(self.main_target);
+        make_layer_image!(self.main_shifted);
+        make_layer_image!(self.palette_target);
+        make_layer_image!(self.light_target);
+        make_layer_image!(self.static_target);
+        make_layer_image!(self.fg_target);
+        make_layer_image!(self.menu_target);
+        make_layer_image!(self.transition_target);
+        make_layer_image!(self.final_target);
     }
 }
 
@@ -569,7 +571,5 @@ impl Plugin for LayerPlugin {
                 .after(RootInit),
         );
         app.add_systems(Update, resize_canvases);
-
-        light::register_lights(app);
     }
 }

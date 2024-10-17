@@ -1,9 +1,11 @@
 use crate::prelude::*;
 
+mod light_anim;
 mod menu_anim;
 mod player_anim;
 mod transition_anim;
 
+pub use light_anim::*;
 pub use menu_anim::*;
 pub use player_anim::*;
 pub use transition_anim::TransitionAnim;
@@ -55,6 +57,7 @@ impl Plugin for MyAnimPlugin {
         );
         app.add_systems(PostUpdate, drive_anim_time_res.before(AnimSet));
 
+        light_anim::register_light_anim(app);
         menu_anim::register_menu_anim(app);
         player_anim::register_player_anim(app);
         transition_anim::register_transition_anim(app);

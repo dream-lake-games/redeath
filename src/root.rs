@@ -145,4 +145,8 @@ impl_root_init!(
     ObserveRoot,
 );
 
-impl_subroot_init!(PlatformRoot(WorldRoot), WorldDetailRoot(WorldRoot));
+impl_subroot_init!(
+    PlatformRoot(WorldRoot),
+    WorldDetailRoot(WorldRoot),
+    LightRoot(WorldRoot)
+);

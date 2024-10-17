@@ -30,19 +30,3 @@ impl LightMat {
         }
     }
 }
-
-#[derive(Resource, Clone, Debug, Reflect)]
-pub struct BaseLights {
-    pub ambience: Color,
-    pub detail: Color,
-    pub main: Color,
-}
-
-pub(super) fn register_lights(app: &mut App) {
-    app.add_plugins(Material2dPlugin::<LightMat>::default());
-    app.insert_resource(BaseLights {
-        ambience: Color::srgba(0.4, 0.4, 0.4, 1.0),
-        detail: Color::srgba(0.3, 0.3, 0.3, 1.0),
-        main: Color::srgba(0.6, 0.6, 0.6, 1.0),
-    });
-}

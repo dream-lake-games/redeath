@@ -43,3 +43,7 @@ pub const ANIM_TIME_REAL: AnimTimeClass = 1;
 pub const ANIM_TIME_BULLET_ALWAYS: AnimTimeClass = 2;
 /// Animations that always play, beholden to real time
 pub const ANIM_TIME_REAL_ALWAYS: AnimTimeClass = 2;
+
+// Lights
+pub const BASE_LIGHT_RENDER_LAYER: usize = 1000;
+pub const MAX_NUM_LIGHTS: usize = 64;
