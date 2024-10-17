@@ -504,7 +504,7 @@ fn setup_layer_cameras(
         LightLayer,
         "light_camera",
         camera_targets.light_target.clone(),
-        true
+        false
     );
     spawn_layer_camera!(
         FgLayer,

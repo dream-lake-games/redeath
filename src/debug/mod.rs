@@ -6,7 +6,7 @@ fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>) {
     // Gizmo config
     let (config, _) = gizmo_config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 2.0;
-    config.render_layers = MainLayer::to_render_layers();
+    config.render_layers = StaticLayer::to_render_layers();
 }
 
 fn debug_update() {}

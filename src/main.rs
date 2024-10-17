@@ -42,7 +42,10 @@ pub mod prelude {
     pub use rand::{thread_rng, Rng};
     pub use std::time::Duration;
 }
-use bevy::window::{WindowMode, WindowResolution};
+use bevy::{
+    diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    window::{WindowMode, WindowResolution},
+};
 use menu::MenuPlugin;
 use prelude::*;
 
@@ -69,7 +72,9 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest()),
     )
-    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)));
+    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)))
+    .add_plugins(FrameTimeDiagnosticsPlugin::default())
+    .add_plugins(LogDiagnosticsPlugin::default());
 
     // Our plugins
     app.add_plugins(CameraPlugin)

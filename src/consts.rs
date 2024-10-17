@@ -47,3 +47,4 @@ pub const ANIM_TIME_REAL_ALWAYS: AnimTimeClass = 2;
 // Lights
 pub const BASE_LIGHT_RENDER_LAYER: usize = 1000;
 pub const MAX_NUM_LIGHTS: usize = 64;
+pub const MAX_LIGHT_RADIUS: f32 = 500.0;

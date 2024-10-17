@@ -84,7 +84,7 @@ impl Component for Light {
                     Name::new("light_camera"),
                     Camera2dBundle {
                         camera: Camera {
-                            order: rl_usize as isize,
+                            order: LightLayer::to_i32() as isize - 1,
                             target: RenderTarget::Image(image_hand.clone()),
                             clear_color: ClearColorConfig::Custom(COLOR_NONE),
                             ..default()
@@ -109,7 +109,7 @@ impl Component for Light {
                     texture: image_hand.clone(),
                     ..default()
                 },
-                TransitionLayer::to_render_layers(),
+                LightLayer::to_render_layers(),
             ));
 
             // Make the claim
@@ -140,6 +140,11 @@ impl Component for LightClaimed {
             manager.free(rl);
             world.commands().entity(camera).despawn_recursive();
         });
+    }
+}
+impl LightClaimed {
+    pub fn to_render_layers(&self) -> RenderLayers {
+        RenderLayers::from_layers(&[self.rl])
     }
 }
 

@@ -1,6 +1,7 @@
 use crate::prelude::*;
 use bevy::sprite::Material2dPlugin;
 
+mod light_interaction;
 pub mod light_manager;
 pub mod light_mat;
 
@@ -24,6 +25,7 @@ impl Plugin for LightPlugin {
             main: Color::srgba(0.6, 0.6, 0.6, 1.0),
         });
 
+        light_interaction::register_light_interaction(app);
         light_manager::register_light_manager(app);
     }
 }
