@@ -127,5 +127,5 @@ fn block_lights(
 
 pub(super) fn register_light_interaction(app: &mut App) {
     app.insert_resource(BlackMatRes::default());
-    app.add_systems(BulletUpdate, block_lights);
+    app.add_systems(BulletUpdate, block_lights.after(PhysicsSet));
 }
