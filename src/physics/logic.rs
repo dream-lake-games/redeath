@@ -327,9 +327,13 @@ fn move_interesting_dynos(
     }
 }
 
-fn apply_gravity(mut ents: Query<(&mut Dyno, &Gravity)>, consts: Res<PhysicsConsts>) {
+fn apply_gravity(
+    mut ents: Query<(&mut Dyno, &Gravity)>,
+    consts: Res<PhysicsConsts>,
+    bullet_time: Res<BulletTime>,
+) {
     for (mut dyno, grav) in &mut ents {
-        dyno.vel.y -= grav.mult * consts.gravity_strength / FRAMERATE;
+        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_seconds();
     }
 }
 
@@ -353,7 +357,7 @@ pub(super) fn register_logic(app: &mut App) {
     app.insert_resource(PhysicsConsts::default());
     // debug_resource!(app, PhysicsConsts);
     app.add_systems(
-        BulletUpdate,
+        Update,
         apply_gravity
             .in_set(PhysicsSet)
             .run_if(in_state(PhysicsState::Active)),

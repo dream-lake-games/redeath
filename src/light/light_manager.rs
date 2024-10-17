@@ -1,4 +1,4 @@
-use bevy::render::camera::RenderTarget;
+use bevy::{render::camera::RenderTarget, sprite::Mesh2dHandle};
 
 use crate::prelude::*;
 
@@ -104,11 +104,15 @@ impl Component for Light {
                 .id();
 
             // Testing
+            let mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+            let mesh: Mesh2dHandle = world.resource_mut::<Assets<Mesh>>().add(mesh).into();
+            let mat = world
+                .resource_mut::<Assets<LightCutoutMat>>()
+                .add(LightCutoutMat::new(image_hand.clone()));
             world.commands().spawn((
-                SpriteBundle {
-                    texture: image_hand.clone(),
-                    ..default()
-                },
+                mesh,
+                mat,
+                SpatialBundle::default(),
                 LightLayer::to_render_layers(),
             ));
 

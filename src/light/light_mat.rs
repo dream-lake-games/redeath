@@ -1,10 +1,11 @@
 use bevy::{
     render::render_resource::{AsBindGroup, ShaderRef},
-    sprite::{Material2d, Material2dPlugin},
+    sprite::Material2d,
 };
 
 use crate::prelude::*;
 
+/// The mat that does the multiplying
 #[derive(AsBindGroup, Debug, Clone, Asset, Reflect, PartialEq)]
 pub struct LightMat {
     #[texture(1)]
@@ -28,5 +29,23 @@ impl LightMat {
             light,
             base: color_as_vec4(base),
         }
+    }
+}
+
+/// The mat that turns black to clear after doing dynamic light cutting
+#[derive(AsBindGroup, Debug, Clone, Asset, Reflect, PartialEq)]
+pub struct LightCutoutMat {
+    #[texture(1)]
+    #[sampler(2)]
+    light: Handle<Image>,
+}
+impl Material2d for LightCutoutMat {
+    fn fragment_shader() -> ShaderRef {
+        "shaders/light_cutout_mat.wgsl".into()
+    }
+}
+impl LightCutoutMat {
+    pub fn new(light: Handle<Image>) -> Self {
+        Self { light }
     }
 }

@@ -18,6 +18,7 @@ pub struct BaseLights {
 pub(super) struct LightPlugin;
 impl Plugin for LightPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(Material2dPlugin::<LightCutoutMat>::default());
         app.add_plugins(Material2dPlugin::<LightMat>::default());
         app.insert_resource(BaseLights {
             ambience: Color::srgba(0.4, 0.4, 0.4, 1.0),

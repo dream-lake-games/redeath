@@ -83,7 +83,7 @@ fn block_lights(
     light_root: Res<LightRoot>,
     old: Query<Entity, With<TemporaryLightMesh>>,
     pos_q: Query<&Pos>,
-    sources: Query<(Entity, &LightClaimed)>,
+    sources: Query<(Entity, &LightClaimed, &AnimMan<LightAnim>)>,
     blockers: Query<&StaticTxComp>,
 ) {
     // Delete the old meshes
@@ -95,11 +95,11 @@ fn block_lights(
         black_mat.0 = Some(mats.add(Color::BLACK));
     }
     let black_mat = black_mat.0.clone().unwrap();
-    for (source_eid, light) in &sources {
+    for (source_eid, light, anim) in &sources {
         let source_pos = pos_q.get(source_eid).unwrap().as_vec2();
         for stx_comp in &blockers {
             let blocker_pos = pos_q.get(stx_comp.ctrl).unwrap();
-            if source_pos.distance(blocker_pos.as_vec2()) > 64.0 {
+            if source_pos.distance(blocker_pos.as_vec2()) > anim.get_state().to_radius() {
                 continue;
             }
             let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
@@ -127,5 +127,5 @@ fn block_lights(
 
 pub(super) fn register_light_interaction(app: &mut App) {
     app.insert_resource(BlackMatRes::default());
-    app.add_systems(BulletUpdate, block_lights.after(PhysicsSet));
+    app.add_systems(Update, block_lights.after(PhysicsSet));
 }

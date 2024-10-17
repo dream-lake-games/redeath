@@ -35,13 +35,6 @@ fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let original = textureSample(image_texture, image_splr, in.uv);
     let active_light = textureSample(light_texture, light_splr, in.uv);
     let total_light = vec_min(base_light + active_light, vec4<f32>(1.0));
-    // let total_light = vec4<f32>(
-    //     base_light[0] + active_light[0],
-    //     base_light[1] + active_light[1],
-    //     base_light[2] + active_light[2],
-    //     base_light[3] + active_light[3]
-    // );
-    // return total_light;
     return vec4<f32>(
         original[0] * total_light[0],
         original[1] * total_light[1],
