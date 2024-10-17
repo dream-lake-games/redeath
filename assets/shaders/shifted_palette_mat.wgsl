@@ -36,6 +36,8 @@ const ref_five = vec3<f32>(109.0 / 255.0, 133.0 / 255.0, 165.0 / 255.0);
 const ref_six = vec3<f32>(108.0 / 255.0, 185.0 / 255.0, 201.0 / 255.0);
 const ref_seven = vec3<f32>(108.0 / 255.0, 237.0 / 255.0, 237.0 / 255.0);
 
+const none = vec4<f32>(0.0, 0.0, 0.0, 0.0);
+
 // This is fucky for reasons I don't understand (non-linear colors?)
 // _but_ _it_ _works_
 fn quantize(color: vec3<f32>) -> i32 {
@@ -129,6 +131,11 @@ fn to_linear(nonlinear: vec4<f32>) -> vec4<f32> {
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let original = textureSample(input_texture, input_splr, in.uv);
     let shiftRaw = textureSample(shift_texture, shift_splr, in.uv);
+
+    // If there's no alpha, return blank
+    if (original[3] < 0.01) {
+        return none;
+    }
 
     let quantized = quantize(vec3<f32>(original.x, original.y, original.z));
     let shift = get_shift(shiftRaw);

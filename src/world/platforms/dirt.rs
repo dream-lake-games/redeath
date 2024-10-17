@@ -6,7 +6,7 @@ struct BackgroundDirtBundle {
 }
 impl MyLdtkIntCell for BackgroundDirtBundle {
     type Root = WorldDetailRoot;
-    type RenderLayers = MainLayer;
+    type RenderLayers = MainAmbienceLayer;
     fn from_ldtk(_pos: Pos, _value: i32) -> Self {
         Self {
             name: Name::new("background_dirt"),
@@ -22,7 +22,7 @@ struct DirtBundle {
 }
 impl MyLdtkIntCell for DirtBundle {
     type Root = PlatformRoot;
-    type RenderLayers = MainLayer;
+    type RenderLayers = StaticLayer;
     fn from_ldtk(pos: Pos, _value: i32) -> Self {
         Self {
             name: Name::new("dirt"),
@@ -34,8 +34,8 @@ impl MyLdtkIntCell for DirtBundle {
 
 pub(super) fn register_dirt(app: &mut App) {
     app.add_plugins(MyLdtkIntCellPlugin::<BackgroundDirtBundle>::new(
-        "LakePlatforms",
-        2,
+        "LakeAmbience",
+        1,
     ));
     app.add_plugins(MyLdtkIntCellPlugin::<DirtBundle>::new("LakePlatforms", 1));
 }

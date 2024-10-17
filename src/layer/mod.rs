@@ -10,6 +10,10 @@ use bevy::render::{
 use bevy::sprite::Mesh2dHandle;
 use bevy::window::WindowResized;
 
+pub mod light;
+
+pub use light::*;
+
 pub trait Layer: Into<RenderLayers> + Default {
     fn to_render_layers() -> RenderLayers {
         Self::default().into()
@@ -33,14 +37,16 @@ macro_rules! decl_layer {
         }
     };
 }
-decl_layer!(BgLayer, 1);
-decl_layer!(AmbienceLayer, 2);
-decl_layer!(MainLayer, 3);
-decl_layer!(PaletteLayer, 4);
-decl_layer!(LightLayer, 5);
-decl_layer!(FgLayer, 6);
-decl_layer!(MenuLayer, 7);
-decl_layer!(TransitionLayer, 8);
+decl_layer!(BgLayer, 10);
+decl_layer!(PaletteLayer, 20);
+decl_layer!(LightLayer, 30);
+decl_layer!(MainAmbienceLayer, 40);
+decl_layer!(MainDetailLayer, 41);
+decl_layer!(MainLayer, 42);
+decl_layer!(StaticLayer, 50);
+decl_layer!(FgLayer, 60);
+decl_layer!(MenuLayer, 61);
+decl_layer!(TransitionLayer, 62);
 
 /// Grows all of the layers by a given scale.
 /// Makes it easy for the game to fill the screen in a satisfying way.
@@ -61,12 +67,15 @@ impl Default for LayerGrowth {
 #[derive(Debug, Resource, Clone)]
 struct CameraTargets {
     bg_target: Handle<Image>,
-    ambience_target: Handle<Image>,
-    ambience_shifted_target: Handle<Image>,
+    main_ambience_target: Handle<Image>,
+    main_ambience_shifted: Handle<Image>,
+    main_detail_target: Handle<Image>,
+    main_detail_shifted: Handle<Image>,
     main_target: Handle<Image>,
-    main_shifted_target: Handle<Image>,
+    main_shifted: Handle<Image>,
     palette_target: Handle<Image>,
     light_target: Handle<Image>,
+    static_target: Handle<Image>,
     fg_target: Handle<Image>,
     menu_target: Handle<Image>,
     transition_target: Handle<Image>,
@@ -76,12 +85,15 @@ impl Default for CameraTargets {
     fn default() -> Self {
         Self {
             bg_target: Handle::weak_from_u128(thread_rng().gen()),
-            ambience_target: Handle::weak_from_u128(thread_rng().gen()),
-            ambience_shifted_target: Handle::weak_from_u128(thread_rng().gen()),
+            main_ambience_target: Handle::weak_from_u128(thread_rng().gen()),
+            main_ambience_shifted: Handle::weak_from_u128(thread_rng().gen()),
+            main_detail_target: Handle::weak_from_u128(thread_rng().gen()),
+            main_detail_shifted: Handle::weak_from_u128(thread_rng().gen()),
             main_target: Handle::weak_from_u128(thread_rng().gen()),
-            main_shifted_target: Handle::weak_from_u128(thread_rng().gen()),
+            main_shifted: Handle::weak_from_u128(thread_rng().gen()),
             palette_target: Handle::weak_from_u128(thread_rng().gen()),
             light_target: Handle::weak_from_u128(thread_rng().gen()),
+            static_target: Handle::weak_from_u128(thread_rng().gen()),
             fg_target: Handle::weak_from_u128(thread_rng().gen()),
             menu_target: Handle::weak_from_u128(thread_rng().gen()),
             transition_target: Handle::weak_from_u128(thread_rng().gen()),
@@ -90,7 +102,7 @@ impl Default for CameraTargets {
     }
 }
 impl CameraTargets {
-    /// Creates actually images that the various layers can write to to place on quads.
+    /// Creates actual images that the various layers can write to to place on quads.
     pub fn initialize(&self, images: &mut Assets<Image>) {
         macro_rules! make_layer_image {
             ($label:expr, $handle:expr) => {{
@@ -121,12 +133,15 @@ impl CameraTargets {
             }};
         }
         make_layer_image!("bg_target", self.bg_target);
-        make_layer_image!("ambience_target", self.ambience_target);
-        make_layer_image!("ambience_shifted_target", self.ambience_shifted_target);
+        make_layer_image!("main_ambience_target", self.main_ambience_target);
+        make_layer_image!("main_ambience_shifted", self.main_ambience_shifted);
+        make_layer_image!("main_detail_target", self.main_detail_target);
+        make_layer_image!("main_detail_shifted", self.main_detail_shifted);
         make_layer_image!("main_target", self.main_target);
-        make_layer_image!("main_shifted_target", self.main_shifted_target);
+        make_layer_image!("main_shifted", self.main_shifted);
         make_layer_image!("palette_target", self.palette_target);
         make_layer_image!("light_target", self.light_target);
+        make_layer_image!("static_target", self.static_target);
         make_layer_image!("fg_target", self.fg_target);
         make_layer_image!("menu_target", self.menu_target);
         make_layer_image!("transition_target", self.transition_target);
@@ -143,12 +158,15 @@ fn setup_layer_materials(
     mut meshes: ResMut<Assets<Mesh>>,
     mut simple_palette_mats: ResMut<Assets<SimplePaletteMat>>,
     mut shifted_palette_mats: ResMut<Assets<ShiftedPaletteMat>>,
+    mut light_mats: ResMut<Assets<LightMat>>,
+    base_lights: Res<BaseLights>,
 ) {
     // For the juicy palette shifting and lighting work
-    let ambience_layer = RenderLayers::from_layers(&[27]);
-    let main_layer = RenderLayers::from_layers(&[28]);
-    let squash_layer = RenderLayers::from_layers(&[29]);
-    let final_layer = RenderLayers::from_layers(&[30]);
+    let main_ambience_layer = RenderLayers::from_layers(&[25]);
+    let main_detail_layer = RenderLayers::from_layers(&[26]);
+    let main_layer = RenderLayers::from_layers(&[27]);
+    let squash_layer = RenderLayers::from_layers(&[28]);
+    let final_layer = RenderLayers::from_layers(&[31]);
 
     camera_targets.initialize(&mut images);
 
@@ -182,6 +200,17 @@ fn setup_layer_materials(
         "bg_image",
         camera_targets.bg_target.clone(),
         BgLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        simple_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+    setup_simple_layer(
+        "static_image",
+        camera_targets.static_target.clone(),
+        StaticLayer::to_i32(),
         palette.clone(),
         &mut commands,
         meshes.as_mut(),
@@ -228,13 +257,15 @@ fn setup_layer_materials(
         name: &str,
         image: Handle<Image>,
         shift: Handle<Image>,
-        _light: Handle<Image>,
+        light: Handle<Image>,
         intermediate_image: Handle<Image>,
         zix: i32,
         palette: Palette,
+        base_light: Color,
         commands: &mut Commands,
         meshes: &mut Assets<Mesh>,
         shifted_palette_mats: &mut Assets<ShiftedPaletteMat>,
+        light_mats: &mut Assets<LightMat>,
         intermediate_layer: RenderLayers,
         squash_layer: RenderLayers,
         root: Entity,
@@ -274,15 +305,20 @@ fn setup_layer_materials(
                 intermediate_layer.clone(),
             ))
             .set_parent(root);
-        // TODO: Then apply light
+        // Then apply light
+        let lighted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+        let lighted_mesh: Mesh2dHandle = meshes.add(lighted_mesh).into();
+        let lighted_mat = light_mats.add(LightMat::new(
+            intermediate_image.clone(),
+            light.clone(),
+            base_light,
+        ));
         commands
             .spawn((
                 Name::new(format!("{name}_image")),
-                SpriteBundle {
-                    texture: intermediate_image.clone(),
-                    transform: Transform::from_translation(Vec3::Z * zix as f32),
-                    ..default()
-                },
+                lighted_mesh,
+                lighted_mat,
+                SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
                 squash_layer,
             ))
             .set_parent(root);
@@ -290,16 +326,35 @@ fn setup_layer_materials(
 
     setup_complex_layer(
         "ambience",
-        camera_targets.ambience_target.clone(),
+        camera_targets.main_ambience_target.clone(),
         camera_targets.palette_target.clone(),
         camera_targets.light_target.clone(),
-        camera_targets.ambience_shifted_target.clone(),
-        AmbienceLayer::to_i32(),
+        camera_targets.main_ambience_shifted.clone(),
+        MainAmbienceLayer::to_i32(),
         palette.clone(),
+        base_lights.ambience,
         &mut commands,
         meshes.as_mut(),
         shifted_palette_mats.as_mut(),
-        ambience_layer.clone(),
+        light_mats.as_mut(),
+        main_ambience_layer.clone(),
+        squash_layer.clone(),
+        root.eid(),
+    );
+    setup_complex_layer(
+        "detail",
+        camera_targets.main_detail_target.clone(),
+        camera_targets.palette_target.clone(),
+        camera_targets.light_target.clone(),
+        camera_targets.main_detail_shifted.clone(),
+        MainDetailLayer::to_i32(),
+        palette.clone(),
+        base_lights.detail,
+        &mut commands,
+        meshes.as_mut(),
+        shifted_palette_mats.as_mut(),
+        light_mats.as_mut(),
+        main_detail_layer.clone(),
         squash_layer.clone(),
         root.eid(),
     );
@@ -307,13 +362,15 @@ fn setup_layer_materials(
         "main",
         camera_targets.main_target.clone(),
         camera_targets.palette_target.clone(),
-        camera_targets.main_shifted_target.clone(),
-        camera_targets.ambience_shifted_target.clone(),
+        camera_targets.light_target.clone(),
+        camera_targets.main_shifted.clone(),
         MainLayer::to_i32(),
         palette.clone(),
+        base_lights.main,
         &mut commands,
         meshes.as_mut(),
         shifted_palette_mats.as_mut(),
+        light_mats.as_mut(),
         main_layer.clone(),
         squash_layer.clone(),
         root.eid(),
@@ -412,9 +469,21 @@ fn setup_layer_cameras(
         false
     );
     spawn_layer_camera!(
-        AmbienceLayer,
-        "ambience_camera",
-        camera_targets.ambience_target.clone(),
+        StaticLayer,
+        "static_camera",
+        camera_targets.static_target.clone(),
+        true
+    );
+    spawn_layer_camera!(
+        MainAmbienceLayer,
+        "main_ambience_camera",
+        camera_targets.main_ambience_target.clone(),
+        true
+    );
+    spawn_layer_camera!(
+        MainDetailLayer,
+        "main_detail_camera",
+        camera_targets.main_detail_target.clone(),
         true
     );
     spawn_layer_camera!(
@@ -500,5 +569,7 @@ impl Plugin for LayerPlugin {
                 .after(RootInit),
         );
         app.add_systems(Update, resize_canvases);
+
+        light::register_lights(app);
     }
 }
