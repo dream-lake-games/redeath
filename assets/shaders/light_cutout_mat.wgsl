@@ -8,11 +8,9 @@ var light_splr: sampler;
 @fragment
 fn fragment(in: VertexOutput) -> @location(0) vec4<f32> {
     let original = textureSample(light_texture, light_splr, in.uv);
-    if (original.x < 0.1) {
-        return vec4<f32>(0.0, 0.0, 0.0, 0.0);
-    }
+    let avg = (original.x + original.y + original.z) / 3.0;
     return vec4<f32>(
         1.0, 1.0, 1.0,
-        (original.x + original.y + original.z + original.w) / 4.0
+        avg * avg 
     );
 }
