@@ -14,7 +14,7 @@ pub(super) struct ScratchPlayerBundle {
 }
 impl ScratchPlayerBundle {
     pub(super) fn new(pos: Pos) -> Self {
-        let size = Vec2::new(9.0, 15.0);
+        let size = Vec2::new(8.0, 14.0);
         Self {
             name: Name::new("scratch_player"),
             player: Player,
