@@ -2,8 +2,11 @@ use crate::prelude::*;
 
 fn player_meta_state_checks(
     player_q: Query<Entity, With<Player>>,
-    player_meta_state: Res<State<PlayerMetaState>>,
+    player_meta_state: Option<Res<State<PlayerMetaState>>>,
 ) {
+    let Some(player_meta_state) = player_meta_state else {
+        return;
+    };
     let player_count = player_q.iter().count();
     match player_meta_state.get() {
         PlayerMetaState::NoneOk | PlayerMetaState::Spawning => {

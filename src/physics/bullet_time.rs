@@ -107,12 +107,8 @@ fn update_bullet_time(mut bullet_time: ResMut<BulletTime>, time: Res<Time>) {
 //     let in_game_time = world.resource::<BulletTime>().delta_seconds();
 //     let mut time_passed = world.resource_mut::<InGameTimePassed>();
 //     time_passed.0 += in_game_time;
-//     let mut num_runs = 0;
-//     while time_passed.0 >= 1.0 / FRAMERATE {
-//         time_passed.0 -= 1.0 / FRAMERATE;
-//         num_runs += 1;
-//     }
-//     for _ in 0..num_runs {
+//     if time_passed.0 >= 1.0 / FRAMERATE {
+//         time_passed.0 = 0.0;
 //         world.run_schedule(BulletUpdate);
 //     }
 // }

@@ -19,6 +19,7 @@ struct DirtBundle {
     name: Name,
     pos: Pos,
     static_tx: StaticTx,
+    consolidate: MyLdtkConsolidateKind,
 }
 impl MyLdtkIntCell for DirtBundle {
     type Root = PlatformRoot;
@@ -28,6 +29,7 @@ impl MyLdtkIntCell for DirtBundle {
             name: Name::new("dirt"),
             pos,
             static_tx: StaticTx::single(StaticTxKind::Solid, HBox::new(8, 8)),
+            consolidate: MyLdtkConsolidateKind::Solid8x8,
         }
     }
 }

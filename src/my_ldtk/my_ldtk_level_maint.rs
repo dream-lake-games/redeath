@@ -168,7 +168,7 @@ fn watch_level_selection(
     }
 }
 
-pub(super) fn register_my_ldtk_levels(app: &mut App) {
+pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
     app.insert_resource(LevelRects::default());
 
     app.add_systems(Update, update_my_level_rects.in_set(MyLdtkLevelMaint));

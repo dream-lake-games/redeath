@@ -2,11 +2,13 @@ use std::ops::Deref;
 
 use crate::prelude::*;
 
+pub mod my_ldtk_consolidate;
 pub mod my_ldtk_entity;
 pub mod my_ldtk_int_cell;
 pub mod my_ldtk_level_maint;
 pub mod my_ldtk_load;
 
+pub use my_ldtk_consolidate::*;
 pub use my_ldtk_entity::*;
 pub use my_ldtk_int_cell::*;
 pub use my_ldtk_level_maint::*;
@@ -98,7 +100,8 @@ impl Plugin for MyLdtkPlugin {
             MyLdtkChild
         );
 
-        my_ldtk_level_maint::register_my_ldtk_levels(app);
+        my_ldtk_level_maint::register_my_ldtk_level_maint(app);
+        my_ldtk_consolidate::register_my_ldtk_consolidate(app);
 
         app.add_plugins(LdtkPlugin).insert_resource(LdtkSettings {
             level_spawn_behavior: LevelSpawnBehavior::UseWorldTranslation {
