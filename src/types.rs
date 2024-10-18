@@ -86,7 +86,8 @@ pub enum CardDir {
     NW,
 }
 impl CardDir {
-    pub fn as_vec2(&self) -> Vec2 {
+    /// NOTE: Not normalized
+    pub const fn as_non_normal_vec2(&self) -> Vec2 {
         match self {
             Self::N => Vec2::new(0.0, 1.0),
             Self::NE => Vec2::new(1.0, 1.0),
@@ -97,6 +98,9 @@ impl CardDir {
             Self::W => Vec2::new(-1.0, 0.0),
             Self::NW => Vec2::new(-1.0, 1.0),
         }
+    }
+    pub fn from_vec2(v: Vec2) -> Self {
+        closest_card_dir(v)
     }
     pub fn from_field_instance(fi: &FieldInstance) -> Self {
         let FieldValue::Enum(Some(string)) = &fi.value else {

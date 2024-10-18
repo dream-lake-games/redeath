@@ -7,7 +7,8 @@ trait HitboxColorable {
 impl HitboxColorable for StaticRxKind {
     fn to_color(&self) -> Color {
         match self {
-            Self::Default => tailwind::AMBER_200.into(),
+            Self::Default => tailwind::RED_400.into(),
+            Self::Observe => tailwind::AMBER_400.into(),
         }
     }
 }

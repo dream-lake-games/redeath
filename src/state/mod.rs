@@ -29,12 +29,6 @@ pub enum PauseState {
     Unpaused,
 }
 
-#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
-pub enum PlayerExistsState {
-    Exists,
-    DoesNotExist,
-}
-
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Reflect, States)]
 pub struct TransitionState {
     pub exiting: Option<MetaState>,

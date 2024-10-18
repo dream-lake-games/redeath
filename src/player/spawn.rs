@@ -2,7 +2,7 @@ use bevy::ecs::query::QuerySingleError;
 
 use crate::prelude::*;
 
-use super::scratch::ScratchPlayerBundle;
+use super::player_bundle::PlayerBundle;
 
 #[derive(Component)]
 struct SpawnPoint;
@@ -93,7 +93,7 @@ fn spawn_player(
         }
     };
     commands
-        .spawn(ScratchPlayerBundle::new(spawn_pos.clone()))
+        .spawn(PlayerBundle::new(spawn_pos.clone()))
         .set_parent(root.eid());
     let mut world_state = world_state.get().clone();
     world_state.player_meta_state = PlayerMetaState::Playing;

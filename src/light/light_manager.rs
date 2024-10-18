@@ -109,12 +109,15 @@ impl Component for Light {
             let mat = world
                 .resource_mut::<Assets<LightCutoutMat>>()
                 .add(LightCutoutMat::new(image_hand.clone()));
-            world.commands().spawn((
-                mesh,
-                mat,
-                SpatialBundle::default(),
-                LightLayer::to_render_layers(),
-            ));
+            world
+                .commands()
+                .spawn((
+                    mesh,
+                    mat,
+                    SpatialBundle::default(),
+                    LightLayer::to_render_layers(),
+                ))
+                .set_parent(light_root_eid);
 
             // Make the claim
             world.commands().entity(eid).insert(LightClaimed {

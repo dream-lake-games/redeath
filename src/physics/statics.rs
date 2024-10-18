@@ -15,6 +15,8 @@ pub enum StaticTxKind {
 pub enum StaticRxKind {
     /// Pushes the rx ctrl out of tx comps, sets vel to zero along plane of intersection
     Default,
+    /// Observes collisions but does nothing to respond
+    Observe,
 }
 
 // PLUMBING

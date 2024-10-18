@@ -169,6 +169,9 @@ fn resolve_collisions(
                             *my_vel = old_par;
                         }
                     }
+                    (StaticRxKind::Observe, _) => {
+                        add_coll_rec();
+                    }
                 }
             }
         }

@@ -16,6 +16,11 @@ impl Deref for DirInput {
         &self.dir
     }
 }
+impl DirInput {
+    pub fn as_vec2(&self) -> Vec2 {
+        self.dir
+    }
+}
 
 #[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq, std::hash::Hash)]
 pub enum ButtKind {
@@ -32,11 +37,11 @@ pub struct ButtInput {
     just_pressed: HashMap<ButtKind, bool>,
 }
 impl ButtInput {
-    pub fn pressed(&self, but: ButtKind) -> bool {
-        self.pressed[&but].clone()
+    pub fn pressed(&self, butt: ButtKind) -> bool {
+        self.pressed[&butt].clone()
     }
-    pub fn just_pressed(&self, but: ButtKind) -> bool {
-        self.just_pressed[&but].clone()
+    pub fn just_pressed(&self, butt: ButtKind) -> bool {
+        self.just_pressed[&butt].clone()
     }
 }
 

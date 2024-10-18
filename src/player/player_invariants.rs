@@ -12,11 +12,8 @@ fn player_meta_state_checks(
         PlayerMetaState::NoneOk | PlayerMetaState::Spawning => {
             debug_assert!(player_count == 0);
         }
-        PlayerMetaState::Puppet | PlayerMetaState::Playing => {
+        PlayerMetaState::Puppet | PlayerMetaState::Playing | PlayerMetaState::Dying => {
             debug_assert!(player_count == 1);
-        }
-        PlayerMetaState::Dying => {
-            // Haven't thought about this yet
         }
     }
 }

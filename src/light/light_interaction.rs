@@ -99,7 +99,8 @@ fn block_lights(
         let source_pos = pos_q.get(source_eid).unwrap().as_vec2();
         for stx_comp in &blockers {
             let blocker_pos = pos_q.get(stx_comp.ctrl).unwrap();
-            if source_pos.distance(blocker_pos.as_vec2()) > anim.get_state().to_radius() {
+            let blocker_hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
+            if blocker_hbox.manhattan_distance_to_point(source_pos) > anim.get_state().to_radius() {
                 continue;
             }
             let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
