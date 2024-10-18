@@ -7,11 +7,11 @@ fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut commands:
     let (config, _) = gizmo_config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 2.0;
     config.render_layers = StaticLayer::to_render_layers();
-    spawn_light(Pos::new(10.0, 100.0), &mut commands);
-    spawn_light(Pos::new(100.0, -100.0), &mut commands);
-    spawn_light(Pos::new(130.0, -140.0), &mut commands);
-    spawn_light(Pos::new(50.0, -160.0), &mut commands);
-    spawn_light(Pos::new(160.0, -190.0), &mut commands);
+    // spawn_light(Pos::new(10.0, 100.0), &mut commands);
+    // spawn_light(Pos::new(100.0, -100.0), &mut commands);
+    // spawn_light(Pos::new(130.0, -140.0), &mut commands);
+    // spawn_light(Pos::new(50.0, -160.0), &mut commands);
+    // spawn_light(Pos::new(160.0, -190.0), &mut commands);
 }
 
 fn spawn_light(pos: Pos, commands: &mut Commands) {

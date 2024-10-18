@@ -104,13 +104,13 @@ fn resolve_collisions(
                 my_thbox.overlaps_with(&other_hbox)
             })
             .collect::<Vec<_>>();
-        // Then sort by distance (this should work as long as hitboxes are smallish?)
+        // Then sort by area overlapping
         can_possibly_collide.sort_by(|a, b| {
             let ahbox = translate_other!(a);
             let bhbox = translate_other!(b);
-            let dist_a = my_thbox.get_offset().distance_squared(ahbox.get_offset());
-            let dist_b = my_thbox.get_offset().distance_squared(bhbox.get_offset());
-            dist_a.total_cmp(&dist_b)
+            let dist_a = ahbox.area_overlapping_assuming_overlap(&my_thbox);
+            let dist_b = bhbox.area_overlapping_assuming_overlap(&my_thbox);
+            dist_b.total_cmp(&dist_a)
         });
         for other_stx_comp in can_possibly_collide {
             if other_stx_comp.ctrl == my_eid {

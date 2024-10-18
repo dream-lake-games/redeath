@@ -56,6 +56,61 @@ impl HBox {
 // I don't care that this is super verbose, and maybe inefficient. I want it to be correct.
 // Can performance engineer later if needed.
 impl HBox {
+    /// Manhattan distance to another hitbox
+    pub fn manhattan_distance(&self, rhs: &Self) -> f32 {
+        let fsize = self.size.as_vec2();
+        let my_x_min = self.offset.x - fsize.x / 2.0;
+        let my_x_max = self.offset.x + fsize.x / 2.0;
+        let my_y_min = self.offset.y - fsize.y / 2.0;
+        let my_y_max = self.offset.y + fsize.y / 2.0;
+
+        let ofsize = rhs.size.as_vec2();
+        let o_x_min = rhs.offset.x - ofsize.x / 2.0;
+        let o_x_max = rhs.offset.x + ofsize.x / 2.0;
+        let o_y_min = rhs.offset.y - ofsize.y / 2.0;
+        let o_y_max = rhs.offset.y + ofsize.y / 2.0;
+
+        let x_dist = (my_x_min - o_x_max).abs().min((o_x_min - my_x_max).abs());
+        let y_dist = (my_y_min - o_y_max).abs().min((o_y_min - my_y_max).abs());
+
+        x_dist + y_dist
+    }
+
+    /// Manhattan distance to a point
+    pub fn manhattan_distance_to_point(&self, point: Vec2) -> f32 {
+        let fsize = self.size.as_vec2();
+        let my_x_min = self.offset.x - fsize.x / 2.0;
+        let my_x_max = self.offset.x + fsize.x / 2.0;
+        let my_y_min = self.offset.y - fsize.y / 2.0;
+        let my_y_max = self.offset.y + fsize.y / 2.0;
+
+        let x_dist = (my_x_min - point.x).abs().min((point.x - my_x_max).abs());
+        let y_dist = (my_y_min - point.y).abs().min((point.y - my_y_max).abs());
+
+        x_dist + y_dist
+    }
+
+    /// Area overlapping with another hitbox
+    /// NOTE: Assumes they are overlapping
+    pub fn area_overlapping_assuming_overlap(&self, rhs: &Self) -> f32 {
+        let fsize = self.size.as_vec2();
+        let my_x_min = self.offset.x - fsize.x / 2.0;
+        let my_x_max = self.offset.x + fsize.x / 2.0;
+        let my_y_min = self.offset.y - fsize.y / 2.0;
+        let my_y_max = self.offset.y + fsize.y / 2.0;
+
+        let ofsize = rhs.size.as_vec2();
+        let ox_min = rhs.offset.x - ofsize.x / 2.0;
+        let ox_max = rhs.offset.x + ofsize.x / 2.0;
+        let oy_min = rhs.offset.y - ofsize.y / 2.0;
+        let oy_max = rhs.offset.y + ofsize.y / 2.0;
+
+        let x_overlap = (my_x_min - ox_max).abs().min((ox_min - my_x_max).abs());
+        let y_overlap = (my_y_min - oy_max).abs().min((oy_min - my_y_max).abs());
+
+        x_overlap * y_overlap
+    }
+
     /// Returns if the two hitboxes overlap
     pub fn overlaps_with(&self, rhs: &Self) -> bool {
         let fsize = self.size.as_vec2();
