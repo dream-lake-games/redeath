@@ -7,15 +7,15 @@ fn start_jump_animation(
 ) {
     let event = trigger.event();
     let mut anim = player.single_mut();
-    match event {
-        JumpEvent::Regular => {
+    match event.kind {
+        JumpKind::Regular => {
             anim.set_state(PlayerAnim::Jump);
         }
-        JumpEvent::FromLeftWall => {
+        JumpKind::FromLeftWall => {
             anim.set_flip_x(false);
             anim.set_state(PlayerAnim::WallJump);
         }
-        JumpEvent::FromRightWall => {
+        JumpKind::FromRightWall => {
             anim.set_flip_x(true);
             anim.set_state(PlayerAnim::WallJump);
         }
@@ -32,12 +32,26 @@ fn maybe_start_land_animation(
 }
 
 fn normal_movement_animation(
-    mut player: Query<(&mut AnimMan<PlayerAnim>, &TouchingDir, &Dyno), With<Player>>,
+    mut player: Query<
+        (
+            &mut AnimMan<PlayerAnim>,
+            &TouchingDir,
+            &Dyno,
+            Option<&Dashing>,
+        ),
+        With<Player>,
+    >,
     dir: Res<DirInput>,
 ) {
-    let (mut anim, touching, dyno) = player.single_mut();
+    let (mut anim, touching, dyno, dashing) = player.single_mut();
 
-    // Handle wall sliding first (note anim logic is slightly different from vel logic — be warned)
+    // Dashing overrides everything
+    if dashing.is_some() {
+        anim.set_state(PlayerAnim::Dash);
+        return;
+    }
+
+    // Then wall sliding (note anim logic is slightly different from vel logic — be warned)
     // Okay it's actually not that scary it's just that anim also comes into play when sliding and moving up,
     // whereas vel only changes when going down
     let wall_sliding = !touching.down()
@@ -48,6 +62,7 @@ fn normal_movement_animation(
         return;
     }
 
+    // Then don't interrupt stuff
     if matches!(anim.get_state(), PlayerAnim::Jump | PlayerAnim::Land) {
         // Don't interrupt these animations for normal movement
         if dyno.vel.x.abs() > 1.0 {
@@ -56,6 +71,7 @@ fn normal_movement_animation(
         return;
     }
 
+    // Finally do running and inair if we get here
     if touching.down() {
         // On the ground
         if dyno.vel.x.abs() < 1.0 {

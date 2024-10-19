@@ -10,7 +10,6 @@ pub enum MyLdtkConsolidateKind {
 
 #[derive(Clone)]
 struct ConsolidationEntry {
-    key: (i32, i32),
     eid: Entity,
     comp_eid: Entity,
 }
@@ -39,7 +38,6 @@ fn consolidate_int_cells(
                 solid8x8_entries.insert(
                     key,
                     ConsolidationEntry {
-                        key,
                         eid,
                         comp_eid: ctrl.comps[0],
                     },

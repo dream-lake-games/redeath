@@ -35,10 +35,31 @@ derive_anim!(
         #[file("player/wall_jump.png")]
         #[size(22, 22)]
         WallJump,
+        #[file("player/dash.png")]
+        #[size(22, 22)]
+        Dash,
     }
 );
 type PlayerAnimPlugin = AnimDefnPlugin<PlayerAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum JumpAnim {
+        #[default]
+        #[file("smoke/jump/regular1.png")]
+        #[size(16, 16)]
+        #[length(8)]
+        #[next(Despawn)]
+        Regular1,
+        #[file("smoke/jump/wall1.png")]
+        #[size(16, 16)]
+        #[length(7)]
+        #[next(Despawn)]
+        Wall1,
+    }
+);
+type JumpAnimPlugin = AnimDefnPlugin<JumpAnim, AnimTimeRes>;
+
 pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(PlayerAnimPlugin::default());
+    app.add_plugins(JumpAnimPlugin::default());
 }

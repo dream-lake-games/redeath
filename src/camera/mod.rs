@@ -1,6 +1,9 @@
 use crate::prelude::*;
 
 mod camera_movement;
+pub mod camera_shake;
+
+pub use camera_shake::*;
 
 /// The set that contains all camera related systems
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -48,5 +51,6 @@ impl Plugin for CameraPlugin {
         app.add_systems(Startup, spawn_dynamic_camera);
 
         camera_movement::register_camera_movement(app);
+        camera_shake::register_camera_shake(app);
     }
 }

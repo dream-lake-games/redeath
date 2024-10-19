@@ -3,6 +3,8 @@ use crate::prelude::*;
 mod platforms;
 mod world_loading;
 
+pub struct ShutupRust;
+
 pub(super) struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {

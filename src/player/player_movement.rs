@@ -196,6 +196,8 @@ fn maybe_start_dash(
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
+        let event = DashEvent { dir: card_dir };
+        commands.trigger(event);
     }
 }
 
@@ -211,15 +213,16 @@ fn maybe_start_regular_jump(
     };
     if butt.just_pressed(ButtKind::A) {
         dyno.vel.y = consts.jump_speed;
-        let event = JumpEvent::Regular;
+        let kind = JumpKind::Regular;
         commands.entity(eid).insert(PostJump {
-            event,
+            kind,
             time_left: consts.post_jump_time,
         });
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
-        commands.trigger(JumpEvent::Regular);
+        let event = JumpEvent { kind };
+        commands.trigger(event);
     }
 }
 
@@ -249,18 +252,19 @@ fn maybe_start_wall_jump(
         let x_mul = if from_left { 1.0 } else { -1.0 };
         dyno.vel.x = consts.max_hor_speed * x_mul;
         dyno.vel.y = consts.jump_speed;
-        let event = if from_left {
-            JumpEvent::FromLeftWall
+        let kind = if from_left {
+            JumpKind::FromLeftWall
         } else {
-            JumpEvent::FromRightWall
+            JumpKind::FromRightWall
         };
         commands.entity(eid).insert(PostJump {
-            event,
+            kind,
             time_left: consts.post_jump_time,
         });
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
+        let event = JumpEvent { kind };
         commands.trigger(event);
     }
 }
@@ -286,16 +290,16 @@ fn move_horizontally(
 
     if !touching.down()
         && matches!(
-            post_jump.map(|s| s.event),
-            Some(JumpEvent::FromLeftWall) | Some(JumpEvent::FromRightWall)
+            post_jump.map(|s| s.kind),
+            Some(JumpKind::FromLeftWall) | Some(JumpKind::FromRightWall)
         )
     {
         // Don't let the player decelerate back into wall while post is happening
         let post_jump = post_jump.unwrap();
-        if matches!(post_jump.event, JumpEvent::FromLeftWall) && dyno.vel.x < 0.0 {
+        if matches!(post_jump.kind, JumpKind::FromLeftWall) && dyno.vel.x < 0.0 {
             return;
         }
-        if matches!(post_jump.event, JumpEvent::FromRightWall) && dyno.vel.x > 0.0 {
+        if matches!(post_jump.kind, JumpKind::FromRightWall) && dyno.vel.x > 0.0 {
             return;
         }
     } else {

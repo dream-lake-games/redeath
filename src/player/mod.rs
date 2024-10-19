@@ -3,8 +3,8 @@ use crate::prelude::*;
 mod player_animation;
 mod player_bundle;
 mod player_invariants;
+mod player_juice;
 mod player_movement;
-mod scratch;
 mod spawn;
 
 // NOTE: Even though stuff in here is pub it's only available in player
@@ -47,7 +47,7 @@ mod playerlude {
 
     #[derive(Component, Clone, Debug, Reflect)]
     pub struct PostJump {
-        pub event: JumpEvent,
+        pub kind: JumpKind,
         pub time_left: f32,
     }
 
@@ -59,16 +59,21 @@ mod playerlude {
         pub time_left: f32,
     }
 
-    #[derive(Event, Clone, Copy, Debug, Reflect)]
-    pub enum JumpEvent {
+    #[derive(Clone, Copy, Debug, Reflect)]
+    pub enum JumpKind {
         Regular,
         FromLeftWall,
         FromRightWall,
     }
 
     #[derive(Event, Clone, Debug, Reflect)]
+    pub struct JumpEvent {
+        pub kind: JumpKind,
+    }
+
+    #[derive(Event, Clone, Debug, Reflect)]
     pub struct DashEvent {
-        dir: CardDir,
+        pub dir: CardDir,
     }
 
     #[derive(Component, Clone, Debug, Default, Reflect)]
@@ -92,6 +97,7 @@ mod playerlude {
             self.map.insert(Dir4::Right, val);
             self
         }
+        #[allow(dead_code)]
         pub fn up(&self) -> bool {
             *self.map.get(&Dir4::Up).unwrap_or(&false)
         }
@@ -128,9 +134,9 @@ impl Plugin for PlayerPlugin {
         );
 
         player_animation::register_player_animation(app);
+        player_juice::register_player_juice(app);
         player_invariants::register_player_invariants(app);
         player_movement::register_player_movement(app);
-        // scratch::register_scratch(app);
         spawn::register_spawn(app);
     }
 }

@@ -24,3 +24,12 @@ pub fn closest_card_dir(v: Vec2) -> CardDir {
         CardDir::E
     }
 }
+
+pub trait MyPick<V> {
+    fn pick(&self) -> V;
+}
+impl<V: Clone> MyPick<V> for Vec<V> {
+    fn pick(&self) -> V {
+        self.choose(&mut thread_rng()).unwrap().clone()
+    }
+}
