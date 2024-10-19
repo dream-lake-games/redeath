@@ -100,27 +100,10 @@ fn update_bullet_time(mut bullet_time: ResMut<BulletTime>, time: Res<Time>) {
     bullet_time.duration = time.delta().mul_f32(bullet_time.mode.to_factor());
 }
 
-// TODO: I think this is bad
-// #[derive(Resource)]
-// struct InGameTimePassed(f32);
-// fn shephard_bullet_update(world: &mut World) {
-//     let in_game_time = world.resource::<BulletTime>().delta_seconds();
-//     let mut time_passed = world.resource_mut::<InGameTimePassed>();
-//     time_passed.0 += in_game_time;
-//     if time_passed.0 >= 1.0 / FRAMERATE {
-//         time_passed.0 = 0.0;
-//         world.run_schedule(BulletUpdate);
-//     }
-// }
-
 pub(super) struct BulletTimePlugin;
 impl Plugin for BulletTimePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BulletTime::new());
         app.add_systems(First, update_bullet_time);
-
-        // app.init_schedule(BulletUpdate);
-        // app.insert_resource(InGameTimePassed(0.0));
-        // app.add_systems(Update, shephard_bullet_update.in_set(PhysicsSet));
     }
 }

@@ -36,7 +36,7 @@ impl Default for PlayerMovementConsts {
             post_jump_time: 0.1,
             dash_speed: 160.0,
             dash_time: 0.15,
-            coyote_time: 0.2,
+            coyote_time: 0.1,
         }
     }
 }

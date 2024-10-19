@@ -51,7 +51,9 @@ impl PlayerBundle {
                 (StaticRxKind::Observe, below_hbox),
             ]),
             render_layers: MainLayer.into(),
-            anim: default(),
+            anim: AnimMan::default()
+                .with_observe_state_changes()
+                .with_observe_ix_changes(),
             light: Light::new(LightAnim::Static128),
         }
     }

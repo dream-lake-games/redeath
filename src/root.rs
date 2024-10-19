@@ -143,6 +143,7 @@ impl_root_init!(
     MenuRoot(ZIX_MENU),
     TransitionRoot(ZIX_TRANSITION),
     ObserveRoot,
+    SoundRoot,
 );
 
 impl_subroot_init!(

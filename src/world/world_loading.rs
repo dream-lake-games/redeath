@@ -1,11 +1,12 @@
 use crate::prelude::*;
 
-fn on_enter_loading(mut commands: Commands) {
+fn on_enter_loading(mut commands: Commands, mut songs: ResMut<SongManager>) {
     commands.trigger(UnloadMyLdtk);
     commands.trigger(StartMyLdtkLoad {
         world_path: "worlds/lake.ldtk".to_string(),
         level_iid: "d32f7850-73f0-11ef-ab29-c106faf0247d".to_string(),
     });
+    songs.fade_to(Song::Elegy);
 }
 
 fn update_loading(

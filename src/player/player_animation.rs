@@ -3,21 +3,29 @@ use crate::prelude::*;
 
 fn start_jump_animation(
     trigger: Trigger<JumpEvent>,
-    mut player: Query<&mut AnimMan<PlayerAnim>, With<Player>>,
+    mut player: Query<(&mut AnimMan<PlayerAnim>, Option<&CanDash>), With<Player>>,
 ) {
     let event = trigger.event();
-    let mut anim = player.single_mut();
-    match event.kind {
-        JumpKind::Regular => {
+    let (mut anim, can_dash) = player.single_mut();
+    match (event.kind, can_dash) {
+        (JumpKind::Regular, _) => {
             anim.set_state(PlayerAnim::Jump);
         }
-        JumpKind::FromLeftWall => {
+        (JumpKind::FromLeftWall, Some(_)) => {
             anim.set_flip_x(false);
             anim.set_state(PlayerAnim::WallJump);
         }
-        JumpKind::FromRightWall => {
+        (JumpKind::FromLeftWall, None) => {
+            anim.set_flip_x(false);
+            anim.set_state(PlayerAnim::WallJumpExhausted);
+        }
+        (JumpKind::FromRightWall, Some(_)) => {
             anim.set_flip_x(true);
             anim.set_state(PlayerAnim::WallJump);
+        }
+        (JumpKind::FromRightWall, None) => {
+            anim.set_flip_x(true);
+            anim.set_state(PlayerAnim::WallJumpExhausted);
         }
     }
 }
@@ -26,7 +34,11 @@ fn maybe_start_land_animation(
     mut player: Query<(&mut AnimMan<PlayerAnim>, &TouchingDir), With<Player>>,
 ) {
     let (mut anim, touching) = player.single_mut();
-    if matches!(anim.get_state(), PlayerAnim::AirUp | PlayerAnim::AirDown) && touching.down() {
+    if matches!(
+        anim.get_state(),
+        PlayerAnim::AirDown | PlayerAnim::AirDownExhausted
+    ) && touching.down()
+    {
         anim.set_state(PlayerAnim::Land);
     }
 }
@@ -38,12 +50,13 @@ fn normal_movement_animation(
             &TouchingDir,
             &Dyno,
             Option<&Dashing>,
+            Option<&CanDash>,
         ),
         With<Player>,
     >,
     dir: Res<DirInput>,
 ) {
-    let (mut anim, touching, dyno, dashing) = player.single_mut();
+    let (mut anim, touching, dyno, dashing, can_dash) = player.single_mut();
 
     // Dashing overrides everything
     if dashing.is_some() {
@@ -58,12 +71,19 @@ fn normal_movement_animation(
         && (touching.right() && dyno.vel.x > 0.0 || touching.left() && dyno.vel.x < 0.0);
     if wall_sliding {
         anim.set_flip_x(touching.right());
-        anim.set_state(PlayerAnim::WallSlide);
+        if can_dash.is_some() {
+            anim.set_state(PlayerAnim::WallSlide);
+        } else {
+            anim.set_state(PlayerAnim::WallSlideExhausted);
+        }
         return;
     }
 
     // Then don't interrupt stuff
-    if matches!(anim.get_state(), PlayerAnim::Jump | PlayerAnim::Land) {
+    if matches!(
+        anim.get_state(),
+        PlayerAnim::Jump | PlayerAnim::WallJump | PlayerAnim::WallJumpExhausted | PlayerAnim::Land
+    ) {
         // Don't interrupt these animations for normal movement
         if dyno.vel.x.abs() > 1.0 {
             anim.set_flip_x(dyno.vel.x < 0.0);
@@ -83,7 +103,13 @@ fn normal_movement_animation(
             }
         } else {
             // Moving
-            anim.set_state(PlayerAnim::Run);
+            let pushing_wall =
+                (dyno.vel.x > 0.0 && touching.right()) || (dyno.vel.x < 0.0 && touching.left());
+            if pushing_wall {
+                anim.set_state(PlayerAnim::WallPush);
+            } else {
+                anim.set_state(PlayerAnim::Run);
+            }
             anim.set_flip_x(dyno.vel.x < 0.0);
         }
     } else {
@@ -92,9 +118,17 @@ fn normal_movement_animation(
             anim.set_flip_x(dyno.vel.x < 0.0);
         }
         anim.set_state(if dyno.vel.y > 0.0 {
-            PlayerAnim::AirUp
+            if can_dash.is_some() {
+                PlayerAnim::AirUp
+            } else {
+                PlayerAnim::AirUpExhausted
+            }
         } else {
-            PlayerAnim::AirDown
+            if can_dash.is_some() {
+                PlayerAnim::AirDown
+            } else {
+                PlayerAnim::AirDownExhausted
+            }
         });
     }
 }
