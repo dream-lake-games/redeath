@@ -11,10 +11,14 @@ struct PlayerMovementConsts {
     air_hor_friction: f32,
     /// Maximum vertical speed (when not dashing)
     max_ver_speed: f32,
+    /// What's the max speed when wall sliding?
+    max_wall_slide_ver_speed: f32,
     /// How quickly to slow down back to max speed when over max speed (for instance, post-dash)
     over_max_slowdown_acc: f32,
     /// Jump speed
-    jump_vel: f32,
+    jump_speed: f32,
+    /// How long after a wall jump to mess with input?
+    post_jump_time: f32,
     dash_speed: f32,
     dash_time: f32,
     coyote_time: f32,
@@ -22,12 +26,14 @@ struct PlayerMovementConsts {
 impl Default for PlayerMovementConsts {
     fn default() -> Self {
         Self {
-            max_hor_speed: 90.0,
-            hor_acc: 480.0,
+            max_hor_speed: 120.0,
+            hor_acc: 680.0,
             air_hor_friction: 0.66,
             max_ver_speed: 200.0,
+            max_wall_slide_ver_speed: 40.0,
             over_max_slowdown_acc: 960.0,
-            jump_vel: 156.0,
+            jump_speed: 180.0,
+            post_jump_time: 0.1,
             dash_speed: 200.0,
             dash_time: 0.1,
             coyote_time: 0.2,
@@ -67,14 +73,16 @@ fn update_can_jump(
             Option<&mut CanRegularJump>,
             Option<&mut CanWallJumpFromLeft>,
             Option<&mut CanWallJumpFromRight>,
+            Option<&mut PostJump>,
         ),
         With<Player>,
     >,
     time: Res<Time>,
+    bullet_time: Res<BulletTime>,
     mut commands: Commands,
     consts: Res<PlayerMovementConsts>,
 ) {
-    let (eid, touching, mut can_regular, mut can_wall_left, mut can_wall_right) =
+    let (eid, touching, mut can_regular, mut can_wall_left, mut can_wall_right, mut post_jump) =
         player.single_mut();
     // Update regular jump
     if touching.down() {
@@ -113,6 +121,16 @@ fn update_can_jump(
             if wall_right_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanWallJumpFromRight>();
             }
+        }
+    }
+    // BUT if we are post jump we can't jump
+    if let Some(post_jump) = post_jump.as_mut() {
+        commands.entity(eid).remove::<CanRegularJump>();
+        commands.entity(eid).remove::<CanWallJumpFromLeft>();
+        commands.entity(eid).remove::<CanWallJumpFromRight>();
+        post_jump.time_left -= bullet_time.delta_seconds();
+        if post_jump.time_left < 0.0 {
+            commands.entity(eid).remove::<PostJump>();
         }
     }
 }
@@ -167,6 +185,9 @@ fn maybe_start_dash(
         });
         commands.entity(eid).remove::<CanDash>();
         commands.entity(eid).remove::<Gravity>();
+        commands.entity(eid).remove::<CanRegularJump>();
+        commands.entity(eid).remove::<CanWallJumpFromLeft>();
+        commands.entity(eid).remove::<CanWallJumpFromRight>();
     }
 }
 
@@ -181,10 +202,16 @@ fn maybe_start_regular_jump(
         return;
     };
     if butt.just_pressed(ButtKind::A) {
-        dyno.vel.y = consts.jump_vel;
+        dyno.vel.y = consts.jump_speed;
+        let event = JumpEvent::Regular;
+        commands.entity(eid).insert(PostJump {
+            event,
+            time_left: consts.post_jump_time,
+        });
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
+        commands.trigger(JumpEvent::Regular);
     }
 }
 
@@ -206,23 +233,40 @@ fn maybe_start_wall_jump(
         // Means the player can't wall jump rn
         return;
     };
+    if !butt.just_pressed(ButtKind::A) {
+        return;
+    }
+    let from_left = from_left.is_some();
     if butt.just_pressed(ButtKind::A) {
-        let from_left = from_left.is_some();
         let x_mul = if from_left { 1.0 } else { -1.0 };
-        dyno.vel.x = consts.jump_vel * x_mul * 0.5;
-        dyno.vel.y = consts.jump_vel;
+        dyno.vel.x = consts.max_hor_speed * x_mul;
+        dyno.vel.y = consts.jump_speed;
+        let event = if from_left {
+            JumpEvent::FromLeftWall
+        } else {
+            JumpEvent::FromRightWall
+        };
+        commands.entity(eid).insert(PostJump {
+            event,
+            time_left: consts.post_jump_time,
+        });
+        commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
+        commands.trigger(event);
     }
 }
 
 fn move_horizontally(
-    mut player: Query<(&mut Dyno, &TouchingDir), (With<Player>, Without<Dashing>)>,
+    mut player: Query<
+        (&mut Dyno, &TouchingDir, Option<&PostJump>),
+        (With<Player>, Without<Dashing>),
+    >,
     dir: Res<DirInput>,
     consts: Res<PlayerMovementConsts>,
     bullet_time: Res<BulletTime>,
 ) {
-    let Ok((mut dyno, touching)) = player.get_single_mut() else {
+    let Ok((mut dyno, touching, post_jump)) = player.get_single_mut() else {
         // Means the player can't move horizontally rn
         return;
     };
@@ -231,22 +275,70 @@ fn move_horizontally(
     } else {
         consts.air_hor_friction
     };
-    let acc = consts.hor_acc * bullet_time.delta_seconds() * friction;
-    if dir.x.abs() < 0.01 {
-        // Go towards 0.0
-        if acc >= dyno.vel.x.abs() {
-            // We would overshoot 0, hard 0.0
-            dyno.vel.x = 0.0;
-        } else {
-            dyno.vel.x -= dyno.vel.x.signum() * acc;
+
+    if !touching.down()
+        && matches!(
+            post_jump.map(|s| s.event),
+            Some(JumpEvent::FromLeftWall) | Some(JumpEvent::FromRightWall)
+        )
+    {
+        // Don't let the player decelerate back into wall while post is happening
+        let post_jump = post_jump.unwrap();
+        if matches!(post_jump.event, JumpEvent::FromLeftWall) && dyno.vel.x < 0.0 {
+            return;
+        }
+        if matches!(post_jump.event, JumpEvent::FromRightWall) && dyno.vel.x > 0.0 {
+            return;
         }
     } else {
-        // Accelerate
-        dyno.vel.x += dir.x.signum() * acc;
+        let acc = consts.hor_acc * bullet_time.delta_seconds() * friction;
+        if dir.x.abs() < 0.01 {
+            // Go towards 0.0
+            if acc >= dyno.vel.x.abs() {
+                // We would overshoot 0, hard 0.0
+                dyno.vel.x = 0.0;
+            } else {
+                dyno.vel.x -= dyno.vel.x.signum() * acc;
+            }
+        } else {
+            // Accelerate
+            dyno.vel.x += dir.x.signum() * acc;
+        }
     }
 }
 
-fn limit_speed() {}
+fn limit_speed(
+    mut player: Query<(&mut Dyno, &TouchingDir), (With<Player>, Without<Dashing>)>,
+    consts: Res<PlayerMovementConsts>,
+    bullet_time: Res<BulletTime>,
+) {
+    let Ok((mut dyno, touching)) = player.get_single_mut() else {
+        // Means the player can't move horizontally rn
+        return;
+    };
+    let acc = consts.over_max_slowdown_acc * bullet_time.delta_seconds();
+    // Hor
+    if dyno.vel.x.abs() > consts.max_hor_speed {
+        dyno.vel.x -= dyno.vel.x.signum() * acc;
+        if dyno.vel.x.abs() < consts.max_hor_speed {
+            dyno.vel.x = dyno.vel.x.signum() * consts.max_hor_speed;
+        }
+    }
+    // Ver
+    let wall_sliding = dyno.vel.y < 0.0
+        && (touching.right() && dyno.vel.x > 0.0 || touching.left() && dyno.vel.x < 0.0);
+    let actual_max_ver_speed = if wall_sliding {
+        consts.max_wall_slide_ver_speed
+    } else {
+        consts.max_ver_speed
+    };
+    if dyno.vel.y.abs() > actual_max_ver_speed {
+        dyno.vel.y -= dyno.vel.y.signum() * acc;
+        if dyno.vel.y.abs() < actual_max_ver_speed {
+            dyno.vel.y = dyno.vel.y.signum() * actual_max_ver_speed;
+        }
+    }
+}
 
 pub(super) fn register_player_movement(app: &mut App) {
     app.insert_resource(PlayerMovementConsts::default());

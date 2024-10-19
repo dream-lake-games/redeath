@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+mod player_animation;
 mod player_bundle;
 mod player_invariants;
 mod player_movement;
@@ -14,6 +15,10 @@ mod playerlude {
     /// For handling all player movement
     #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
     pub struct PlayerMovementSet;
+
+    /// For handling all player animation
+    #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+    pub struct PlayerAnimationSet;
 
     // Consts for helping figure out how the player is currently interacting with solids
     pub const PLAYER_MAIN_HBOX: u32 = 1;
@@ -41,11 +46,29 @@ mod playerlude {
     }
 
     #[derive(Component, Clone, Debug, Reflect)]
+    pub struct PostJump {
+        pub event: JumpEvent,
+        pub time_left: f32,
+    }
+
+    #[derive(Component, Clone, Debug, Reflect)]
     pub struct CanDash;
 
     #[derive(Component, Clone, Debug, Reflect)]
     pub struct Dashing {
         pub time_left: f32,
+    }
+
+    #[derive(Event, Clone, Copy, Debug, Reflect)]
+    pub enum JumpEvent {
+        Regular,
+        FromLeftWall,
+        FromRightWall,
+    }
+
+    #[derive(Event, Clone, Debug, Reflect)]
+    pub struct DashEvent {
+        dir: CardDir,
     }
 
     #[derive(Component, Clone, Debug, Default, Reflect)]
@@ -104,6 +127,7 @@ impl Plugin for PlayerPlugin {
             playerlude::TouchingDir
         );
 
+        player_animation::register_player_animation(app);
         player_invariants::register_player_invariants(app);
         player_movement::register_player_movement(app);
         // scratch::register_scratch(app);

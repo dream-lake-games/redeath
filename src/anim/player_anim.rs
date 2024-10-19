@@ -12,11 +12,13 @@ derive_anim!(
         #[file("player/lenny_run.png")]
         #[size(24, 24)]
         #[length(14)]
+        #[fps(24.0)]
         Run,
         #[file("player/lenny_jump.png")]
         #[size(24, 24)]
         #[length(5)]
         #[next(MidAir)]
+        #[fps(24.0)]
         Jump,
         #[file("player/lenny_air.png")]
         #[size(24, 24)]
