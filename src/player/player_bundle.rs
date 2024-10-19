@@ -16,8 +16,8 @@ pub(super) struct PlayerBundle {
 }
 impl PlayerBundle {
     pub(super) fn new(pos: Pos) -> Self {
-        let size = UVec2::new(14, 16);
-        let offset = Vec2::new(0.0, -1.0);
+        let size = UVec2::new(8, 11);
+        let offset = Vec2::new(0.0, -1.5);
         let fsize = size.as_vec2();
 
         let main_hbox = HBox::new(size.x, size.y)

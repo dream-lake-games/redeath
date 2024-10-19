@@ -3,32 +3,38 @@ use crate::prelude::*;
 derive_anim!(
     pub enum PlayerAnim {
         #[default]
-        #[file("player/lenny_stand.png")]
-        #[size(24, 24)]
+        #[file("player/stand.png")]
+        #[size(22, 22)]
         Stand,
-        #[file("player/lenny_squat.png")]
-        #[size(24, 24)]
+        #[file("player/squat.png")]
+        #[size(22, 22)]
         Squat,
-        #[file("player/lenny_run.png")]
-        #[size(24, 24)]
-        #[length(14)]
-        #[fps(24.0)]
-        Run,
-        #[file("player/lenny_jump.png")]
-        #[size(24, 24)]
+        #[file("player/run.png")]
+        #[size(22, 22)]
         #[length(5)]
-        #[next(MidAir)]
-        #[fps(24.0)]
+        Run,
+        #[file("player/jump.png")]
+        #[size(22, 22)]
+        #[length(2)]
+        #[next(AirUp)]
         Jump,
-        #[file("player/lenny_air.png")]
-        #[size(24, 24)]
-        #[length(4)]
-        MidAir,
-        #[file("player/lenny_land.png")]
-        #[size(24, 24)]
+        #[file("player/air_up.png")]
+        #[size(22, 22)]
+        AirUp,
+        #[file("player/air_down.png")]
+        #[size(22, 22)]
+        AirDown,
+        #[file("player/land.png")]
+        #[size(22, 22)]
         #[length(2)]
         #[next(Stand)]
         Land,
+        #[file("player/wall_slide.png")]
+        #[size(22, 22)]
+        WallSlide,
+        #[file("player/wall_jump.png")]
+        #[size(22, 22)]
+        WallJump,
     }
 );
 type PlayerAnimPlugin = AnimDefnPlugin<PlayerAnim, AnimTimeRes>;

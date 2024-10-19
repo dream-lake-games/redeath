@@ -26,16 +26,16 @@ struct PlayerMovementConsts {
 impl Default for PlayerMovementConsts {
     fn default() -> Self {
         Self {
-            max_hor_speed: 120.0,
-            hor_acc: 680.0,
+            max_hor_speed: 100.0,
+            hor_acc: 600.0,
             air_hor_friction: 0.66,
-            max_ver_speed: 200.0,
+            max_ver_speed: 190.0,
             max_wall_slide_ver_speed: 40.0,
             over_max_slowdown_acc: 960.0,
-            jump_speed: 180.0,
+            jump_speed: 190.0,
             post_jump_time: 0.1,
-            dash_speed: 200.0,
-            dash_time: 0.1,
+            dash_speed: 160.0,
+            dash_time: 0.15,
             coyote_time: 0.2,
         }
     }
@@ -167,18 +167,26 @@ fn update_can_dash_from_ground(
 }
 
 fn maybe_start_dash(
-    mut player: Query<(Entity, &mut Dyno), (With<Player>, With<CanDash>)>,
+    mut player: Query<(Entity, &mut Dyno, &AnimMan<PlayerAnim>), (With<Player>, With<CanDash>)>,
     butt: Res<ButtInput>,
     dir: Res<DirInput>,
     consts: Res<PlayerMovementConsts>,
     mut commands: Commands,
 ) {
-    let Ok((eid, mut dyno)) = player.get_single_mut() else {
+    let Ok((eid, mut dyno, anim)) = player.get_single_mut() else {
         // Means the player can't dash
         return;
     };
-    if butt.just_pressed(ButtKind::B) && dir.length_squared() > 0.1 {
-        let card_dir = CardDir::from_vec2(dir.as_vec2());
+    if butt.just_pressed(ButtKind::B) {
+        let card_dir = if dir.as_vec2().length_squared() > 0.1 {
+            CardDir::from_vec2(dir.as_vec2())
+        } else {
+            if anim.get_flip_x() {
+                CardDir::W
+            } else {
+                CardDir::E
+            }
+        };
         dyno.vel = card_dir.as_non_normal_vec2().normalize_or_zero() * consts.dash_speed;
         commands.entity(eid).insert(Dashing {
             time_left: consts.dash_time,

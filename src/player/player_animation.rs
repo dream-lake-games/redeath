@@ -7,14 +7,17 @@ fn start_jump_animation(
 ) {
     let event = trigger.event();
     let mut anim = player.single_mut();
-    anim.set_state(PlayerAnim::Jump);
     match event {
-        JumpEvent::Regular => {}
+        JumpEvent::Regular => {
+            anim.set_state(PlayerAnim::Jump);
+        }
         JumpEvent::FromLeftWall => {
             anim.set_flip_x(false);
+            anim.set_state(PlayerAnim::WallJump);
         }
         JumpEvent::FromRightWall => {
             anim.set_flip_x(true);
+            anim.set_state(PlayerAnim::WallJump);
         }
     }
 }
@@ -23,7 +26,7 @@ fn maybe_start_land_animation(
     mut player: Query<(&mut AnimMan<PlayerAnim>, &TouchingDir), With<Player>>,
 ) {
     let (mut anim, touching) = player.single_mut();
-    if matches!(anim.get_state(), PlayerAnim::MidAir) && touching.down() {
+    if matches!(anim.get_state(), PlayerAnim::AirUp | PlayerAnim::AirDown) && touching.down() {
         anim.set_state(PlayerAnim::Land);
     }
 }
@@ -33,6 +36,17 @@ fn normal_movement_animation(
     dir: Res<DirInput>,
 ) {
     let (mut anim, touching, dyno) = player.single_mut();
+
+    // Handle wall sliding first (note anim logic is slightly different from vel logic — be warned)
+    // Okay it's actually not that scary it's just that anim also comes into play when sliding and moving up,
+    // whereas vel only changes when going down
+    let wall_sliding = !touching.down()
+        && (touching.right() && dyno.vel.x > 0.0 || touching.left() && dyno.vel.x < 0.0);
+    if wall_sliding {
+        anim.set_flip_x(touching.right());
+        anim.set_state(PlayerAnim::WallSlide);
+        return;
+    }
 
     if matches!(anim.get_state(), PlayerAnim::Jump | PlayerAnim::Land) {
         // Don't interrupt these animations for normal movement
@@ -61,7 +75,11 @@ fn normal_movement_animation(
         if dyno.vel.x.abs() > 1.0 {
             anim.set_flip_x(dyno.vel.x < 0.0);
         }
-        anim.set_state(PlayerAnim::MidAir);
+        anim.set_state(if dyno.vel.y > 0.0 {
+            PlayerAnim::AirUp
+        } else {
+            PlayerAnim::AirDown
+        });
     }
 }
 
