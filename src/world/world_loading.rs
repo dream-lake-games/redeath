@@ -7,6 +7,16 @@ fn on_enter_loading(mut commands: Commands, mut songs: ResMut<SongManager>) {
         level_iid: "d32f7850-73f0-11ef-ab29-c106faf0247d".to_string(),
     });
     songs.fade_to(Song::Elegy);
+    commands.spawn(BlackScreenImage);
+    commands.spawn(
+        ParallaxScreenImage::new_bg("environment/bg/mountains_far.png", 720, 184, 0.0)
+            .with_parallax_x(-0.03),
+    );
+    commands.spawn(
+        ParallaxScreenImage::new_bg("environment/bg/mountains_close.png", 720, 184, 10.0)
+            .with_parallax_x(-0.12),
+    );
+    commands.trigger(SpawnStarsEvent { num_stars: 50 });
 }
 
 fn update_loading(

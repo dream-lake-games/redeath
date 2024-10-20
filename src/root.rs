@@ -149,5 +149,6 @@ impl_root_init!(
 impl_subroot_init!(
     PlatformRoot(WorldRoot),
     WorldDetailRoot(WorldRoot),
-    LightRoot(WorldRoot)
+    LightRoot(WorldRoot),
+    BgFgRoot(WorldRoot),
 );

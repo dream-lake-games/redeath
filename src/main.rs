@@ -1,4 +1,5 @@
 pub mod anim;
+pub mod bgfg;
 pub mod camera;
 pub mod consts;
 pub mod debug;
@@ -22,9 +23,9 @@ pub mod world;
 
 pub mod prelude {
     pub use super::{
-        anim::*, camera::*, consts::*, input::*, layer::*, lazy::*, light::*, math::*, my_ldtk::*,
-        palette::*, physics::*, player::*, root::*, savefile::*, sound::*, state::*, transition::*,
-        types::*, world::*,
+        anim::*, bgfg::*, camera::*, consts::*, input::*, layer::*, lazy::*, light::*, math::*,
+        my_ldtk::*, palette::*, physics::*, player::*, root::*, savefile::*, sound::*, state::*,
+        transition::*, types::*, world::*,
     };
     pub use bevy::{
         color::palettes::tailwind,
@@ -80,6 +81,7 @@ fn main() {
 
     // Our plugins
     app.add_plugins(CameraPlugin)
+        .add_plugins(BgFgPlugin)
         .add_plugins(debug::DebugPlugin)
         .add_plugins(InputPlugin)
         .add_plugins(LayerPlugin)
