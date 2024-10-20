@@ -16,7 +16,11 @@ fn on_enter_loading(mut commands: Commands, mut songs: ResMut<SongManager>) {
         ParallaxScreenImage::new_bg("environment/bg/mountains_close.png", 720, 184, 10.0)
             .with_parallax_x(-0.12),
     );
-    commands.trigger(SpawnStarsEvent { num_stars: 50 });
+    commands.trigger(SpawnStarsEvent {
+        num3s: 12,
+        num5s: 24,
+        num7s: 12,
+    });
 }
 
 fn update_loading(

@@ -1,9 +1,11 @@
+use std::ops::Range;
+
 use crate::prelude::*;
 
 use super::parallax::ParallaxX;
 
-const GROW_PROBABILITY: f32 = 0.001;
-const SHRINK_PROBABILITY: f32 = 0.01;
+const GROW_PROBABILITY: f32 = 0.0005;
+const SHRINK_PROBABILITY: f32 = 0.005;
 
 trait DoStarAnimThings {
     fn do_star_things(&mut self);
@@ -31,7 +33,7 @@ macro_rules! impl_do_star_anim_things {
         )+
     };
 }
-impl_do_star_anim_things!(Star7Anim);
+impl_do_star_anim_things!(Star3Anim, Star5Anim, Star7Anim);
 
 #[derive(Bundle)]
 struct StarBundle<StarAnim: AnimStateMachine> {
@@ -41,7 +43,7 @@ struct StarBundle<StarAnim: AnimStateMachine> {
     parallax: ParallaxX,
 }
 impl<StarAnim: AnimStateMachine> StarBundle<StarAnim> {
-    fn new() -> Self {
+    fn new(parallax_range: Range<f32>) -> Self {
         let mut rng = thread_rng();
         let wrap_size = Vec2::new(SCREEN_WIDTH_f32 * 2.0, SCREEN_HEIGHT_f32);
         let pos = Pos::new(
@@ -53,31 +55,56 @@ impl<StarAnim: AnimStateMachine> StarBundle<StarAnim> {
             name: Name::new("star"),
             anim: default(),
             spatial: pos.to_spatial(-10.0),
-            parallax: ParallaxX::new(-rng.gen_range(0.005..0.008), wrap_size.x),
+            parallax: ParallaxX::new(-rng.gen_range(parallax_range.clone()), wrap_size.x),
         }
     }
 }
 
 #[derive(Event)]
 pub struct SpawnStarsEvent {
-    pub num_stars: u32,
+    pub num3s: u32,
+    pub num5s: u32,
+    pub num7s: u32,
 }
 fn handle_spawn_stars_event(
     trigger: Trigger<SpawnStarsEvent>,
     mut commands: Commands,
     root: Res<BgFgRoot>,
 ) {
-    let SpawnStarsEvent { num_stars } = trigger.event();
-    for _ in 0..*num_stars {
+    let SpawnStarsEvent {
+        num3s,
+        num5s,
+        num7s,
+    } = trigger.event();
+    for _ in 0..*num3s {
         commands
-            .spawn(StarBundle::<Star7Anim>::new())
+            .spawn(StarBundle::<Star3Anim>::new(0.0005..0.0008))
+            .set_parent(root.eid());
+    }
+    for _ in 0..*num5s {
+        commands
+            .spawn(StarBundle::<Star5Anim>::new(0.001..0.004))
+            .set_parent(root.eid());
+    }
+    for _ in 0..*num7s {
+        commands
+            .spawn(StarBundle::<Star7Anim>::new(0.005..0.008))
             .set_parent(root.eid());
     }
 }
 
-fn update_bg_stars(mut sevens: Query<(&mut AnimMan<Star7Anim>, &mut Transform)>) {
-    for (mut anim, mut tran) in &mut sevens {
-        tran.translation = tran.translation.round();
+fn update_bg_stars(
+    mut threes: Query<&mut AnimMan<Star3Anim>>,
+    mut fives: Query<&mut AnimMan<Star5Anim>>,
+    mut sevens: Query<&mut AnimMan<Star7Anim>>,
+) {
+    for mut anim in &mut threes {
+        anim.do_star_things();
+    }
+    for mut anim in &mut fives {
+        anim.do_star_things();
+    }
+    for mut anim in &mut sevens {
         anim.do_star_things();
     }
 }
