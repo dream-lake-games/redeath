@@ -38,6 +38,11 @@ impl Default for Gravity {
         Self { mult: 1.0 }
     }
 }
+impl Gravity {
+    pub fn new(val: f32) -> Self {
+        Self { mult: val }
+    }
+}
 
 pub(super) fn register_dynos(app: &mut App) {
     app.add_systems(

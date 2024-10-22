@@ -83,7 +83,7 @@ fn block_lights(
     light_root: Res<LightRoot>,
     old: Query<Entity, With<TemporaryLightMesh>>,
     pos_q: Query<&Pos>,
-    sources: Query<(Entity, &LightClaimed, &AnimMan<LightAnim>)>,
+    sources: Query<(Entity, &LightClaimed)>,
     blockers: Query<&StaticTxComp>,
 ) {
     // Delete the old meshes
@@ -95,12 +95,12 @@ fn block_lights(
         black_mat.0 = Some(mats.add(Color::BLACK));
     }
     let black_mat = black_mat.0.clone().unwrap();
-    for (source_eid, light, anim) in &sources {
+    for (source_eid, light) in &sources {
         let source_pos = pos_q.get(source_eid).unwrap().as_vec2();
         for stx_comp in &blockers {
             let blocker_pos = pos_q.get(stx_comp.ctrl).unwrap();
             let blocker_hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
-            if blocker_hbox.manhattan_distance_to_point(source_pos) > anim.get_state().to_radius() {
+            if blocker_hbox.manhattan_distance_to_point(source_pos) > light.radius {
                 continue;
             }
             let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);

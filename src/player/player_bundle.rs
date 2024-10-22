@@ -10,9 +10,9 @@ pub(super) struct PlayerBundle {
     dyno: Dyno,
     gravity: Gravity,
     static_rx: StaticRx,
-    render_layers: RenderLayers,
+    trigger_tx: TriggerTx,
     anim: AnimMan<PlayerAnim>,
-    light: Light,
+    light: Light<PlayerLightAnim>,
 }
 impl PlayerBundle {
     pub(super) fn new(pos: Pos) -> Self {
@@ -44,17 +44,17 @@ impl PlayerBundle {
             dyno: default(),
             gravity: default(),
             static_rx: StaticRx::new(vec![
-                (StaticRxKind::Default, main_hbox),
+                (StaticRxKind::Default, main_hbox.clone()),
                 (StaticRxKind::Observe, right_hbox),
                 (StaticRxKind::Observe, above_hbox),
                 (StaticRxKind::Observe, left_hbox),
                 (StaticRxKind::Observe, below_hbox),
             ]),
-            render_layers: MainLayer.into(),
+            trigger_tx: TriggerTx::single(TriggerTxKind::Player, main_hbox),
             anim: AnimMan::default()
                 .with_observe_state_changes()
                 .with_observe_ix_changes(),
-            light: Light::new(LightAnim::Static128),
+            light: default(),
         }
     }
 }

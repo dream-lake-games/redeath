@@ -7,6 +7,7 @@ struct MenuPlatformBundle<const DUMMY: u32> {}
 impl<const DUMMY: u32> MyLdtkIntCell for MenuPlatformBundle<DUMMY> {
     type Root = MenuRoot;
     type RenderLayers = MainLayer;
+    type LeftoverRenderLayers = MainLayer;
     fn from_ldtk(_pos: Pos, _value: i32) -> Self {
         Self {}
     }
@@ -70,11 +71,11 @@ fn on_exit_overworld(mut commands: Commands) {
 
 pub(super) fn register_overworld(app: &mut App) {
     // Ldtk
-    app.add_plugins(MyLdtkIntCellPlugin::<MenuPlatformBundle<1>>::new(
+    app.add_plugins(MyLdtkIntCellPlugin::<MenuPlatformBundle<1>>::single(
         "MenuPlatforms",
         1,
     ));
-    app.add_plugins(MyLdtkIntCellPlugin::<MenuPlatformBundle<2>>::new(
+    app.add_plugins(MyLdtkIntCellPlugin::<MenuPlatformBundle<2>>::single(
         "MenuPlatforms",
         2,
     ));

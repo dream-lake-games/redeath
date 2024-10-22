@@ -36,28 +36,22 @@ impl LightManager {
 /// Signals that this component wants to have a light.
 /// When added to a component, it will claim a render layer, add the animation, image, and camera
 /// It will also add `LightClaimed`. Then it will remove itself. Cleanup is handled by LightClaimed.
-#[derive(Debug, Reflect)]
-pub struct Light {
+#[derive(Debug, Reflect, Default)]
+pub struct Light<LightAnim: LightAnimRadius> {
     anim: LightAnim,
-    singular: bool,
 }
-impl Light {
+impl<LightAnim: LightAnimRadius> Light<LightAnim> {
     pub fn new(anim: LightAnim) -> Self {
-        Self {
-            anim,
-            singular: false,
-        }
+        Self { anim }
     }
-    impl_with_on!(singular);
 }
-impl Component for Light {
+impl<LightAnim: LightAnimRadius> Component for Light<LightAnim> {
     const STORAGE_TYPE: StorageType = StorageType::Table;
     fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
         hooks.on_add(|mut world, eid, _| {
             // Get my animation
             let myself = world.get::<Self>(eid).expect("myself");
             let anim = myself.anim.clone();
-            let singular = myself.singular;
 
             // Claim a render layer
             let mut manager = world.resource_mut::<LightManager>();
@@ -65,10 +59,7 @@ impl Component for Light {
             let rl = RenderLayers::from_layers(&[rl_usize]);
 
             // Add the animation
-            let mut anim_man = AnimMan::<LightAnim>::new(anim).with_render_layers(rl.clone());
-            if singular {
-                anim_man = anim_man.with_singular();
-            }
+            let anim_man = AnimMan::<LightAnim>::new(anim).with_render_layers(rl.clone());
             world.commands().entity(eid).insert(anim_man);
 
             // Add the image
@@ -124,8 +115,9 @@ impl Component for Light {
                 rl: rl_usize,
                 image: image_hand,
                 camera: camera_eid,
+                radius: LightAnim::RADIUS,
             });
-            world.commands().entity(eid).remove::<Light>();
+            world.commands().entity(eid).remove::<Light<LightAnim>>();
         });
     }
 }
@@ -135,6 +127,7 @@ pub struct LightClaimed {
     rl: usize,
     image: Handle<Image>,
     camera: Entity,
+    pub radius: f32,
 }
 impl Component for LightClaimed {
     const STORAGE_TYPE: StorageType = StorageType::Table;

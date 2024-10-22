@@ -65,7 +65,6 @@ fn update_parallaxes(
         return;
     };
     let diff = last_camera_tran.0.as_vec2() - cam_pos.as_vec2();
-    let diff = Vec2::new(1.0, 0.0);
     last_camera_tran.0 = cam_pos.clone();
     for (mut tran, mut px) in &mut pxs {
         px.scratch += diff.x * px.mult;

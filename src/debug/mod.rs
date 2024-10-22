@@ -2,24 +2,19 @@ use crate::prelude::*;
 
 mod draw_hitboxes;
 
-fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut commands: Commands) {
+fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut _commands: Commands) {
     // Gizmo config
     let (config, _) = gizmo_config_store.config_mut::<DefaultGizmoConfigGroup>();
     config.line_width = 2.0;
     config.render_layers = StaticLayer::to_render_layers();
-    spawn_light(Pos::new(10.0, 100.0), &mut commands);
-    spawn_light(Pos::new(100.0, -100.0), &mut commands);
-    spawn_light(Pos::new(130.0, -140.0), &mut commands);
-    spawn_light(Pos::new(50.0, -160.0), &mut commands);
-    spawn_light(Pos::new(160.0, -190.0), &mut commands);
 }
 
-fn spawn_light(pos: Pos, commands: &mut Commands) {
+fn _spawn_light(pos: Pos, commands: &mut Commands) {
     commands.spawn((
         Name::new("debug_light"),
         pos,
         pos.to_spatial(0.0 + thread_rng().gen_range(0.0..1.0)),
-        Light::new(LightAnim::Static128),
+        Light::new(PlayerLightAnim::Static128),
     ));
 }
 

@@ -54,7 +54,7 @@ impl<StarAnim: AnimStateMachine> StarBundle<StarAnim> {
         Self {
             name: Name::new("star"),
             anim: default(),
-            spatial: pos.to_spatial(-10.0),
+            spatial: pos.to_spatial(-10.0 + rng.gen_range(0.0..1.0)),
             parallax: ParallaxX::new(-rng.gen_range(parallax_range.clone()), wrap_size.x),
         }
     }

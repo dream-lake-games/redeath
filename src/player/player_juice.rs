@@ -49,6 +49,7 @@ fn juice_after_jump(
     trigger: Trigger<JumpEvent>,
     player: Query<&Pos, With<Player>>,
     mut commands: Commands,
+    sound_root: Res<SoundRoot>,
 ) {
     // Smoke
     let player_pos = player.single();
@@ -74,7 +75,9 @@ fn juice_after_jump(
     commands.spawn((man, smoke_pos.to_spatial(ZIX_PLAYER + 1.0)));
 
     // Sound
-    commands.spawn(SoundEffect::PlayerJump);
+    commands
+        .spawn(SoundEffect::PlayerJump)
+        .set_parent(sound_root.eid());
 }
 
 /// TODO: I think I want to kill the jump events and just use this? But maybe it's fine? Idk
@@ -104,6 +107,7 @@ fn juice_animation_ix_response(
     trigger: Trigger<AnimIxChange<PlayerAnim>>,
     player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>,
     mut commands: Commands,
+    sound_root: Res<SoundRoot>,
 ) {
     let event = trigger.event();
     let (pos, anim) = player.single();
@@ -114,7 +118,9 @@ fn juice_animation_ix_response(
                 AnimMan::new(RunSmokeAnim::Run1),
                 pos.translated(offset).to_spatial(ZIX_PLAYER + 1.01),
             ));
-            commands.spawn(SoundEffect::PlayerRunStep);
+            commands
+                .spawn(SoundEffect::PlayerRunStep)
+                .set_parent(sound_root.eid());
         }
         _ => {}
     }
@@ -123,6 +129,7 @@ fn juice_animation_ix_response(
 fn juice_wall_slide(
     player: Query<(&AnimMan<PlayerAnim>, &Pos), With<Player>>,
     mut commands: Commands,
+    sound_root: Res<SoundRoot>,
 ) {
     let (anim, player_pos) = player.single();
     if matches!(
@@ -142,7 +149,9 @@ fn juice_wall_slide(
                 // Make smokes closer to bottom on top, and (hopefully) give unique so no flicker
                 .to_spatial(ZIX_PLAYER - ((player_pos.y + 10000.0) / 100000.0)),
         ));
-        commands.spawn((SoundEffect::PlayerWallSlide, OneSound::Ignore));
+        commands
+            .spawn((SoundEffect::PlayerWallSlide, OneSound::Ignore))
+            .set_parent(sound_root.eid());
     }
 }
 
@@ -151,6 +160,7 @@ fn player_impact_sounds(
     player: Query<&StaticRxCtrl, With<Player>>,
     colls: Res<StaticColls>,
     consts: Res<PlayerJuiceConsts>,
+    sound_root: Res<SoundRoot>,
 ) {
     let srx_ctrl = player.single();
     for coll in colls.get_refs(&srx_ctrl.coll_keys) {
@@ -161,11 +171,13 @@ fn player_impact_sounds(
         let frac = ((mag - consts.impact_sound_floor)
             / (consts.impact_sound_ceiling - consts.impact_sound_floor))
             .min(1.0);
-        commands.spawn((
-            SoundEffect::PlayerImpactRegular,
-            SoundMult(frac * consts.impact_sound_mult),
-            OneSound::Ignore,
-        ));
+        commands
+            .spawn((
+                SoundEffect::PlayerImpactRegular,
+                SoundMult(frac * consts.impact_sound_mult),
+                OneSound::Ignore,
+            ))
+            .set_parent(sound_root.eid());
     }
 }
 
