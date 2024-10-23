@@ -94,27 +94,29 @@ impl<LightAnim: LightAnimRadius> Component for Light<LightAnim> {
                 .set_parent(light_root_eid)
                 .id();
 
-            // Testing
             let mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
             let mesh: Mesh2dHandle = world.resource_mut::<Assets<Mesh>>().add(mesh).into();
             let mat = world
                 .resource_mut::<Assets<LightCutoutMat>>()
                 .add(LightCutoutMat::new(image_hand.clone()));
-            world
+            let actual_mesh_eid = world
                 .commands()
                 .spawn((
+                    Name::new("light_actual_mesh"),
                     mesh,
                     mat,
                     SpatialBundle::default(),
                     LightLayer::to_render_layers(),
                 ))
-                .set_parent(light_root_eid);
+                .set_parent(light_root_eid)
+                .id();
 
             // Make the claim
             world.commands().entity(eid).insert(LightClaimed {
                 rl: rl_usize,
                 image: image_hand,
                 camera: camera_eid,
+                actual_mesh: actual_mesh_eid,
                 radius: LightAnim::RADIUS,
             });
             world.commands().entity(eid).remove::<Light<LightAnim>>();
@@ -127,6 +129,7 @@ pub struct LightClaimed {
     rl: usize,
     image: Handle<Image>,
     camera: Entity,
+    actual_mesh: Entity,
     pub radius: f32,
 }
 impl Component for LightClaimed {
@@ -136,9 +139,11 @@ impl Component for LightClaimed {
             let myself = world.get::<Self>(eid).expect("myself");
             let rl = myself.rl;
             let camera = myself.camera;
+            let actual_mesh = myself.actual_mesh;
             let mut manager = world.resource_mut::<LightManager>();
             manager.free(rl);
             world.commands().entity(camera).despawn_recursive();
+            world.commands().entity(actual_mesh).despawn_recursive();
         });
     }
 }

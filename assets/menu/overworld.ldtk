@@ -1706,7 +1706,7 @@
 			"__cHei": 32,
 			"identifier": "Platforms",
 			"uid": 2,
-			"relPath": "../environment/dirt/dirt_static.png",
+			"relPath": "../environment/dirt/dirt_platforms.png",
 			"embedAtlas": null,
 			"pxWid": 256,
 			"pxHei": 256,

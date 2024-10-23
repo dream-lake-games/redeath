@@ -3,6 +3,7 @@ use crate::prelude::*;
 mod camera_movement;
 pub mod camera_shake;
 
+pub use camera_movement::camera_clamp_logic;
 pub use camera_shake::*;
 
 /// The set that contains all camera related systems

@@ -30,7 +30,7 @@ impl SavefileButtonBundle {
 
 fn on_enter(mut commands: Commands) {
     commands.spawn(MenuImage::new("menu/savefile.png"));
-    commands.trigger(EndTransition);
+    commands.trigger(EndTransition::center());
     commands.insert_resource(SavefileInput {
         selected: SavefileKind::A,
         block_move: None,

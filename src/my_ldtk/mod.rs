@@ -21,7 +21,12 @@ pub struct MyLdtkMaintSet;
 /// What leveliid spawned this thing?
 #[derive(Component, Clone, Debug, Reflect)]
 pub struct SpawnedLid {
-    iid: String,
+    pub iid: String,
+}
+impl SpawnedLid {
+    pub fn new(iid: String) -> Self {
+        Self { iid }
+    }
 }
 /// Attached to entities when it is known that the level that spawned them IS active
 #[derive(Component, Clone, Debug, Reflect)]
@@ -34,10 +39,18 @@ pub struct SpawnedLidInactive;
 #[derive(Component, Clone, Debug, Default, Reflect)]
 pub struct PhysicalLid {
     /// Is the entity currently in the last_known_iid?
-    in_bounds: bool,
+    pub in_bounds: bool,
     /// What is the last known level iid this entity was in?
     /// NOTE: None on initialization
-    last_known_iid: Option<String>,
+    pub last_known_iid: Option<String>,
+}
+impl PhysicalLid {
+    pub fn new(iid: String) -> Self {
+        Self {
+            in_bounds: true,
+            last_known_iid: Some(iid),
+        }
+    }
 }
 /// Attached to entities when it is known that the level they are phsyically in (pos) IS active
 #[derive(Component, Clone, Debug, Reflect)]
@@ -54,6 +67,8 @@ pub struct PhysicalLidOob;
 #[derive(Resource, Clone, Debug, Default, Reflect)]
 pub struct LevelRects {
     pub map: HashMap<String, Rect>,
+    /// Just a convenience since most things just want this
+    pub current: Option<Rect>,
 }
 impl LevelRects {
     pub fn get(&self, key: &str) -> Option<&Rect> {
@@ -97,6 +112,7 @@ impl Plugin for MyLdtkPlugin {
             SpawnedLidActive,
             PhysicalLid,
             PhysicalLidActive,
+            PhysicalLidOob,
             MyLdtkChild
         );
 

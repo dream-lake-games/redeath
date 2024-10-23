@@ -17,10 +17,10 @@ struct FireflyConsts {
 impl Default for FireflyConsts {
     fn default() -> Self {
         Self {
-            flap_time_range: 0.1..0.6,
-            flap_strength_range: 5.0..30.0,
+            flap_time_range: 0.05..0.7,
+            flap_strength_range: 3.0..40.0,
             firefly_gravity: 0.2,
-            launch_x_range: 15.0..25.0,
+            launch_x_range: 15.0..30.0,
             max_ver_speed: 100.0,
             ground_wrong_x_prob: 0.16,
         }

@@ -76,12 +76,15 @@ fn set_spawn_point_on_level_change(
 
 fn spawn_player(
     mut commands: Commands,
-    active_spawn_pos: Query<&Pos, With<SpawnPointActive>>,
+    active_spawn_pos: Query<(&Pos, &SpawnedLid), (With<SpawnPointActive>, Without<DynamicCamera>)>,
     world_state: Res<State<WorldState>>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
     root: Res<WorldRoot>,
+    mut camera_pos: Query<&mut Pos, (With<DynamicCamera>, Without<SpawnPointActive>)>,
+    mut camera_mode: ResMut<DynamicCameraMode>,
+    level_rects: Res<LevelRects>,
 ) {
-    let spawn_pos = match active_spawn_pos.get_single() {
+    let (spawn_pos, spawn_spawned_lid) = match active_spawn_pos.get_single() {
         Ok(pos) => pos,
         Err(QuerySingleError::NoEntities(_)) => {
             warn!("no spawn points");
@@ -92,15 +95,28 @@ fn spawn_player(
             return;
         }
     };
-    commands
-        .spawn(PlayerBundle::new(spawn_pos.clone()))
-        .set_parent(root.eid());
+    let player_eid = commands
+        .spawn(PlayerBundle::new(
+            spawn_pos.clone(),
+            spawn_spawned_lid.iid.clone(),
+        ))
+        .set_parent(root.eid())
+        .id();
     let mut world_state = world_state.get().clone();
     world_state.player_meta_state = PlayerMetaState::Playing;
     next_meta_state.set(world_state.to_meta_state());
+    let mut cam_pos = camera_pos.single_mut();
+    *cam_pos = spawn_pos.clone();
+    *camera_mode = DynamicCameraMode::Follow(player_eid);
+    camera_clamp_logic(&mut cam_pos, &level_rects);
 }
 
-pub(super) fn register_spawn(app: &mut App) {
+fn exit_spawning(player: Query<&Pos, With<Player>>, mut commands: Commands) {
+    let player_pos = player.single();
+    commands.trigger(EndTransition::default().with_world_pos(player_pos.as_vec2()));
+}
+
+pub(super) fn register_player_spawn(app: &mut App) {
     app.add_plugins(MyLdtkEntityPlugin::<SpawnPointBundle>::new(
         "Entities",
         "SpawnPoint",
@@ -109,8 +125,7 @@ pub(super) fn register_spawn(app: &mut App) {
 
     app.add_systems(
         PreUpdate,
-        spawn_player
-            .run_if(in_state(PlayerMetaState::Spawning))
-            .run_if(in_state(MetaStateKind::World)),
+        spawn_player.run_if(in_state(PlayerMetaState::Spawning)),
     );
+    app.add_systems(OnExit(PlayerMetaState::Spawning), exit_spawning);
 }

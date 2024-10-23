@@ -2,10 +2,11 @@ use crate::prelude::*;
 
 mod player_animation;
 mod player_bundle;
+mod player_death;
 mod player_invariants;
 mod player_juice;
 mod player_movement;
-mod spawn;
+mod player_spawn;
 
 // NOTE: Even though stuff in here is pub it's only available in player
 // A.k.a I'm too lazy to write pub(super)
@@ -15,6 +16,10 @@ mod playerlude {
     /// For handling all player movement
     #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
     pub struct PlayerMovementSet;
+
+    /// For anything that can kill the player
+    #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
+    pub struct PlayerDeathSet;
 
     /// For handling all player animation
     #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
@@ -134,9 +139,10 @@ impl Plugin for PlayerPlugin {
         );
 
         player_animation::register_player_animation(app);
+        player_death::register_player_death(app);
         player_juice::register_player_juice(app);
         player_invariants::register_player_invariants(app);
         player_movement::register_player_movement(app);
-        spawn::register_spawn(app);
+        player_spawn::register_player_spawn(app);
     }
 }

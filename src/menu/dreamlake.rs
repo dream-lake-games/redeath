@@ -4,7 +4,7 @@ use super::menu_common::*;
 
 fn on_enter(mut commands: Commands) {
     commands.spawn(MenuImage::new("menu/dreamlake.png"));
-    commands.trigger(EndTransition);
+    commands.trigger(EndTransition::center());
 }
 
 fn watch_input(butts: Res<ButtInput>, mut commands: Commands) {

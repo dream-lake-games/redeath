@@ -10,6 +10,7 @@ fn update_my_level_rects(
     mut level_rects: ResMut<LevelRects>,
     ldtk_projects: Query<&Handle<LdtkProject>>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
+    selection: Option<Res<LevelSelection>>,
 ) {
     let Ok(project) = ldtk_projects.get_single() else {
         return;
@@ -35,6 +36,10 @@ fn update_my_level_rects(
             ),
         };
         level_rects.set(level_iid.to_string(), level_bounds);
+    }
+    level_rects.current = None;
+    if let Some(LevelSelection::Iid(iid)) = selection.map(|inner| inner.into_inner()) {
+        level_rects.current = level_rects.map.get(&iid.to_string()).cloned()
     }
 }
 

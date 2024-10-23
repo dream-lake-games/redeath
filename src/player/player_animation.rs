@@ -144,13 +144,9 @@ pub(super) fn register_player_animation(app: &mut App) {
             .before(AnimSet)
             .in_set(PlayerSet)
             .in_set(PlayerAnimationSet)
-            .after(PlayerMovementSet)
+            .after(PlayerDeathSet)
             .after(InputSet)
             .after(PhysicsSet)
-            .run_if(
-                in_state(PlayerMetaState::Puppet)
-                    .or_else(in_state(PlayerMetaState::Playing))
-                    .or_else(in_state(PlayerMetaState::Dying)),
-            ),
+            .run_if(in_state(PlayerMetaState::Puppet).or_else(in_state(PlayerMetaState::Playing))),
     );
 }

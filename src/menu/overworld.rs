@@ -41,7 +41,7 @@ fn update_loading(
 
 fn on_exit_loading(mut commands: Commands) {
     commands.trigger(CleanupMenuTemp);
-    commands.trigger(EndTransition);
+    commands.trigger(EndTransition::center());
 }
 
 fn on_enter_overworld() {}

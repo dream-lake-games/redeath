@@ -6,6 +6,8 @@ pub(super) struct PlayerBundle {
     name: Name,
     player: Player,
     pos: Pos,
+    spawned_lid: SpawnedLid,
+    physical_lid: PhysicalLid,
     spatial: SpatialBundle,
     dyno: Dyno,
     gravity: Gravity,
@@ -15,7 +17,7 @@ pub(super) struct PlayerBundle {
     light: Light<PlayerLightAnim>,
 }
 impl PlayerBundle {
-    pub(super) fn new(pos: Pos) -> Self {
+    pub(super) fn new(pos: Pos, lid: String) -> Self {
         let size = UVec2::new(8, 11);
         let offset = Vec2::new(0.0, -1.5);
         let fsize = size.as_vec2();
@@ -40,6 +42,8 @@ impl PlayerBundle {
             name: Name::new("player"),
             player: Player,
             pos,
+            spawned_lid: SpawnedLid::new(lid.clone()),
+            physical_lid: PhysicalLid::new(lid.clone()),
             spatial: pos.to_spatial(ZIX_PLAYER),
             dyno: default(),
             gravity: default(),

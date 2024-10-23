@@ -28,6 +28,32 @@ fn move_camera(
     }
 }
 
+pub fn camera_clamp_logic(pos: &mut Pos, level_rects: &LevelRects) {
+    let Some(bounds) = level_rects.current else {
+        return;
+    };
+    pos.x = pos.x.clamp(
+        bounds.min.x + SCREEN_WIDTH_f32 / 2.0,
+        bounds.max.x - SCREEN_WIDTH_f32 / 2.0,
+    );
+    pos.y = pos.y.clamp(
+        bounds.min.y + SCREEN_HEIGHT_f32 / 2.0,
+        bounds.max.y - SCREEN_HEIGHT_f32 / 2.0,
+    );
+}
+
+// No matter the mode, always keep the camera inside the current level if there's a level
+fn clamp_camera_in_level(
+    mut dynamic_camera: Query<&mut Pos, With<DynamicCamera>>,
+    level_rects: Res<LevelRects>,
+) {
+    let Ok(mut pos) = dynamic_camera.get_single_mut() else {
+        warn!("yikes clamp_camera_in_level");
+        return;
+    };
+    camera_clamp_logic(&mut pos, &level_rects);
+}
+
 fn follow_dynamic_camera(
     dynamic_camera: Query<&Pos, With<DynamicCamera>>,
     mut followers: Query<&mut Transform, (With<FollowDynamicCamera>, Without<DynamicCamera>)>,
@@ -38,8 +64,6 @@ fn follow_dynamic_camera(
         return;
     };
     for mut tran in &mut followers {
-        // tran.translation.x = leader.x;
-        // tran.translation.y = leader.y;
         tran.translation.x = leader.x + camera_shake.get_offset().x;
         tran.translation.y = leader.y + camera_shake.get_offset().y;
     }
@@ -48,7 +72,7 @@ fn follow_dynamic_camera(
 pub(super) fn register_camera_movement(app: &mut App) {
     app.add_systems(
         PostUpdate,
-        (move_camera, follow_dynamic_camera)
+        (move_camera, clamp_camera_in_level, follow_dynamic_camera)
             .chain()
             .in_set(CameraSet)
             .after(PhysicsSet),

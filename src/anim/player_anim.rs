@@ -56,6 +56,14 @@ derive_anim!(
         #[size(22, 22)]
         #[length(8)]
         WallPush,
+        #[file("player/movement/death1.png")]
+        #[size(22, 22)]
+        #[length(9)]
+        #[next(AfterDeath)]
+        Death,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        AfterDeath,
     }
 );
 type PlayerAnimPlugin = AnimDefnPlugin<PlayerAnim, AnimTimeRes>;
