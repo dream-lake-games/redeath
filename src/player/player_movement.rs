@@ -28,7 +28,7 @@ impl Default for PlayerMovementConsts {
         Self {
             max_hor_speed: 100.0,
             hor_acc: 600.0,
-            air_hor_friction: 0.66,
+            air_hor_friction: 0.75,
             max_ver_speed: 190.0,
             max_wall_slide_ver_speed: 40.0,
             over_max_slowdown_acc: 960.0,

@@ -67,18 +67,18 @@ fn update_parallaxes(
     let diff = last_camera_tran.0.as_vec2() - cam_pos.as_vec2();
     last_camera_tran.0 = cam_pos.clone();
     for (mut tran, mut px) in &mut pxs {
-        px.scratch += diff.x * px.mult;
+        px.scratch = tran.translation.x + diff.x * px.mult;
         while px.scratch > px.wrap_size / 2.0 {
             px.scratch += tran.translation.x.signum() * -1.0 * px.wrap_size;
         }
-        tran.translation.x = px.scratch.round();
+        tran.translation.x = px.scratch;
     }
     for (mut tran, mut py) in &mut pys {
-        py.scratch += diff.y * py.mult;
+        py.scratch = tran.translation.y + diff.y * py.mult;
         while tran.translation.y.abs() > py.wrap_size / 2.0 {
             tran.translation.y += tran.translation.y.signum() * -1.0 * py.wrap_size;
         }
-        tran.translation.y = py.scratch.round();
+        tran.translation.y = py.scratch;
     }
 }
 
