@@ -6,49 +6,6 @@ use bevy::{
 use crate::prelude::*;
 
 #[derive(AsBindGroup, Debug, Clone, Asset, Reflect, PartialEq)]
-pub struct SimplePaletteMat {
-    #[texture(1)]
-    #[sampler(2)]
-    input: Handle<Image>,
-    #[uniform(3)]
-    zero: Vec4,
-    #[uniform(4)]
-    one: Vec4,
-    #[uniform(5)]
-    two: Vec4,
-    #[uniform(6)]
-    three: Vec4,
-    #[uniform(7)]
-    four: Vec4,
-    #[uniform(8)]
-    five: Vec4,
-    #[uniform(9)]
-    six: Vec4,
-    #[uniform(10)]
-    seven: Vec4,
-}
-impl Material2d for SimplePaletteMat {
-    fn fragment_shader() -> ShaderRef {
-        "shaders/simple_palette_mat.wgsl".into()
-    }
-}
-impl SimplePaletteMat {
-    pub fn new(input: Handle<Image>, palette: Palette) -> Self {
-        Self {
-            input,
-            zero: color_as_vec4(palette.zero),
-            one: color_as_vec4(palette.one),
-            two: color_as_vec4(palette.two),
-            three: color_as_vec4(palette.three),
-            four: color_as_vec4(palette.four),
-            five: color_as_vec4(palette.five),
-            six: color_as_vec4(palette.six),
-            seven: color_as_vec4(palette.seven),
-        }
-    }
-}
-
-#[derive(AsBindGroup, Debug, Clone, Asset, Reflect, PartialEq)]
 pub struct ShiftedPaletteMat {
     #[texture(1)]
     #[sampler(2)]
@@ -83,14 +40,24 @@ impl ShiftedPaletteMat {
         Self {
             input,
             shift,
-            zero: color_as_vec4(palette.zero),
-            one: color_as_vec4(palette.one),
-            two: color_as_vec4(palette.two),
-            three: color_as_vec4(palette.three),
-            four: color_as_vec4(palette.four),
-            five: color_as_vec4(palette.five),
-            six: color_as_vec4(palette.six),
-            seven: color_as_vec4(palette.seven),
+            zero: color_as_vec4(palette[0]),
+            one: color_as_vec4(palette[1]),
+            two: color_as_vec4(palette[2]),
+            three: color_as_vec4(palette[3]),
+            four: color_as_vec4(palette[4]),
+            five: color_as_vec4(palette[5]),
+            six: color_as_vec4(palette[6]),
+            seven: color_as_vec4(palette[7]),
         }
+    }
+    pub fn take_shifted_palette(&mut self, shift_amt: i32, palette: &Palette) {
+        self.zero = color_as_vec4(palette[0 + shift_amt]);
+        self.one = color_as_vec4(palette[1 + shift_amt]);
+        self.two = color_as_vec4(palette[2 + shift_amt]);
+        self.three = color_as_vec4(palette[3 + shift_amt]);
+        self.four = color_as_vec4(palette[4 + shift_amt]);
+        self.five = color_as_vec4(palette[5 + shift_amt]);
+        self.six = color_as_vec4(palette[6 + shift_amt]);
+        self.seven = color_as_vec4(palette[7 + shift_amt]);
     }
 }

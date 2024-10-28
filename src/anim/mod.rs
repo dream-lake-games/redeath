@@ -14,6 +14,20 @@ pub use player_anim::*;
 pub use star_anim::*;
 pub use transition_anim::TransitionAnim;
 
+#[derive(Bundle)]
+pub struct EphemeralAnim<StateMachine: AnimStateMachine> {
+    anim: AnimMan<StateMachine>,
+    spat: SpatialBundle,
+}
+impl<StateMachine: AnimStateMachine> EphemeralAnim<StateMachine> {
+    pub fn new(anim: StateMachine, flip_x: bool, pos: Pos, zix: f32) -> Self {
+        Self {
+            anim: AnimMan::new(anim).with_flip_x(flip_x),
+            spat: pos.to_spatial(zix),
+        }
+    }
+}
+
 #[derive(Resource, Clone, Debug, Default, Reflect)]
 pub struct AnimTimeRes {
     class_map: HashMap<AnimTimeClass, f32>,

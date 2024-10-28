@@ -158,7 +158,6 @@ fn setup_layer_materials(
     camera_targets: Res<CameraTargets>,
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
-    mut simple_palette_mats: ResMut<Assets<SimplePaletteMat>>,
     mut shifted_palette_mats: ResMut<Assets<ShiftedPaletteMat>>,
     mut light_mats: ResMut<Assets<LightMat>>,
     base_lights: Res<BaseLights>,
@@ -172,28 +171,31 @@ fn setup_layer_materials(
 
     camera_targets.initialize(&mut images);
 
-    /// Sets up a layer that applies palette transform but no shifting or lighting
+    /// Sets up a layer that applies palette transform and shifting but no lighting
     fn setup_simple_layer(
         name: &str,
         image: Handle<Image>,
+        shift: Handle<Image>,
         zix: i32,
         palette: Palette,
         commands: &mut Commands,
         meshes: &mut Assets<Mesh>,
-        simple_palette_mats: &mut Assets<SimplePaletteMat>,
+        shifted_palette_mats: &mut Assets<ShiftedPaletteMat>,
         squash_layer: RenderLayers,
         root: Entity,
     ) {
-        let paletted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
-        let paletted_mesh: Mesh2dHandle = meshes.add(paletted_mesh).into();
-        let paletted_mat = simple_palette_mats.add(SimplePaletteMat::new(image, palette));
+        // Apply the palette shift
+        let shifted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+        let shifted_mesh: Mesh2dHandle = meshes.add(shifted_mesh).into();
+        let shifted_mat = shifted_palette_mats.add(ShiftedPaletteMat::new(image, shift, palette));
+        // Then draw
         commands
             .spawn((
-                Name::new(name.to_string()),
-                paletted_mesh,
-                paletted_mat,
+                Name::new(format!("{name}_intermediate_image")),
+                shifted_mesh,
+                shifted_mat,
                 SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
-                squash_layer,
+                squash_layer.clone(),
             ))
             .set_parent(root);
     }
@@ -201,55 +203,60 @@ fn setup_layer_materials(
     setup_simple_layer(
         "bg_image",
         camera_targets.bg_target.clone(),
+        camera_targets.palette_target.clone(),
         BgLayer::to_i32(),
         palette.clone(),
         &mut commands,
         meshes.as_mut(),
-        simple_palette_mats.as_mut(),
+        shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
     );
     setup_simple_layer(
         "static_image",
         camera_targets.static_target.clone(),
+        camera_targets.palette_target.clone(),
         StaticLayer::to_i32(),
         palette.clone(),
         &mut commands,
         meshes.as_mut(),
-        simple_palette_mats.as_mut(),
+        shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
     );
     setup_simple_layer(
         "fg_image",
         camera_targets.fg_target.clone(),
+        camera_targets.palette_target.clone(),
         FgLayer::to_i32(),
         palette.clone(),
         &mut commands,
         meshes.as_mut(),
-        simple_palette_mats.as_mut(),
+        shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
     );
     setup_simple_layer(
         "menu_image",
         camera_targets.menu_target.clone(),
+        camera_targets.palette_target.clone(),
         MenuLayer::to_i32(),
         palette.clone(),
         &mut commands,
         meshes.as_mut(),
-        simple_palette_mats.as_mut(),
+        shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
     );
     setup_simple_layer(
         "transition_image",
         camera_targets.transition_target.clone(),
+        camera_targets.palette_target.clone(),
         TransitionLayer::to_i32(),
         palette.clone(),
         &mut commands,
         meshes.as_mut(),
-        simple_palette_mats.as_mut(),
+        shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
     );

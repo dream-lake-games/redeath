@@ -48,6 +48,9 @@ defn_effects!([
     PlayerRunStep,
     "sound/player/jump.ogg",
     0.005,
+    PlayerThunder,
+    "sound/player/thunder.ogg",
+    0.01,
 ]);
 
 pub(super) fn register_effect_defns(app: &mut App) {

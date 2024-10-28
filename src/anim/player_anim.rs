@@ -114,9 +114,37 @@ derive_anim!(
 );
 type RunSmokeAnimPlugin = AnimDefnPlugin<RunSmokeAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum DashDieAnim {
+        #[default]
+        #[file("player/movement/dash_die.png")]
+        #[size(22, 22)]
+        #[length(10)]
+        #[next(Despawn)]
+        DashDie,
+    }
+);
+type DashDieAnimPlugin = AnimDefnPlugin<DashDieAnim, AnimTimeRes>;
+
+derive_anim!(
+    pub enum DashFadeAnim {
+        #[default]
+        #[file("player/movement/dash_fade.png")]
+        #[size(22, 22)]
+        #[length(3)]
+        #[next(Despawn)]
+        #[render_layers(PaletteLayer)]
+        #[fps(8.0)]
+        DashFade,
+    }
+);
+type DashFadeAnimPlugin = AnimDefnPlugin<DashFadeAnim, AnimTimeRes>;
+
 pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(PlayerAnimPlugin::default());
     app.add_plugins(JumpSmokeAnimPlugin::default());
     app.add_plugins(WallSlideSmokeAnimPlugin::default());
     app.add_plugins(RunSmokeAnimPlugin::default());
+    app.add_plugins(DashDieAnimPlugin::default());
+    app.add_plugins(DashFadeAnimPlugin::default());
 }

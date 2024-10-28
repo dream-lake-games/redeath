@@ -8,18 +8,29 @@ struct PlayerJuiceConsts {
     /// Above this speed, sound of impact will be the same
     impact_sound_ceiling: f32,
     impact_sound_mult: f32,
+    // Time to do the global palette shift after dashing
+    dash_global_shift_time: f32,
 }
 impl Default for PlayerJuiceConsts {
     fn default() -> Self {
         Self {
             impact_sound_floor: 2.0,
             impact_sound_ceiling: 144.0,
-            impact_sound_mult: 0.05,
+            impact_sound_mult: 0.08,
+            dash_global_shift_time: 0.2,
         }
     }
 }
 
-fn juice_after_dash(trigger: Trigger<DashEvent>, mut camera_shake: ResMut<CameraShake>) {
+fn juice_after_dash(
+    trigger: Trigger<DashEvent>,
+    mut camera_shake: ResMut<CameraShake>,
+    mut commands: Commands,
+    player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>,
+    world_detail_root: Res<WorldDetailRoot>,
+    mut global_shift: ResMut<GlobalPaletteShift>,
+    consts: Res<PlayerJuiceConsts>,
+) {
     let event = trigger.event();
 
     // Camera shake
@@ -43,6 +54,39 @@ fn juice_after_dash(trigger: Trigger<DashEvent>, mut camera_shake: ResMut<Camera
         0..=0
     };
     camera_shake.shake(0.1, x_range, y_range);
+
+    // Dash die
+    let (player_pos, player_anim) = player.single();
+    commands
+        .spawn(EphemeralAnim::new(
+            DashDieAnim::DashDie,
+            player_anim.get_flip_x(),
+            *player_pos,
+            ZIX_PLAYER + 1.0,
+        ))
+        .set_parent(world_detail_root.eid());
+
+    // Global shift
+    global_shift.add(consts.dash_global_shift_time / 2.0, 1);
+    global_shift.add(consts.dash_global_shift_time, 1);
+
+    // Thunder
+    commands.spawn(SoundEffect::PlayerThunder);
+}
+
+fn juice_during_dash(
+    player: Query<(&Pos, &AnimMan<PlayerAnim>, &Dashing), With<Player>>,
+    mut commands: Commands,
+) {
+    let Ok((pos, anim, dashing)) = player.get_single() else {
+        return;
+    };
+    commands.spawn(EphemeralAnim::new(
+        DashFadeAnim::DashFade,
+        anim.get_flip_x(),
+        *pos,
+        ZIX_PLAYER - dashing.time_left,
+    ));
 }
 
 fn juice_after_jump(
@@ -68,10 +112,7 @@ fn juice_after_jump(
         JumpKind::FromRightWall => (vec![JumpSmokeAnim::Wall1].pick(), Vec2::new(0.0, 0.0), true),
     };
     let smoke_pos = player_pos.translated(offset);
-    let mut man = AnimMan::new(anim);
-    if flipx {
-        man = man.with_flip_x();
-    }
+    let man = AnimMan::new(anim).with_flip_x(flipx);
     commands.spawn((man, smoke_pos.to_spatial(ZIX_PLAYER + 1.0)));
 
     // Sound
@@ -89,10 +130,7 @@ fn juice_animation_state_response(
     let (pos, anim) = player.single();
     match trigger.event().next {
         PlayerAnim::Land => {
-            let mut man = AnimMan::new(JumpSmokeAnim::Land1);
-            if anim.get_flip_x() {
-                man = man.with_flip_x();
-            }
+            let man = AnimMan::new(JumpSmokeAnim::Land1).with_flip_x(anim.get_flip_x());
             commands.spawn((
                 man,
                 pos.translated(Vec2::new(0.0, -3.0))
@@ -136,10 +174,10 @@ fn juice_wall_slide(
         anim.get_state(),
         PlayerAnim::WallSlide | PlayerAnim::WallSlideExhausted
     ) {
-        let mut man = AnimMan::new(vec![WallSlideSmokeAnim::WallSlide1].pick());
+        let man = AnimMan::new(vec![WallSlideSmokeAnim::WallSlide1].pick())
+            .with_flip_x(anim.get_flip_x());
         let mut offset = Vec2::new(0.0, -4.0);
         if anim.get_flip_x() {
-            man = man.with_flip_x();
             offset.x *= -1.0;
         }
         commands.spawn((
@@ -192,7 +230,7 @@ pub(super) fn register_player_juice(app: &mut App) {
 
     app.add_systems(
         Update,
-        (juice_wall_slide, player_impact_sounds)
+        (juice_during_dash, juice_wall_slide, player_impact_sounds)
             .in_set(PlayerSet)
             .after(PhysicsSet)
             .run_if(in_state(PlayerMetaState::Playing).or_else(in_state(PlayerMetaState::Puppet))),

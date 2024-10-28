@@ -61,6 +61,9 @@ fn normal_movement_animation(
     // Dashing overrides everything
     if dashing.is_some() {
         anim.set_state(PlayerAnim::Dash);
+        if dyno.vel.x.abs() > 0.1 {
+            anim.set_flip_x(dyno.vel.x < 0.0);
+        }
         return;
     }
 

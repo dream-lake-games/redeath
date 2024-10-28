@@ -69,13 +69,13 @@ fn quantize(color: vec3<f32>) -> i32 {
 
 // wgsl is annoying and/or i am bad at it
 fn hacky_to_int(val: f32) -> i32 {
-    if (val < 0.1) {
+    if (val < 0.01) {
         return 0;
-    } else if (val < 0.2) {
+    } else if (val < 0.02) {
         return 1;
-    } else if (val < 0.3) {
+    } else if (val < 0.07) {
         return 2;
-    } else if (val < 0.4) {
+    } else if (val < 0.12) {
         return 3;
     } else if (val < 0.5) {
         return 4;
@@ -89,14 +89,14 @@ fn hacky_to_int(val: f32) -> i32 {
 }
 
 fn get_shift(shift: vec4<f32>) -> i32 {
-    if (shift.x > 0.0) {
-        return 1;
-    } else {
-        return 0;
-    }
-    // let up = hacky_to_int(shift.x);
-    // let down = hacky_to_int(shift.y);
-    // // return up - down;
+    // if (shift.x > 0.0) {
+    //     return 1;
+    // } else {
+    //     return 0;
+    // }
+    let up = hacky_to_int(shift.x);
+    let down = hacky_to_int(shift.y);
+    return up - down;
     // return up;
 }
 

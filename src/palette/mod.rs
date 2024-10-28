@@ -2,8 +2,10 @@ use bevy::sprite::Material2dPlugin;
 
 use crate::prelude::*;
 
+pub mod global_shift;
 pub mod palette_mats;
 
+pub use global_shift::*;
 pub use palette_mats::*;
 
 pub fn color_as_vec4(color: Color) -> Vec4 {
@@ -77,7 +79,8 @@ impl Plugin for PalettePlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(BERRY_NEBULA.clone());
         // app.insert_resource(WAVERATOR.clone());
-        app.add_plugins(Material2dPlugin::<SimplePaletteMat>::default());
         app.add_plugins(Material2dPlugin::<ShiftedPaletteMat>::default());
+
+        global_shift::register_global_shift(app);
     }
 }
