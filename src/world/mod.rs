@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 mod animals;
+mod plants;
 mod platforms;
 mod world_loading;
 
@@ -12,6 +13,7 @@ impl Plugin for WorldPlugin {
         app.add_plugins(platforms::PlatformsPlugin);
 
         animals::register_animals(app);
+        plants::register_plants(app);
         world_loading::register_world_loading(app);
     }
 }

@@ -71,6 +71,74 @@ fn post_ldtk_entity_blessing<B: MyLdtkEntity>(
     }
 }
 
+struct InternalSimpleSpriteEntity {
+    name: String,
+    path: String,
+    pos: Pos,
+    zix: f32,
+    rl: RenderLayers,
+}
+impl Component for InternalSimpleSpriteEntity {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+    fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
+        hooks.on_add(|mut world, eid, _| {
+            let Self {
+                name,
+                path,
+                pos,
+                zix,
+                rl,
+            } = world.get::<Self>(eid).unwrap();
+            let (name, path, pos, zix, rl) = (
+                name.clone(),
+                path.clone(),
+                pos.clone(),
+                zix.clone(),
+                rl.clone(),
+            );
+            let hand = world.resource::<AssetServer>().load(&path);
+            world.commands().entity(eid).insert((
+                Name::new(name),
+                SpriteBundle {
+                    texture: hand,
+                    transform: pos.to_spatial(zix).transform,
+                    ..default()
+                },
+                rl,
+            ));
+        });
+    }
+}
+
+pub trait SimpleSpriteEntity: Component {
+    const NAME: &'static str;
+    const PATH: &'static str;
+    const ZIX: f32;
+    type Root: RootKind;
+    type RenderLayers: Layer;
+}
+
+#[derive(Bundle)]
+pub struct SimpleSpriteBundle<Thing: SimpleSpriteEntity> {
+    pc: PhantomComponent<Thing>,
+    internal: InternalSimpleSpriteEntity,
+}
+impl<Thing: SimpleSpriteEntity> MyLdtkEntity for SimpleSpriteBundle<Thing> {
+    type Root = Thing::Root;
+    fn from_ldtk(pos: Pos, _fields: &HashMap<String, FieldValue>, _iid: String) -> Self {
+        Self {
+            pc: default(),
+            internal: InternalSimpleSpriteEntity {
+                name: Thing::NAME.to_string(),
+                path: Thing::PATH.to_string(),
+                pos,
+                zix: Thing::ZIX,
+                rl: Thing::RenderLayers::to_render_layers(),
+            },
+        }
+    }
+}
+
 pub struct MyLdtkEntityPlugin<B: MyLdtkEntity> {
     layer_id: &'static str,
     entity_id: &'static str,
