@@ -134,7 +134,7 @@ derive_anim!(
         #[length(3)]
         #[next(Despawn)]
         #[render_layers(PaletteLayer)]
-        #[fps(8.0)]
+        #[fps(6.0)]
         DashFade,
     }
 );

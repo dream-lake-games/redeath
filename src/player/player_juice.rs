@@ -10,6 +10,8 @@ struct PlayerJuiceConsts {
     impact_sound_mult: f32,
     // Time to do the global palette shift after dashing
     dash_global_shift_time: f32,
+    // How long to stop time after dashing
+    dash_stop_time_time: f32,
 }
 impl Default for PlayerJuiceConsts {
     fn default() -> Self {
@@ -18,6 +20,7 @@ impl Default for PlayerJuiceConsts {
             impact_sound_ceiling: 144.0,
             impact_sound_mult: 0.08,
             dash_global_shift_time: 0.2,
+            dash_stop_time_time: 0.1,
         }
     }
 }
@@ -30,6 +33,7 @@ fn juice_after_dash(
     world_detail_root: Res<WorldDetailRoot>,
     mut global_shift: ResMut<GlobalPaletteShift>,
     consts: Res<PlayerJuiceConsts>,
+    mut bullet_time: ResMut<BulletTime>,
 ) {
     let event = trigger.event();
 
@@ -72,6 +76,9 @@ fn juice_after_dash(
 
     // Thunder
     commands.spawn(SoundEffect::PlayerThunder);
+
+    // Bullet time
+    bullet_time.set_temp(BulletTimeSpeed::Stopped, consts.dash_stop_time_time);
 }
 
 fn juice_during_dash(

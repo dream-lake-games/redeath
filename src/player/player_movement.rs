@@ -33,9 +33,9 @@ impl Default for PlayerMovementConsts {
             max_wall_slide_ver_speed: 40.0,
             over_max_slowdown_acc: 960.0,
             jump_speed: 190.0,
-            post_jump_time: 0.1,
+            post_jump_time: 0.136,
             dash_speed: 160.0,
-            dash_time: 0.15,
+            dash_time: 0.25,
             coyote_time: 0.1,
         }
     }
