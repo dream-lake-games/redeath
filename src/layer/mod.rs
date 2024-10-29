@@ -33,6 +33,8 @@ macro_rules! decl_layer {
         }
     };
 }
+// IGNORED!
+decl_layer!(DummyLayer, 10);
 decl_layer!(BgLayer, 10);
 decl_layer!(PaletteLayer, 20);
 decl_layer!(LightLayer, 30);

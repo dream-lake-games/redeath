@@ -33,10 +33,12 @@ fn move_uninteresting_dynos(
 
 /// TODO! Moves StaticTxs
 fn move_static_txs(
+    bullet_time: Res<BulletTime>,
     mut ents: Query<(&Dyno, &mut Pos), (Without<StaticRxCtrl>, With<StaticTxCtrl>)>,
 ) {
-    for (_dyno, mut _pos) in &mut ents {
-        todo!("Do we want this? How should it work?");
+    for (dyno, mut pos) in &mut ents {
+        *pos += dyno.vel * bullet_time.delta_seconds();
+        // todo!("Do we want this? How should it work?");
     }
 }
 
@@ -68,6 +70,7 @@ fn resolve_collisions(
     stx_ctrls: &mut Query<&mut StaticTxCtrl>,
     trx_ctrls: &mut Query<&mut TriggerRxCtrl>,
     ttx_ctrls: &mut Query<&mut TriggerTxCtrl>,
+    // dyno_q: &Query<&mut Dyno>,
 ) {
     macro_rules! translate_other {
         ($comp:expr) => {{
@@ -160,9 +163,8 @@ fn resolve_collisions(
                         }
                     }
                     (StaticRxKind::Default, StaticTxKind::PassUp) => {
-                        if push.y > 0.0
-                            && old_perp.y < 0.0
-                            && other_thbox.max_y() - 1.1 < my_thbox.min_y()
+                        if push.y > 0.0 && old_perp.y < 0.0
+                        // && other_thbox.max_y() - 1.1 < my_thbox.min_y()
                         {
                             add_coll_rec();
                             do_push(&mut my_thbox);
@@ -348,6 +350,7 @@ pub(super) fn register_logic(app: &mut App) {
             move_uninteresting_dynos,
             move_static_txs,
             move_interesting_dynos,
+            apply_gravity,
         )
             .chain()
             .in_set(PhysicsSet)
@@ -359,10 +362,10 @@ pub(super) fn register_logic(app: &mut App) {
 
     app.insert_resource(PhysicsConsts::default());
     // debug_resource!(app, PhysicsConsts);
-    app.add_systems(
-        Update,
-        apply_gravity
-            .in_set(PhysicsSet)
-            .run_if(in_state(PhysicsState::Active)),
-    );
+    // app.add_systems(
+    //     Update,
+    //     apply_gravity
+    //         .in_set(PhysicsSet)
+    //         .run_if(in_state(PhysicsState::Active)),
+    // );
 }

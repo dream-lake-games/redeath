@@ -208,11 +208,18 @@ fn player_impact_sounds(
     sound_root: Res<SoundRoot>,
 ) {
     let srx_ctrl = player.single();
+    let mut plank_handled = false;
     for coll in colls.get_refs(&srx_ctrl.coll_keys) {
         let mag = coll.rx_perp.length();
         if mag < consts.impact_sound_floor {
             continue;
         }
+        if coll.tx_kind == StaticTxKind::PassUp && (plank_handled || coll.rx_perp.y > 0.0) {
+            continue;
+        } else {
+            plank_handled = true;
+        }
+
         let frac = ((mag - consts.impact_sound_floor)
             / (consts.impact_sound_ceiling - consts.impact_sound_floor))
             .min(1.0);

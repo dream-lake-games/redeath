@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 mod animals_anim;
+mod common_platform_anim;
 mod light_anim;
 mod menu_anim;
 mod player_anim;
@@ -8,6 +9,7 @@ mod star_anim;
 mod transition_anim;
 
 pub use animals_anim::*;
+pub use common_platform_anim::*;
 pub use light_anim::*;
 pub use menu_anim::*;
 pub use player_anim::*;
@@ -76,6 +78,7 @@ impl Plugin for MyAnimPlugin {
         app.add_systems(PostUpdate, drive_anim_time_res.before(AnimSet));
 
         animals_anim::register_animals_anim(app);
+        common_platform_anim::register_common_platform_anim(app);
         light_anim::register_light_anim(app);
         menu_anim::register_menu_anim(app);
         player_anim::register_player_anim(app);

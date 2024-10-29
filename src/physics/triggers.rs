@@ -12,6 +12,7 @@ pub enum TriggerTxKind {
 pub enum TriggerRxKind {
     Player,
     Firefly,
+    PlankFall,
 }
 
 // PLUMBING
@@ -37,7 +38,7 @@ pub struct TriggerTxComp {
     pub ctrl: Entity,
     pub hbox: HBox,
 }
-#[derive(Component, Clone, Debug, Default, Reflect)]
+#[derive(Clone, Debug, Default, Reflect)]
 pub struct TriggerTxCtrl {
     pub comps: Vec<Entity>,
     pub coll_keys: Vec<CollKey>,
@@ -67,7 +68,7 @@ pub struct TriggerRxComp {
     pub hbox: HBox,
 }
 impl_physics_comp!(TriggerRxKind, TriggerRxComp, TriggerRxCtrl);
-#[derive(Component, Clone, Debug, Default, Reflect)]
+#[derive(Clone, Debug, Default, Reflect)]
 pub struct TriggerRxCtrl {
     pub comps: Vec<Entity>,
     pub coll_keys: Vec<CollKey>,
