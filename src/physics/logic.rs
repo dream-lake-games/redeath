@@ -21,10 +21,17 @@ fn invariants(
     debug_assert!(static_rx_n_tx.is_empty());
 }
 
-/// Moves dynos that have no receivers
+/// Moves dynos that have no receivers or static providers
 fn move_uninteresting_dynos(
     bullet_time: Res<BulletTime>,
-    mut ents: Query<(&Dyno, &mut Pos), (Without<StaticRxCtrl>, Without<TriggerRxCtrl>)>,
+    mut ents: Query<
+        (&Dyno, &mut Pos),
+        (
+            Without<StaticRxCtrl>,
+            Without<TriggerRxCtrl>,
+            Without<StaticTxCtrl>,
+        ),
+    >,
 ) {
     for (dyno, mut pos) in &mut ents {
         *pos += dyno.vel * bullet_time.delta_seconds();
@@ -70,7 +77,7 @@ fn resolve_collisions(
     stx_ctrls: &mut Query<&mut StaticTxCtrl>,
     trx_ctrls: &mut Query<&mut TriggerRxCtrl>,
     ttx_ctrls: &mut Query<&mut TriggerTxCtrl>,
-    // dyno_q: &Query<&mut Dyno>,
+    dyno_q: &Query<&mut Dyno>,
 ) {
     macro_rules! translate_other {
         ($comp:expr) => {{
@@ -153,6 +160,8 @@ fn resolve_collisions(
                     *grr = grr.translated(push.x, push.y);
                 };
 
+                let tx_dyno = dyno_q.get(other_stx_comp.ctrl).cloned().unwrap_or_default();
+
                 match (my_srx_comp.kind, other_stx_comp.kind) {
                     (StaticRxKind::Default, StaticTxKind::Solid) => {
                         add_coll_rec();
@@ -163,12 +172,13 @@ fn resolve_collisions(
                         }
                     }
                     (StaticRxKind::Default, StaticTxKind::PassUp) => {
-                        if push.y > 0.0 && old_perp.y < 0.0
-                        // && other_thbox.max_y() - 1.1 < my_thbox.min_y()
+                        if push.y > 0.0
+                            && old_perp.y < 0.0
+                            && other_thbox.max_y() - 1.1 < my_thbox.min_y()
                         {
                             add_coll_rec();
                             do_push(&mut my_thbox);
-                            *my_vel = old_par;
+                            *my_vel = old_par + Vec2::new(0.0, tx_dyno.vel.y);
                         }
                     }
                     (StaticRxKind::Observe, _) => {
@@ -221,15 +231,7 @@ fn move_interesting_dynos(
             With<TriggerTxCtrl>,
         )>,
     >,
-    mut dyno_q: Query<
-        &mut Dyno,
-        Or<(
-            With<StaticRxCtrl>,
-            With<StaticTxCtrl>,
-            With<TriggerRxCtrl>,
-            With<TriggerTxCtrl>,
-        )>,
-    >,
+    mut dyno_q: Query<&mut Dyno>,
     mut srx_ctrls: Query<&mut StaticRxCtrl>,
     mut stx_ctrls: Query<&mut StaticTxCtrl>,
     mut trx_ctrls: Query<&mut TriggerRxCtrl>,
@@ -295,6 +297,7 @@ fn move_interesting_dynos(
                     &mut stx_ctrls,
                     &mut trx_ctrls,
                     &mut ttx_ctrls,
+                    &dyno_q,
                 );
             }};
         }
@@ -347,10 +350,10 @@ pub(super) fn register_logic(app: &mut App) {
         Update,
         (
             invariants,
-            move_uninteresting_dynos,
+            // move_uninteresting_dynos,
+            apply_gravity,
             move_static_txs,
             move_interesting_dynos,
-            apply_gravity,
         )
             .chain()
             .in_set(PhysicsSet)
