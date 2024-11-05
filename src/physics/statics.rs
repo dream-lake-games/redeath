@@ -8,6 +8,8 @@ use super::physics_maint::{impl_physics_comp, PhysicsComp, PhysicsComps, Physics
 pub enum StaticTxKind {
     /// Standard solid thing. Stops stuff
     Solid,
+    /// Same as standard solid but can be broken by fragile breaking receivers
+    SolidFragile,
     /// A platform that only stops things that are moving down
     PassUp,
 }
@@ -15,9 +17,14 @@ pub enum StaticTxKind {
 pub enum StaticRxKind {
     /// Pushes the rx ctrl out of tx comps, sets vel to zero along plane of intersection
     Default,
+    /// Same as default but can break fragile statics
+    DefaultBreaker,
     /// Observes collisions but does nothing to respond
     Observe,
 }
+
+#[derive(Component)]
+pub struct FragileBroken;
 
 // PLUMBING
 #[derive(Bundle, Debug, Clone, Reflect)]

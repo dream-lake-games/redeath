@@ -51,7 +51,7 @@ impl PlankFallBundle {
         let hbox = HBox::new(8, 8);
         Self {
             name: Name::new("plank_fall"),
-            trigger_rx: TriggerRx::single(TriggerRxKind::PlankFall, hbox),
+            trigger_rx: TriggerRx::single(TriggerRxKind::WantStatic, hbox),
             pos,
             spatial: pos.to_spatial(ZIX_PLANK_FALL),
             anim: default(),

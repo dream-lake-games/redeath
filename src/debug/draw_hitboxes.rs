@@ -7,16 +7,14 @@ trait HitboxColorable {
 impl HitboxColorable for StaticRxKind {
     fn to_color(&self) -> Color {
         match self {
-            Self::Default => tailwind::RED_400.into(),
-            Self::Observe => tailwind::AMBER_400.into(),
+            _ => tailwind::AMBER_400.into(),
         }
     }
 }
 impl HitboxColorable for StaticTxKind {
     fn to_color(&self) -> Color {
         match self {
-            Self::Solid => tailwind::ORANGE_400.into(),
-            Self::PassUp => tailwind::SLATE_300.into(),
+            _ => tailwind::SLATE_300.into(),
         }
     }
 }

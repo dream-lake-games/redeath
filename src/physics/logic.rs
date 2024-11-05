@@ -81,6 +81,7 @@ fn resolve_collisions(
     trx_ctrls: &mut Query<&mut TriggerRxCtrl>,
     ttx_ctrls: &mut Query<&mut TriggerTxCtrl>,
     dyno_q: &Query<&mut Dyno>,
+    commands: &mut Commands,
 ) {
     macro_rules! translate_other {
         ($comp:expr) => {{
@@ -169,12 +170,21 @@ fn resolve_collisions(
                 };
 
                 match (my_srx_comp.kind, other_stx_comp.kind) {
-                    (StaticRxKind::Default, StaticTxKind::Solid) => {
+                    (StaticRxKind::Default, StaticTxKind::Solid | StaticTxKind::SolidFragile)
+                    | (StaticRxKind::DefaultBreaker, StaticTxKind::Solid) => {
+                        // Solid collision, no breaking
                         add_coll_rec();
                         do_push(&mut my_thbox);
                         *my_vel = old_par + Vec2::new(0.0, tx_dyno.vel.y);
                     }
-                    (StaticRxKind::Default, StaticTxKind::PassUp) => {
+                    (StaticRxKind::DefaultBreaker, StaticTxKind::SolidFragile) => {
+                        commands.entity(other_stx_comp.ctrl).insert(FragileBroken);
+                    }
+                    (
+                        StaticRxKind::Default | StaticRxKind::DefaultBreaker,
+                        StaticTxKind::PassUp,
+                    ) => {
+                        // Any kind of passup
                         if push.y > 0.0
                             && old_perp.y < 0.0
                             && other_thbox.max_y() - 1.1 < my_thbox.min_y()
@@ -254,6 +264,7 @@ fn move_interesting_dynos(
     >,
     mut static_colls: ResMut<StaticColls>,
     mut trigger_colls: ResMut<TriggerColls>,
+    mut commands: Commands,
 ) {
     let mut static_coll_counter: CollKey = 0;
     let mut trigger_coll_counter: CollKey = 0;
@@ -301,6 +312,7 @@ fn move_interesting_dynos(
                     &mut trx_ctrls,
                     &mut ttx_ctrls,
                     &dyno_q,
+                    &mut commands,
                 );
             }};
         }

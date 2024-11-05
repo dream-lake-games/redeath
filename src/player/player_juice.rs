@@ -210,6 +210,12 @@ fn player_impact_sounds(
     let srx_ctrl = player.single();
     let mut plank_handled = false;
     for coll in colls.get_refs(&srx_ctrl.coll_keys) {
+        if !matches!(
+            coll.rx_kind,
+            StaticRxKind::Default | StaticRxKind::DefaultBreaker
+        ) {
+            continue;
+        }
         let mag = coll.rx_perp.length();
         if mag < consts.impact_sound_floor {
             continue;

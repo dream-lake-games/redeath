@@ -11,7 +11,6 @@ pub enum MyLdtkConsolidateKind {
 #[derive(Clone)]
 struct ConsolidationEntry {
     eid: Entity,
-    comp_eid: Entity,
 }
 fn consolidate_int_cells(
     _trigger: Trigger<LevelChangeEvent>,
@@ -35,13 +34,7 @@ fn consolidate_int_cells(
                 debug_assert!(comp.hbox.get_offset() == Vec2::ZERO);
                 debug_assert!(comp.hbox.get_size() == UVec2::new(8, 8));
                 solid8x8_keys.push(key);
-                solid8x8_entries.insert(
-                    key,
-                    ConsolidationEntry {
-                        eid,
-                        comp_eid: ctrl.comps[0],
-                    },
-                );
+                solid8x8_entries.insert(key, ConsolidationEntry { eid });
             }
         }
         commands.entity(eid).remove::<MyLdtkConsolidateKind>();
@@ -96,7 +89,6 @@ fn consolidate_int_cells(
             }
             for entry in entries {
                 commands.entity(entry.eid).remove::<StaticTxCtrl>();
-                // commands.entity(entry.comp_eid).despawn_recursive();
             }
             commands.entity(main_entry.eid).insert(StaticTx::single(
                 StaticTxKind::Solid,

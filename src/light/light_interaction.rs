@@ -107,6 +107,10 @@ fn block_lights(
                 // If a source is inside a box we want to ignore that box, useful for passup
                 continue;
             }
+            if matches!(stx_comp.kind, StaticTxKind::SolidFragile) {
+                // For now we can see through solid fragile things...
+                continue;
+            }
             let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
             let blocked_quads = hbox_to_blocked_quads(source_pos, &hbox);
             for quad in blocked_quads {

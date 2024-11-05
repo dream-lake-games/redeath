@@ -55,12 +55,28 @@ fn update_touching(
             .unwrap_or(default())
     };
     let touching = TouchingDir::default()
-        .with_right(marker_tx_kinds(PLAYER_RIGHT_HBOX).contains(&StaticTxKind::Solid))
-        .with_up(marker_tx_kinds(PLAYER_ABOVE_HBOX).contains(&StaticTxKind::Solid))
-        .with_left(marker_tx_kinds(PLAYER_LEFT_HBOX).contains(&StaticTxKind::Solid))
+        .with_right(
+            marker_tx_kinds(PLAYER_RIGHT_HBOX)
+                .iter()
+                .any(|kind| matches!(kind, StaticTxKind::Solid | StaticTxKind::SolidFragile)),
+        )
+        .with_up(
+            marker_tx_kinds(PLAYER_ABOVE_HBOX)
+                .iter()
+                .any(|kind| matches!(kind, StaticTxKind::Solid | StaticTxKind::SolidFragile)),
+        )
+        .with_left(
+            marker_tx_kinds(PLAYER_LEFT_HBOX)
+                .iter()
+                .any(|kind| matches!(kind, StaticTxKind::Solid | StaticTxKind::SolidFragile)),
+        )
         .with_down({
-            let kinds = marker_tx_kinds(PLAYER_BELOW_HBOX);
-            kinds.contains(&StaticTxKind::Solid) || kinds.contains(&StaticTxKind::PassUp)
+            marker_tx_kinds(PLAYER_BELOW_HBOX).iter().any(|kind| {
+                matches!(
+                    kind,
+                    StaticTxKind::Solid | StaticTxKind::SolidFragile | StaticTxKind::PassUp
+                )
+            })
         });
     commands.entity(eid).insert(touching);
 }
@@ -352,6 +368,24 @@ fn limit_speed(
     }
 }
 
+fn update_breaking(
+    player: Query<(&StaticRxCtrl, &AnimMan<PlayerAnim>, Option<&Dashing>)>,
+    mut srx_comps: Query<&mut StaticRxComp>,
+) {
+    let (srx_ctrl, anim, dashing) = player.single();
+    for comp_eid in &srx_ctrl.comps {
+        let mut comp = srx_comps.get_mut(*comp_eid).unwrap();
+        if comp.kind == StaticRxKind::Observe {
+            continue;
+        }
+        comp.kind = if matches!(anim.get_state(), PlayerAnim::Dash) || dashing.is_some() {
+            StaticRxKind::DefaultBreaker
+        } else {
+            StaticRxKind::Default
+        }
+    }
+}
+
 pub(super) fn register_player_movement(app: &mut App) {
     app.insert_resource(PlayerMovementConsts::default());
 
@@ -382,6 +416,7 @@ pub(super) fn register_player_movement(app: &mut App) {
             maybe_start_wall_jump,
             move_horizontally,
             limit_speed,
+            update_breaking,
         )
             .chain()
             .before(AnimSet)
