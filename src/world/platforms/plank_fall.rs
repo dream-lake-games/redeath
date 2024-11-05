@@ -10,8 +10,8 @@ impl Default for PlankFallConsts {
     fn default() -> Self {
         Self {
             respawn_time: 1.0,
-            plank_gravity: 0.1,
-            max_ver_speed: 100.0,
+            plank_gravity: 0.25,
+            max_ver_speed: 80.0,
         }
     }
 }

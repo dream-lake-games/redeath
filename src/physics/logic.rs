@@ -16,9 +16,23 @@ impl Default for PhysicsConsts {
 fn invariants(
     dyno_without_pos: Query<Entity, (With<Dyno>, Without<Pos>)>,
     static_rx_n_tx: Query<Entity, (With<StaticRxCtrl>, With<StaticTxCtrl>)>,
+    moving_static_tx_vert_only: Query<&Dyno, With<StaticTxCtrl>>,
 ) {
     debug_assert!(dyno_without_pos.is_empty());
     debug_assert!(static_rx_n_tx.is_empty());
+    for dyno in &moving_static_tx_vert_only {
+        debug_assert!(dyno.vel.x.abs() == 0.0);
+    }
+}
+
+fn apply_gravity(
+    mut ents: Query<(&mut Dyno, &Gravity)>,
+    consts: Res<PhysicsConsts>,
+    bullet_time: Res<BulletTime>,
+) {
+    for (mut dyno, grav) in &mut ents {
+        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_seconds();
+    }
 }
 
 /// Moves dynos that have no receivers or static providers
@@ -38,14 +52,13 @@ fn move_uninteresting_dynos(
     }
 }
 
-/// TODO! Moves StaticTxs
+/// Moves static txs
 fn move_static_txs(
     bullet_time: Res<BulletTime>,
     mut ents: Query<(&Dyno, &mut Pos), (Without<StaticRxCtrl>, With<StaticTxCtrl>)>,
 ) {
     for (dyno, mut pos) in &mut ents {
         *pos += dyno.vel * bullet_time.delta_seconds();
-        // todo!("Do we want this? How should it work?");
     }
 }
 
@@ -130,8 +143,13 @@ fn resolve_collisions(
             let other_thbox = translate_other!(other_stx_comp);
             if let Some(push) = my_thbox.get_push_out(&other_thbox) {
                 // STATIC COLLISION HERE (maybe)
-                let old_perp = my_vel.dot(push.normalize_or_zero()) * push.normalize_or_zero();
+                let tx_dyno = dyno_q.get(other_stx_comp.ctrl).cloned().unwrap_or_default();
+
+                let mut old_perp = my_vel.dot(push.normalize_or_zero()) * push.normalize_or_zero();
                 let old_par = *my_vel - old_perp;
+                if push.y.abs() > 0.0 {
+                    old_perp.y -= tx_dyno.vel.y;
+                }
 
                 let coll_rec = StaticCollRec {
                     pos: my_pos.clone(),
@@ -160,16 +178,11 @@ fn resolve_collisions(
                     *grr = grr.translated(push.x, push.y);
                 };
 
-                let tx_dyno = dyno_q.get(other_stx_comp.ctrl).cloned().unwrap_or_default();
-
                 match (my_srx_comp.kind, other_stx_comp.kind) {
                     (StaticRxKind::Default, StaticTxKind::Solid) => {
                         add_coll_rec();
                         do_push(&mut my_thbox);
-                        *my_vel = old_par;
-                        if old_perp.dot(push) > 0.0 {
-                            *my_vel += old_perp;
-                        }
+                        *my_vel = old_par + Vec2::new(0.0, tx_dyno.vel.y);
                     }
                     (StaticRxKind::Default, StaticTxKind::PassUp) => {
                         if push.y > 0.0
@@ -335,23 +348,13 @@ fn move_interesting_dynos(
     }
 }
 
-fn apply_gravity(
-    mut ents: Query<(&mut Dyno, &Gravity)>,
-    consts: Res<PhysicsConsts>,
-    bullet_time: Res<BulletTime>,
-) {
-    for (mut dyno, grav) in &mut ents {
-        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_seconds();
-    }
-}
-
 pub(super) fn register_logic(app: &mut App) {
     app.add_systems(
         Update,
         (
             invariants,
-            // move_uninteresting_dynos,
             apply_gravity,
+            move_uninteresting_dynos,
             move_static_txs,
             move_interesting_dynos,
         )
@@ -364,11 +367,4 @@ pub(super) fn register_logic(app: &mut App) {
     );
 
     app.insert_resource(PhysicsConsts::default());
-    // debug_resource!(app, PhysicsConsts);
-    // app.add_systems(
-    //     Update,
-    //     apply_gravity
-    //         .in_set(PhysicsSet)
-    //         .run_if(in_state(PhysicsState::Active)),
-    // );
 }

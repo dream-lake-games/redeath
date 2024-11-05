@@ -103,6 +103,10 @@ fn block_lights(
             if blocker_hbox.manhattan_distance_to_point(source_pos) > light.radius {
                 continue;
             }
+            if blocker_hbox.manhattan_distance_to_point(source_pos) <= 0.001 {
+                // If a source is inside a box we want to ignore that box, useful for passup
+                continue;
+            }
             let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
             let blocked_quads = hbox_to_blocked_quads(source_pos, &hbox);
             for quad in blocked_quads {
