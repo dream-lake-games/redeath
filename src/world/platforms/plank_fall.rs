@@ -9,8 +9,8 @@ struct PlankFallConsts {
 impl Default for PlankFallConsts {
     fn default() -> Self {
         Self {
-            respawn_time: 1.0,
-            plank_gravity: 0.25,
+            respawn_time: 2.25,
+            plank_gravity: 0.33,
             max_ver_speed: 80.0,
         }
     }
@@ -64,6 +64,26 @@ impl PlankFallBundle {
     }
 }
 
+#[derive(Component)]
+struct PlankFallCanary;
+#[derive(Bundle)]
+struct PlankFallCanaryBundle {
+    name: Name,
+    canary: PlankFallCanary,
+    pos: Pos,
+    static_rx: StaticRx,
+}
+impl PlankFallCanaryBundle {
+    fn new(pos: Pos) -> Self {
+        Self {
+            name: Name::new("plank_fall_canary"),
+            canary: PlankFallCanary,
+            pos,
+            static_rx: StaticRx::single(StaticRxKind::Observe, HBox::new(8, 8)),
+        }
+    }
+}
+
 #[derive(Bundle)]
 struct PlankFallParentBundle {
     name: Name,
@@ -110,13 +130,14 @@ fn update_shaking(
         &mut AnimMan<PlankFallAnim>,
         &RememberParent,
         &StaticTxCtrl,
+        &Pos,
     )>,
     static_colls: Res<StaticColls>,
     mut commands: Commands,
     player_q: Query<&Player>,
     consts: Res<PlankFallConsts>,
 ) {
-    for (eid, mut anim, remember, stx_ctrl) in &mut planks {
+    for (eid, mut anim, remember, stx_ctrl, pos) in &mut planks {
         let player_on_top = static_colls
             .get_refs(&stx_ctrl.coll_keys)
             .iter()
@@ -135,10 +156,27 @@ fn update_shaking(
                 commands
                     .entity(eid)
                     .insert((Dyno::default(), Gravity::new(consts.plank_gravity)));
+                commands
+                    .spawn(PlankFallCanaryBundle::new(*pos))
+                    .set_parent(eid);
             }
         } else {
             anim.set_state(PlankFallAnim::Stable);
             anim.set_flip_x(false);
+        }
+    }
+}
+
+fn update_waiting_parents(
+    mut waiting_parents: Query<(Entity, &mut ParentWaiting)>,
+    mut commands: Commands,
+    bullet_time: Res<BulletTime>,
+) {
+    for (eid, mut waiting) in &mut waiting_parents {
+        waiting.time_left -= bullet_time.delta_seconds();
+        if waiting.time_left <= 0.0 {
+            commands.entity(eid).remove::<ParentWaiting>();
+            commands.entity(eid).insert(ParentStable);
         }
     }
 }
@@ -154,6 +192,30 @@ fn cap_falling_speed(
     }
 }
 
+fn update_canaries(
+    mut commands: Commands,
+    static_colls: Res<StaticColls>,
+    mut canaries: Query<(&mut Pos, &Parent, &StaticRxCtrl), With<PlankFallCanary>>,
+    mut planks: Query<(Entity, &Pos, &mut AnimMan<PlankFallAnim>), Without<PlankFallCanary>>,
+) {
+    for (mut canary_pos, parent, srx_ctrl) in &mut canaries {
+        let dad = parent.get();
+        let (dad_eid, dad_pos, mut dad_anim) = planks.get_mut(dad).unwrap();
+        if static_colls
+            .get_refs(&srx_ctrl.coll_keys)
+            .iter()
+            .any(|coll| coll.tx_ctrl != dad)
+        {
+            commands.entity(dad_eid).remove::<Dyno>();
+            commands.entity(dad_eid).remove::<Gravity>();
+            commands.entity(dad_eid).remove::<StaticTxCtrl>();
+            dad_anim.set_state(PlankFallAnim::Fade);
+        } else {
+            *canary_pos = *dad_pos;
+        }
+    }
+}
+
 pub(super) fn register_plank_fall(app: &mut App) {
     app.add_plugins(MyLdtkIntCellPlugin::<PlankFallParentBundle>::single(
         "CommonPlatforms",
@@ -163,7 +225,13 @@ pub(super) fn register_plank_fall(app: &mut App) {
 
     app.add_systems(
         Update,
-        (bless_static_hitboxes, update_shaking, cap_falling_speed)
+        (
+            bless_static_hitboxes,
+            update_shaking,
+            update_waiting_parents,
+            cap_falling_speed,
+            update_canaries,
+        )
             .run_if(in_state(MetaStateKind::World))
             .after(PhysicsSet),
     );

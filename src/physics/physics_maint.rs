@@ -29,20 +29,20 @@ macro_rules! impl_physics_comp {
         }
         impl Component for $ctrl {
             const STORAGE_TYPE: StorageType = StorageType::Table;
-            fn register_component_hooks(_hooks: &mut bevy::ecs::component::ComponentHooks) {
-                // hooks.on_remove(|mut world, eid, _| {
-                //     let myself = world.get::<Self>(eid).unwrap();
-                //     let kids = myself
-                //         .comps
-                //         .iter()
-                //         .map(|thing| thing.clone())
-                //         .collect::<Vec<_>>();
-                //     for kid in kids {
-                //         if let Some(commands) = world.commands().get_entity(kid) {
-                //             commands.despawn_recursive();
-                //         }
-                //     }
-                // });
+            fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
+                hooks.on_remove(|mut world, eid, _| {
+                    let myself = world.get::<Self>(eid).unwrap();
+                    let kids = myself
+                        .comps
+                        .iter()
+                        .map(|thing| thing.clone())
+                        .collect::<Vec<_>>();
+                    for kid in kids {
+                        if let Some(commands) = world.commands().get_entity(kid) {
+                            commands.despawn_recursive();
+                        }
+                    }
+                });
             }
         }
     };

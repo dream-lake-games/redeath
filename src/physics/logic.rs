@@ -25,16 +25,6 @@ fn invariants(
     }
 }
 
-fn apply_gravity(
-    mut ents: Query<(&mut Dyno, &Gravity)>,
-    consts: Res<PhysicsConsts>,
-    bullet_time: Res<BulletTime>,
-) {
-    for (mut dyno, grav) in &mut ents {
-        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_seconds();
-    }
-}
-
 /// Moves dynos that have no receivers or static providers
 fn move_uninteresting_dynos(
     bullet_time: Res<BulletTime>,
@@ -348,15 +338,25 @@ fn move_interesting_dynos(
     }
 }
 
+fn apply_gravity(
+    mut ents: Query<(&mut Dyno, &Gravity)>,
+    consts: Res<PhysicsConsts>,
+    bullet_time: Res<BulletTime>,
+) {
+    for (mut dyno, grav) in &mut ents {
+        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_seconds();
+    }
+}
+
 pub(super) fn register_logic(app: &mut App) {
     app.add_systems(
         Update,
         (
             invariants,
-            apply_gravity,
             move_uninteresting_dynos,
             move_static_txs,
             move_interesting_dynos,
+            apply_gravity,
         )
             .chain()
             .in_set(PhysicsSet)

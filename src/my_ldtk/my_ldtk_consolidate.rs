@@ -96,7 +96,7 @@ fn consolidate_int_cells(
             }
             for entry in entries {
                 commands.entity(entry.eid).remove::<StaticTxCtrl>();
-                commands.entity(entry.comp_eid).despawn_recursive();
+                // commands.entity(entry.comp_eid).despawn_recursive();
             }
             commands.entity(main_entry.eid).insert(StaticTx::single(
                 StaticTxKind::Solid,
