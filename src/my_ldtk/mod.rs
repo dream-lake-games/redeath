@@ -103,6 +103,17 @@ impl Component for MyLdtkChild {
     }
 }
 
+/// A "fake" parent relationship, so that children can potentially manipulate their parent's tilemap
+#[derive(Component, Reflect)]
+pub struct MyLdtkParent {
+    parent_eid: Entity,
+}
+impl MyLdtkParent {
+    pub fn get(&self) -> Entity {
+        self.parent_eid
+    }
+}
+
 pub(super) struct MyLdtkPlugin;
 impl Plugin for MyLdtkPlugin {
     fn build(&self, app: &mut App) {

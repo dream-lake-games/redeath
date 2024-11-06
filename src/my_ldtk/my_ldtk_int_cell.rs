@@ -132,6 +132,9 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
             .insert(SpawnedLid {
                 iid: level_iid.to_string(),
             })
+            .insert(MyLdtkParent {
+                parent_eid: ldtk_eid,
+            })
             .set_parent(root.eid())
             .id();
         // Holy fuck this api is cursed

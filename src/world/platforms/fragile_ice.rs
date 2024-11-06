@@ -21,7 +21,11 @@ impl Component for ParentStable {
     fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
         hooks.on_add(|mut world, eid, _| {
             let pos = world.get::<Pos>(eid).unwrap().clone();
-            world.commands().spawn(FragileIce8Bundle::new(pos, eid));
+            let parent = world.resource::<PlatformRoot>().eid();
+            world
+                .commands()
+                .spawn(FragileIce8Bundle::new(pos, eid))
+                .set_parent(parent);
         });
     }
 }
