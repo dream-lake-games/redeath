@@ -22,6 +22,22 @@ fn oob_death(
     }
 }
 
+fn spike_death(
+    trx_ctl_q: Query<&TriggerRxCtrl, With<Player>>,
+    trigger_colls: Res<TriggerColls>,
+    meta_state: Res<State<MetaState>>,
+    mut next_state: ResMut<NextState<MetaState>>,
+) {
+    let trx_ctl = trx_ctl_q.single();
+    if trigger_colls
+        .get_refs(&trx_ctl.coll_keys)
+        .iter()
+        .any(|coll| matches!(coll.tx_kind, TriggerTxKind::Spikes))
+    {
+        go_next!(meta_state, next_state, Dying);
+    }
+}
+
 fn enter_dying(
     mut player: Query<(Entity, &mut Dyno, &mut AnimMan<PlayerAnim>, &Pos), With<Player>>,
     meta_state: Res<State<MetaState>>,
@@ -49,7 +65,7 @@ fn exit_dying(mut commands: Commands, player: Query<Entity, With<Player>>) {
 pub(super) fn register_player_death(app: &mut App) {
     app.add_systems(
         Update,
-        (oob_death,)
+        (oob_death, spike_death)
             .chain()
             .before(AnimSet)
             .in_set(PlayerSet)

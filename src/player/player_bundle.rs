@@ -12,6 +12,7 @@ pub(super) struct PlayerBundle {
     dyno: Dyno,
     gravity: Gravity,
     static_rx: StaticRx,
+    trigger_rx: TriggerRx,
     trigger_tx: TriggerTx,
     anim: AnimMan<PlayerAnim>,
     light: Light<PlayerLightAnim>,
@@ -54,7 +55,8 @@ impl PlayerBundle {
                 (StaticRxKind::Observe, left_hbox),
                 (StaticRxKind::Observe, below_hbox),
             ]),
-            trigger_tx: TriggerTx::single(TriggerTxKind::Player, main_hbox),
+            trigger_rx: TriggerRx::single(TriggerRxKind::Player, main_hbox.clone()),
+            trigger_tx: TriggerTx::single(TriggerTxKind::Player, main_hbox.clone()),
             anim: AnimMan::default()
                 .with_observe_state_changes()
                 .with_observe_ix_changes(),

@@ -7,6 +7,7 @@ use super::physics_maint::{impl_physics_comp, PhysicsComp, PhysicsComps, Physics
 #[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq, std::hash::Hash)]
 pub enum TriggerTxKind {
     Player,
+    Spikes,
 }
 #[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq, std::hash::Hash)]
 pub enum TriggerRxKind {
