@@ -80,13 +80,6 @@ fn add_spike_group_info(
         let ix = ixs.get(parent.get()).unwrap();
         let base = SpikeGroupBase::from_tilemap_index(ix.0 as i32);
         let offset = SpikeGroupOffset::from_tilemap_index(ix.0 as i32);
-        println!("\nbase: {base:?}");
-        println!("offset: {offset:?}");
-        println!(
-            "compare: {} -> {}\n",
-            ix.0 as i32,
-            base.to_tilemap_index(&offset)
-        );
         commands.entity(eid).insert(base);
         commands.entity(eid).insert(offset);
     }
@@ -94,7 +87,7 @@ fn add_spike_group_info(
 
 fn rotate_spike_group_offsets(mut offsets: Query<&mut SpikeGroupOffset>) {
     for mut offset in &mut offsets {
-        if thread_rng().gen_bool(0.01) {
+        if thread_rng().gen_bool(0.1) {
             offset.rotate();
         }
     }

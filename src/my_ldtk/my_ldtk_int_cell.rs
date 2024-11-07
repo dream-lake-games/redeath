@@ -117,7 +117,7 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
         &TilemapType,
     )>,
 ) {
-    let mut new_dad_map: HashMap<i32, Entity> = default();
+    let mut new_dad_map: HashMap<(i32, String), Entity> = default();
     let mut needs_cleanup = HashSet::<Entity>::default();
     for (ldtk_eid, gt, wrapper) in &mut wrappers {
         // First get the level iid
@@ -138,7 +138,7 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
             .set_parent(root.eid())
             .id();
         // Holy fuck this api is cursed
-        let key = B::RenderLayers::to_i32();
+        let key = (B::RenderLayers::to_i32(), level_iid.to_string());
         if let Some(new_dad) = new_dad_map.get(&key).cloned() {
             commands.entity(ldtk_eid).set_parent(new_dad);
             commands.entity(ldtk_eid).insert(TilemapId(new_dad));

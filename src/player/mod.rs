@@ -5,6 +5,7 @@ mod player_bundle;
 mod player_death;
 mod player_invariants;
 mod player_juice;
+mod player_level;
 mod player_movement;
 mod player_spawn;
 
@@ -142,6 +143,7 @@ impl Plugin for PlayerPlugin {
         player_death::register_player_death(app);
         player_juice::register_player_juice(app);
         player_invariants::register_player_invariants(app);
+        player_level::register_player_level(app);
         player_movement::register_player_movement(app);
         player_spawn::register_player_spawn(app);
     }
