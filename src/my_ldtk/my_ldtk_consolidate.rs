@@ -14,18 +14,25 @@ struct ConsolidationEntry {
 }
 fn consolidate_int_cells(
     _trigger: Trigger<LevelChangeEvent>,
-    consolidating: Query<(Entity, &MyLdtkConsolidateKind, &StaticTxCtrl, &Pos)>,
+    consolidating: Query<(
+        Entity,
+        &MyLdtkConsolidateKind,
+        &StaticTxCtrl,
+        &Pos,
+        &SpawnedLid,
+    )>,
     stx_comps: Query<&StaticTxComp>,
     mut commands: Commands,
 ) {
-    fn get_key(pos: &Pos) -> (i32, i32) {
-        ((pos.x / 8.0) as i32, (pos.y / 8.0) as i32)
+    fn get_key(pos: &Pos, slid: String) -> (i32, i32, String) {
+        ((pos.x / 8.0) as i32, (pos.y / 8.0) as i32, slid)
     }
 
-    let mut solid8x8_keys: Vec<(i32, i32)> = Vec::with_capacity(consolidating.iter().count());
-    let mut solid8x8_entries: HashMap<(i32, i32), ConsolidationEntry> = default();
-    for (eid, kind, ctrl, pos) in &consolidating {
-        let key = get_key(pos);
+    let mut solid8x8_keys: Vec<(i32, i32, String)> =
+        Vec::with_capacity(consolidating.iter().count());
+    let mut solid8x8_entries: HashMap<(i32, i32, String), ConsolidationEntry> = default();
+    for (eid, kind, ctrl, pos, slid) in &consolidating {
+        let key = get_key(pos, slid.iid.clone());
         match kind {
             MyLdtkConsolidateKind::Solid8x8 => {
                 debug_assert!(ctrl.comps.len() == 1);
@@ -33,13 +40,13 @@ fn consolidate_int_cells(
                 debug_assert!(comp.kind == StaticTxKind::Solid);
                 debug_assert!(comp.hbox.get_offset() == Vec2::ZERO);
                 debug_assert!(comp.hbox.get_size() == UVec2::new(8, 8));
-                solid8x8_keys.push(key);
-                solid8x8_entries.insert(key, ConsolidationEntry { eid });
+                solid8x8_keys.push(key.clone());
+                solid8x8_entries.insert(key.clone(), ConsolidationEntry { eid });
             }
         }
         commands.entity(eid).remove::<MyLdtkConsolidateKind>();
     }
-    solid8x8_keys.sort_by(|(ax, ay), (bx, by)| {
+    solid8x8_keys.sort_by(|(ax, ay, _), (bx, by, _)| {
         if ay < by {
             return Ordering::Less;
         } else if ay > by {
@@ -54,24 +61,24 @@ fn consolidate_int_cells(
             continue;
         }
         let mut max_x_size = 1;
-        while solid8x8_entries.contains_key(&(key.0 + max_x_size, key.1)) {
+        while solid8x8_entries.contains_key(&(key.0 + max_x_size, key.1, key.2.clone())) {
             max_x_size += 1;
         }
         fn can_support_y(
-            key: (i32, i32),
+            key: (i32, i32, String),
             y: i32,
             max_x_size: i32,
-            solid8x8_entries: &HashMap<(i32, i32), ConsolidationEntry>,
+            solid8x8_entries: &HashMap<(i32, i32, String), ConsolidationEntry>,
         ) -> bool {
             for xdiff in 0..max_x_size {
-                if !solid8x8_entries.contains_key(&(key.0 + xdiff, key.1 + y)) {
+                if !solid8x8_entries.contains_key(&(key.0 + xdiff, key.1 + y, key.2.clone())) {
                     return false;
                 }
             }
             return true;
         }
         let mut max_y_size = 1;
-        while can_support_y(key, max_y_size, max_x_size, &solid8x8_entries) {
+        while can_support_y(key.clone(), max_y_size, max_x_size, &solid8x8_entries) {
             max_y_size += 1;
         }
 
@@ -82,7 +89,7 @@ fn consolidate_int_cells(
                 for ydiff in 0..max_y_size {
                     entries.push(
                         solid8x8_entries
-                            .remove(&(key.0 + xdiff, key.1 + ydiff))
+                            .remove(&(key.0 + xdiff, key.1 + ydiff, key.2.clone()))
                             .unwrap(),
                     );
                 }

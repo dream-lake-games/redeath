@@ -13,6 +13,8 @@ fn update_player_level(
 pub(super) fn register_player_level(app: &mut App) {
     app.add_systems(
         Update,
-        update_player_level.run_if(in_state(PlayerMetaState::Playing)),
+        update_player_level
+            .run_if(in_state(PlayerMetaState::Playing))
+            .after(MyLdtkLevelMaint),
     );
 }
