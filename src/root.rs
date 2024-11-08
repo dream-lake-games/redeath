@@ -144,6 +144,7 @@ impl_root_init!(
     TransitionRoot(ZIX_TRANSITION),
     ObserveRoot,
     SoundRoot,
+    ConvoRoot,
 );
 
 impl_subroot_init!(

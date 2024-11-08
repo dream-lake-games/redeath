@@ -12,3 +12,21 @@ If it's still slow after this...
 If it's still slow after that...
 
 - Figure out a way to only recalculate meshes for things that have changed (hard)
+
+# Conversation
+
+A single text box:
+
+- Speaker
+- Emotion
+- Text
+
+A speaker:
+
+- Map from emotion to:
+    - Portrait
+    - Voice
+
+A conversation:
+
+- Collection of text boxes

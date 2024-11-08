@@ -84,6 +84,13 @@ fn spawn_player(
     mut camera_mode: ResMut<DynamicCameraMode>,
     level_rects: Res<LevelRects>,
 ) {
+    // HACKING
+    commands.spawn(ConvoBox::new(
+        ConvoSpeaker::Lenny,
+        ConvoEmotion::Default,
+        ConvoText::simple("hello this is custom now"),
+    ));
+
     let (spawn_pos, spawn_spawned_lid) = match active_spawn_pos.get_single() {
         Ok(pos) => pos,
         Err(QuerySingleError::NoEntities(_)) => {
