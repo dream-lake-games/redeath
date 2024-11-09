@@ -22,10 +22,12 @@ pub enum PhysicsState {
     Inactive,
 }
 impl ComputedStates for PhysicsState {
-    type SourceStates = (LevelState, PauseState);
+    type SourceStates = (LevelState, PauseState, ConvoMetaState);
     fn compute(sources: Self::SourceStates) -> Option<Self> {
         match sources {
-            (LevelState { .. }, PauseState::Unpaused) => Some(PhysicsState::Active),
+            (LevelState { .. }, PauseState::Unpaused, ConvoMetaState::None) => {
+                Some(PhysicsState::Active)
+            }
             _ => Some(PhysicsState::Inactive),
         }
     }

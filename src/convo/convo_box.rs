@@ -1,3 +1,5 @@
+use bevy::ecs::query::QuerySingleError;
+
 use crate::prelude::*;
 
 #[derive(Bundle, Clone, Debug)]
@@ -15,8 +17,12 @@ impl ConvoBox {
             name: Name::new("box_root"),
             root: ConvoBoxRoot,
             spatial: SpatialBundle {
-                visibility: Visibility::Hidden,
-                transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
+                // visibility: Visibility::Hidden,
+                transform: Transform::from_translation(Vec3::new(
+                    0.0,
+                    -56.0 * TextLayer::growth_factor() as f32,
+                    0.0,
+                )),
                 ..default()
             },
             speaker,
@@ -29,6 +35,7 @@ impl ConvoBox {
 #[derive(Clone, Debug, Reflect)]
 struct ConvoBoxRoot;
 
+#[derive(Component)]
 struct ConvoBoxRootLoading {
     frames_left: u32,
 }
@@ -55,16 +62,124 @@ impl Component for ConvoBoxRoot {
                     Name::new("bg"),
                     SpriteBundle {
                         texture: hand,
-                        transform: Transform::from_translation(Vec3::new(0.0, 0.0, ZIX_CONVO_BG)),
+                        transform: Transform {
+                            translation: Vec3::new(0.0, 0.0, ZIX_CONVO_BG),
+                            scale: (Vec2::ONE * TextLayer::growth_factor() as f32).extend(1.0),
+                            ..default()
+                        },
                         ..default()
                     },
-                    MenuLayer::to_render_layers(),
+                    TextLayer::to_render_layers(),
                 ))
                 .set_parent(box_root_eid);
         });
     }
 }
 
-impl Component for ConvoBoxRootLoading {
-    const STORAGE_TYPE: StorageType = StorageType::Table;
+#[derive(Component, Debug)]
+pub struct ConvoManager {
+    boxes: Vec<ConvoBox>,
+}
+impl ConvoManager {
+    pub fn new<I: DoubleEndedIterator<Item = ConvoBox>>(boxes: I) -> Self {
+        Self {
+            boxes: boxes.into_iter().rev().collect(),
+        }
+    }
+}
+
+/// Finishes loading a single box, despawning stale ones
+fn finish_loading_box(
+    mut commands: Commands,
+    mut loading: Query<(Entity, &mut ConvoBoxRootLoading, &mut Visibility), With<ConvoBoxRoot>>,
+    stale: Query<Entity, (With<ConvoBoxRoot>, Without<ConvoBoxRootLoading>)>,
+) {
+    let (eid, mut loading, mut viz) = match loading.get_single_mut() {
+        Ok(loading) => loading,
+        Err(QuerySingleError::NoEntities(_)) => return,
+        Err(QuerySingleError::MultipleEntities(_)) => {
+            warn!("multiple convo boxes loading...");
+            return;
+        }
+    };
+    loading.frames_left = loading.frames_left.saturating_sub(1);
+    if loading.frames_left == 0 {
+        commands.entity(eid).remove::<ConvoBoxRootLoading>();
+        *viz = Visibility::Inherited;
+        commands.entity(eid).insert(ConvoTextStarted);
+        for oid in &stale {
+            commands.entity(oid).despawn_recursive();
+        }
+    }
+}
+
+fn update_managers(
+    mut manager_q: Query<(Entity, &mut ConvoManager)>,
+    boxes_q: Query<(
+        Entity,
+        &ConvoBoxRoot,
+        Option<&ConvoTextStarted>,
+        Option<&ConvoTextDone>,
+    )>,
+    mut commands: Commands,
+    butt: Res<ButtInput>,
+) {
+    let (eid, mut manager) = match manager_q.get_single_mut() {
+        Ok(manager) => manager,
+        Err(QuerySingleError::NoEntities(_)) => return,
+        Err(QuerySingleError::MultipleEntities(e)) => panic!("ruh roh update convo managers {e:?}"),
+    };
+    if boxes_q.is_empty() {
+        match manager.boxes.pop() {
+            Some(boox) => {
+                commands.spawn(boox);
+            }
+            None => {
+                commands.entity(eid).despawn_recursive();
+            }
+        }
+    } else {
+        let any_loading = boxes_q
+            .iter()
+            .any(|multi| multi.2.is_none() && multi.3.is_none());
+        if any_loading {
+            return;
+        }
+
+        let has_forward_input = butt.just_pressed(ButtKind::A) | butt.just_pressed(ButtKind::Enter);
+        if !has_forward_input {
+            return;
+        }
+
+        let started = boxes_q
+            .iter()
+            .filter(|multi| multi.2.is_some())
+            .collect::<Vec<_>>();
+        let done = boxes_q
+            .iter()
+            .filter(|multi| multi.3.is_some())
+            .collect::<Vec<_>>();
+        match (started.is_empty(), done.is_empty()) {
+            (true, true) => unreachable!(),
+            (false, _) => {
+                // We want to finish all the texts marked as started
+                for multi in started {
+                    commands.entity(multi.0).insert(ConvoTextDone);
+                }
+            }
+            (true, false) => {
+                if let Some(next_box) = manager.boxes.pop() {
+                    commands.spawn(next_box);
+                } else {
+                    for multi in &boxes_q {
+                        commands.entity(multi.0).despawn_recursive();
+                    }
+                }
+            }
+        }
+    }
+}
+
+pub(super) fn register_convo_box(app: &mut App) {
+    app.add_systems(Update, (finish_loading_box, update_managers));
 }

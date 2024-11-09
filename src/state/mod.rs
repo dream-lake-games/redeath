@@ -43,6 +43,13 @@ impl TransitionState {
     }
 }
 
+#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Reflect, States)]
+pub enum ConvoMetaState {
+    #[default]
+    None,
+    Some,
+}
+
 pub(super) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
@@ -53,6 +60,7 @@ impl Plugin for StatePlugin {
         app.insert_state(MetaState::Menu(MenuState::Savefile));
         app.insert_state(TransitionState::default());
         app.insert_state(PauseState::Unpaused);
+        app.insert_state(ConvoMetaState::None);
 
         app.add_computed_state::<MetaStateKind>();
         app.add_computed_state::<PhysicsState>();

@@ -27,14 +27,15 @@ impl Component for ConvoSpeaker {
                             Name::new("portrait"),
                             SpriteBundle {
                                 texture: hand,
-                                transform: Transform::from_translation(Vec3::new(
-                                    0.0,
-                                    0.0,
-                                    ZIX_CONVO_PORTRAIT,
-                                )),
+                                transform: Transform {
+                                    translation: Vec3::new(-444.0, 0.0, ZIX_CONVO_PORTRAIT),
+                                    scale: (Vec2::ONE * TextLayer::growth_factor() as f32)
+                                        .extend(1.0),
+                                    ..default()
+                                },
                                 ..default()
                             },
-                            MenuLayer::to_render_layers(),
+                            TextLayer::to_render_layers(),
                         ))
                         .set_parent(eid);
                 };

@@ -15,10 +15,13 @@ pub trait Layer: Into<RenderLayers> + Default {
         Self::default().into()
     }
     fn to_i32() -> i32;
+    fn growth_factor() -> u32 {
+        1
+    }
 }
 
 macro_rules! decl_layer {
-    ($name:ident, $order:literal) => {
+    ($name:ident, $order:literal$(,$growth_factor:expr)?) => {
         #[derive(Component, Debug, Reflect, Default)]
         pub struct $name;
         impl Into<RenderLayers> for $name {
@@ -30,6 +33,11 @@ macro_rules! decl_layer {
             fn to_i32() -> i32 {
                 $order
             }
+            $(
+                fn growth_factor() -> u32 {
+                    $growth_factor
+                }
+            )?
         }
     };
 }
@@ -43,8 +51,9 @@ decl_layer!(MainDetailLayer, 41);
 decl_layer!(StaticLayer, 50);
 decl_layer!(MainLayer, 55);
 decl_layer!(FgLayer, 60);
-decl_layer!(MenuLayer, 61);
-decl_layer!(TransitionLayer, 62);
+decl_layer!(TextLayer, 62, WINDOW_GROWTH);
+decl_layer!(MenuLayer, 63);
+decl_layer!(TransitionLayer, 64);
 
 /// Grows all of the layers by a given scale.
 /// Makes it easy for the game to fill the screen in a satisfying way.
@@ -63,10 +72,10 @@ impl Default for LayerGrowth {
 }
 
 /// Creates a new blank image the size of the screen
-pub fn blank_screen_image() -> Image {
+pub fn blank_screen_image(growth: u32) -> Image {
     let target_extent = Extent3d {
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
+        width: SCREEN_WIDTH * growth,
+        height: SCREEN_HEIGHT * growth,
         ..default()
     };
     // Makes the image
@@ -103,6 +112,7 @@ struct CameraTargets {
     light_target: Handle<Image>,
     static_target: Handle<Image>,
     fg_target: Handle<Image>,
+    text_target: Handle<Image>,
     menu_target: Handle<Image>,
     transition_target: Handle<Image>,
     final_target: Handle<Image>,
@@ -121,6 +131,7 @@ impl Default for CameraTargets {
             light_target: Handle::weak_from_u128(thread_rng().gen()),
             static_target: Handle::weak_from_u128(thread_rng().gen()),
             fg_target: Handle::weak_from_u128(thread_rng().gen()),
+            text_target: Handle::weak_from_u128(thread_rng().gen()),
             menu_target: Handle::weak_from_u128(thread_rng().gen()),
             transition_target: Handle::weak_from_u128(thread_rng().gen()),
             final_target: Handle::weak_from_u128(thread_rng().gen()),
@@ -131,25 +142,32 @@ impl CameraTargets {
     /// Creates actual images that the various layers can write to to place on quads.
     pub fn initialize(&self, images: &mut Assets<Image>) {
         macro_rules! make_layer_image {
-            ($handle:expr) => {{
-                let image = blank_screen_image();
+            ($handle:expr, $gf:expr) => {{
+                let image = blank_screen_image($gf);
                 images.insert($handle.id(), image);
             }};
         }
-        make_layer_image!(self.bg_target);
-        make_layer_image!(self.main_ambience_target);
-        make_layer_image!(self.main_ambience_shifted);
-        make_layer_image!(self.main_detail_target);
-        make_layer_image!(self.main_detail_shifted);
-        make_layer_image!(self.main_target);
-        make_layer_image!(self.main_shifted);
-        make_layer_image!(self.palette_target);
-        make_layer_image!(self.light_target);
-        make_layer_image!(self.static_target);
-        make_layer_image!(self.fg_target);
-        make_layer_image!(self.menu_target);
-        make_layer_image!(self.transition_target);
-        make_layer_image!(self.final_target);
+        make_layer_image!(self.bg_target, BgLayer::growth_factor());
+        make_layer_image!(
+            self.main_ambience_target,
+            MainAmbienceLayer::growth_factor()
+        );
+        make_layer_image!(
+            self.main_ambience_shifted,
+            MainAmbienceLayer::growth_factor()
+        );
+        make_layer_image!(self.main_detail_target, MainDetailLayer::growth_factor());
+        make_layer_image!(self.main_detail_shifted, MainDetailLayer::growth_factor());
+        make_layer_image!(self.main_target, MainLayer::growth_factor());
+        make_layer_image!(self.main_shifted, MainLayer::growth_factor());
+        make_layer_image!(self.palette_target, PaletteLayer::growth_factor());
+        make_layer_image!(self.light_target, LightLayer::growth_factor());
+        make_layer_image!(self.static_target, StaticLayer::growth_factor());
+        make_layer_image!(self.fg_target, FgLayer::growth_factor());
+        make_layer_image!(self.text_target, TextLayer::growth_factor());
+        make_layer_image!(self.menu_target, MenuLayer::growth_factor());
+        make_layer_image!(self.transition_target, TransitionLayer::growth_factor());
+        make_layer_image!(self.final_target, WINDOW_GROWTH);
     }
 }
 
@@ -185,18 +203,27 @@ fn setup_layer_materials(
         shifted_palette_mats: &mut Assets<ShiftedPaletteMat>,
         squash_layer: RenderLayers,
         root: Entity,
+        growth_factor: u32,
     ) {
         // Apply the palette shift
-        let shifted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+        let shifted_mesh = Mesh::from(Rectangle::new(
+            SCREEN_WIDTH_f32 * growth_factor as f32,
+            SCREEN_HEIGHT_f32 * growth_factor as f32,
+        ));
         let shifted_mesh: Mesh2dHandle = meshes.add(shifted_mesh).into();
         let shifted_mat = shifted_palette_mats.add(ShiftedPaletteMat::new(image, shift, palette));
         // Then draw
+
         commands
             .spawn((
                 Name::new(format!("{name}_intermediate_image")),
                 shifted_mesh,
                 shifted_mat,
-                SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
+                SpatialBundle::from(Transform {
+                    translation: Vec3::Z * zix as f32,
+                    scale: (Vec2::ONE * (WINDOW_GROWTH as f32 / growth_factor as f32)).extend(1.0),
+                    ..default()
+                }),
                 squash_layer.clone(),
             ))
             .set_parent(root);
@@ -213,6 +240,7 @@ fn setup_layer_materials(
         shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
+        BgLayer::growth_factor(),
     );
     setup_simple_layer(
         "static_image",
@@ -225,6 +253,7 @@ fn setup_layer_materials(
         shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
+        StaticLayer::growth_factor(),
     );
     setup_simple_layer(
         "fg_image",
@@ -237,6 +266,20 @@ fn setup_layer_materials(
         shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
+        FgLayer::growth_factor(),
+    );
+    setup_simple_layer(
+        "text_image",
+        camera_targets.text_target.clone(),
+        camera_targets.palette_target.clone(),
+        TextLayer::to_i32(),
+        palette.clone(),
+        &mut commands,
+        meshes.as_mut(),
+        shifted_palette_mats.as_mut(),
+        squash_layer.clone(),
+        root.eid(),
+        TextLayer::growth_factor(),
     );
     setup_simple_layer(
         "menu_image",
@@ -249,6 +292,7 @@ fn setup_layer_materials(
         shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
+        MenuLayer::growth_factor(),
     );
     setup_simple_layer(
         "transition_image",
@@ -261,6 +305,7 @@ fn setup_layer_materials(
         shifted_palette_mats.as_mut(),
         squash_layer.clone(),
         root.eid(),
+        TransitionLayer::growth_factor(),
     );
 
     /// Sets up a layer that applies both shifting and lighting
@@ -329,7 +374,11 @@ fn setup_layer_materials(
                 Name::new(format!("{name}_image")),
                 lighted_mesh,
                 lighted_mat,
-                SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
+                SpatialBundle::from_transform(Transform {
+                    translation: Vec3::Z * zix as f32,
+                    scale: (Vec2::ONE * WINDOW_GROWTH as f32).extend(1.0),
+                    ..default()
+                }),
                 squash_layer,
             ))
             .set_parent(root);
@@ -519,6 +568,12 @@ fn setup_layer_cameras(
         FgLayer,
         "fg_camera",
         camera_targets.fg_target.clone(),
+        false
+    );
+    spawn_layer_camera!(
+        TextLayer,
+        "text_camera",
+        camera_targets.text_target.clone(),
         false
     );
     spawn_layer_camera!(

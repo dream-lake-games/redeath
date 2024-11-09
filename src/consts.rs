@@ -35,7 +35,7 @@ pub const ZIX_PLANK_FALL: f32 = 5.0;
 pub const ZIX_FRAGILE_ICE: f32 = 5.1;
 
 pub const ZIX_CONVO_BG: f32 = 10.0;
-pub const ZIX_CONVO_TEXT: f32 = 10.0;
+pub const ZIX_CONVO_TEXT: f32 = 20.0;
 pub const ZIX_CONVO_PORTRAIT: f32 = 30.0;
 
 pub const COLOR_NONE: Color = Color::linear_rgba(0.0, 0.0, 0.0, 0.0);

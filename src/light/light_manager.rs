@@ -63,7 +63,7 @@ impl<LightAnim: LightAnimRadius> Component for Light<LightAnim> {
             world.commands().entity(eid).insert(anim_man);
 
             // Add the image
-            let image = blank_screen_image();
+            let image = blank_screen_image(1);
             let mut images = world.resource_mut::<Assets<Image>>();
             let image_hand = images.add(image);
 
