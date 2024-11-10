@@ -27,13 +27,13 @@ impl Component for ParallaxX {
 }
 
 #[derive(Clone, Debug, Reflect)]
-struct ParallaxY {
+pub(super) struct ParallaxY {
     scratch: f32,
     mult: f32,
     wrap_size: f32,
 }
 impl ParallaxY {
-    fn new(mult: f32, wrap_size: f32) -> Self {
+    pub fn new(mult: f32, wrap_size: f32) -> Self {
         Self {
             scratch: 0.0,
             mult,
@@ -58,27 +58,38 @@ struct LastCameraPos(Pos);
 fn update_parallaxes(
     camera: Query<&Pos, (With<DynamicCamera>, Without<ParallaxX>, Without<ParallaxY>)>,
     mut last_camera_tran: ResMut<LastCameraPos>,
-    mut pxs: Query<(&mut Transform, &mut ParallaxX), (Without<DynamicCamera>, Without<ParallaxY>)>,
-    mut pys: Query<(&mut Transform, &mut ParallaxY), (Without<DynamicCamera>, Without<ParallaxY>)>,
+    mut pxs: Query<
+        (
+            &mut Transform,
+            Option<&mut ParallaxX>,
+            Option<&mut ParallaxY>,
+        ),
+        (
+            Without<DynamicCamera>,
+            Or<(With<ParallaxX>, With<ParallaxY>)>,
+        ),
+    >,
 ) {
     let Ok(cam_pos) = camera.get_single() else {
         return;
     };
     let diff = last_camera_tran.0.as_vec2() - cam_pos.as_vec2();
     last_camera_tran.0 = cam_pos.clone();
-    for (mut tran, mut px) in &mut pxs {
-        px.scratch = tran.translation.x + diff.x * px.mult;
-        while px.scratch > px.wrap_size / 2.0 {
-            px.scratch += tran.translation.x.signum() * -1.0 * px.wrap_size;
+    for (mut tran, mut px, mut py) in &mut pxs {
+        if let Some(px) = px.as_mut() {
+            px.scratch = tran.translation.x + diff.x * px.mult;
+            while px.scratch.abs() > px.wrap_size / 2.0 {
+                px.scratch += px.scratch.signum() * -1.0 * px.wrap_size;
+            }
+            tran.translation.x = px.scratch;
         }
-        tran.translation.x = px.scratch;
-    }
-    for (mut tran, mut py) in &mut pys {
-        py.scratch = tran.translation.y + diff.y * py.mult;
-        while tran.translation.y.abs() > py.wrap_size / 2.0 {
-            tran.translation.y += tran.translation.y.signum() * -1.0 * py.wrap_size;
+        if let Some(py) = py.as_mut() {
+            py.scratch = tran.translation.y + diff.y * py.mult;
+            while py.scratch.abs() > py.wrap_size / 2.0 {
+                py.scratch += py.scratch.signum() * -1.0 * py.wrap_size;
+            }
+            tran.translation.y = py.scratch;
         }
-        tran.translation.y = py.scratch;
     }
 }
 

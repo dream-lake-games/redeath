@@ -71,7 +71,7 @@ fn follow_dynamic_camera(
 
 pub(super) fn register_camera_movement(app: &mut App) {
     app.add_systems(
-        PostUpdate,
+        Update,
         (move_camera, clamp_camera_in_level, follow_dynamic_camera)
             .chain()
             .in_set(CameraSet)

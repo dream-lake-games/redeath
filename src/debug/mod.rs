@@ -18,32 +18,7 @@ fn _spawn_light(pos: Pos, commands: &mut Commands) {
     ));
 }
 
-fn debug_update(mut commands: Commands, keyboard: Res<ButtonInput<KeyCode>>) {
-    if keyboard.just_pressed(KeyCode::KeyU) {
-        commands.trigger(StartConvoLake::Hello);
-    }
-}
-
-fn enter_state() {
-    println!("entered state");
-}
-
-fn my_in_state() {
-    if thread_rng().gen_bool(0.01) {
-        println!("in state rate limited");
-    }
-}
-
-fn exit_state() {
-    println!("exited state");
-}
-
-fn start_trigger(trigger: Trigger<ConvoLakeStarted>) {
-    println!("start_trigger: {:?}", trigger.event());
-}
-fn end_trigger(trigger: Trigger<ConvoLakeEnded>) {
-    println!("end_trigger: {:?}", trigger.event());
-}
+fn debug_update() {}
 
 pub(super) struct DebugPlugin;
 impl Plugin for DebugPlugin {
@@ -51,12 +26,5 @@ impl Plugin for DebugPlugin {
         app.add_systems(Startup, debug_startup.after(RootInit));
         app.add_systems(Update, debug_update);
         draw_hitboxes::register_draw_hitboxes(app);
-
-        app.observe(start_trigger);
-        app.observe(end_trigger);
-
-        app.add_systems(OnEnter(ConvoMetaState::Some), enter_state);
-        app.add_systems(Update, my_in_state.run_if(in_state(ConvoMetaState::Some)));
-        app.add_systems(OnEnter(ConvoMetaState::None), exit_state);
     }
 }

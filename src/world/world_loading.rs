@@ -1,6 +1,10 @@
 use crate::prelude::*;
 
-fn on_enter_loading(mut commands: Commands, mut songs: ResMut<SongManager>) {
+fn on_enter_loading(
+    mut commands: Commands,
+    mut songs: ResMut<SongManager>,
+    mut rain_manager: ResMut<RainManager>,
+) {
     commands.trigger(UnloadMyLdtk);
     commands.trigger(StartMyLdtkLoad {
         world_path: "worlds/lake.ldtk".to_string(),
@@ -37,6 +41,7 @@ fn on_enter_loading(mut commands: Commands, mut songs: ResMut<SongManager>) {
         num5s: 24,
         num7s: 12,
     });
+    rain_manager.show();
 }
 
 fn update_loading(

@@ -6,6 +6,7 @@ mod light_anim;
 mod menu_anim;
 mod player_anim;
 mod star_anim;
+mod storm_anim;
 mod transition_anim;
 
 pub use animals_anim::*;
@@ -14,6 +15,7 @@ pub use light_anim::*;
 pub use menu_anim::*;
 pub use player_anim::*;
 pub use star_anim::*;
+pub use storm_anim::*;
 pub use transition_anim::TransitionAnim;
 
 #[derive(Bundle)]
@@ -82,6 +84,7 @@ impl Plugin for MyAnimPlugin {
         light_anim::register_light_anim(app);
         menu_anim::register_menu_anim(app);
         player_anim::register_player_anim(app);
+        storm_anim::register_storm_anim(app);
         star_anim::register_star_anim(app);
         transition_anim::register_transition_anim(app);
     }

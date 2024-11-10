@@ -74,8 +74,9 @@ fn juice_after_dash(
     global_shift.add(consts.dash_global_shift_time / 2.0, 1);
     global_shift.add(consts.dash_global_shift_time, 1);
 
-    // Thunder
+    // Storm
     commands.spawn(SoundEffect::PlayerThunder);
+    commands.spawn(Lightning);
 
     // Bullet time
     bullet_time.set_temp(BulletTimeSpeed::Stopped, consts.dash_stop_time_time);
