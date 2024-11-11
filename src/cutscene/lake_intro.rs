@@ -2,15 +2,52 @@ use crate::prelude::*;
 
 use super::cutlude::*;
 
-fn on_enter(root: Res<ConvoRoot>, mut commands: Commands) {
-    commands.observe(start_intro_convo).set_parent(root.eid());
-
-    commands.spawn(DoInSeconds::new(StartIntroConvo, 1.0));
+#[derive(Bundle)]
+struct FriendBundle {
+    name: Name,
+    pos: Pos,
+    dyno: Dyno,
+    spatial: SpatialBundle,
+    anim: AnimMan<FriendAnim>,
+    light: Light<LightStatic64Anim>,
+}
+impl FriendBundle {
+    fn new(pos: Pos) -> Self {
+        Self {
+            name: Name::new("friend"),
+            pos,
+            dyno: Dyno::new(36.0, 0.0),
+            spatial: pos.to_spatial(ZIX_PLAYER),
+            anim: AnimMan::new(FriendAnim::Run),
+            light: default(),
+        }
+    }
+}
+fn update_friend(
+    mut friend_q: Query<(&Pos, &mut AnimMan<FriendAnim>, &mut Dyno)>,
+    player_q: Query<&Pos, With<Player>>,
+    mut commands: Commands,
+) {
+    let (Ok((friend_pos, mut friend_anim, mut friend_dyno)), Ok(player_pos)) =
+        (friend_q.get_single_mut(), player_q.get_single())
+    else {
+        return;
+    };
+    if player_pos.x - 38.0 < friend_pos.x && friend_dyno.vel.x > 10.0 {
+        friend_anim.set_state(FriendAnim::Stand);
+        friend_dyno.vel.x = 0.0;
+        commands.spawn(DoInSeconds::new(StartIntroConvo, 0.2));
+    }
 }
 
-fn init_puppet(mut player_anim: Query<&mut AnimMan<PlayerAnim>>) {
-    let mut player_anim = player_anim.single_mut();
+fn on_enter(root: Res<ConvoRoot>, mut commands: Commands) {
+    commands.observe(start_intro_convo).set_parent(root.eid());
+}
+
+fn init_puppet(mut player_q: Query<(&Pos, &mut AnimMan<PlayerAnim>)>, mut commands: Commands) {
+    let (pos, mut player_anim) = player_q.single_mut();
     player_anim.set_state(PlayerAnim::EdgeSitting);
+    commands.spawn(FriendBundle::new(pos.translated(Vec2::new(-128.0, 10.0))));
 }
 
 decl_cutscene_event!(
@@ -25,6 +62,8 @@ fn update() {}
 fn on_exit() {}
 
 pub(super) fn register_lake_intro(app: &mut App) {
-    add_basic_systems!(app, LakeIntro);
+    add_common_systems!(app, LakeIntro);
     add_puppet_init!(app, LakeIntro);
+
+    add_update_systems!(app, LakeIntro, update_friend);
 }

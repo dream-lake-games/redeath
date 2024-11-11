@@ -4,6 +4,13 @@ use crate::prelude::*;
 pub struct Dyno {
     pub vel: Vec2,
 }
+impl Dyno {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self {
+            vel: Vec2::new(x, y),
+        }
+    }
+}
 
 #[derive(Clone, Debug, Reflect, Default)]
 pub struct DynoFacing;

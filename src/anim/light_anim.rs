@@ -19,6 +19,20 @@ impl LightAnimRadius for PlayerLightAnim {
 }
 
 derive_anim!(
+    pub enum LightStatic64Anim {
+        #[default]
+        #[file("light/static64.png")]
+        #[size(64, 64)]
+        #[render_layers(LightLayer)]
+        Static64,
+    }
+);
+type LightStatic64AnimPlugin = AnimDefnPlugin<LightStatic64Anim, AnimTimeRes>;
+impl LightAnimRadius for LightStatic64Anim {
+    const RADIUS: f32 = 32.0;
+}
+
+derive_anim!(
     pub enum FireflyLightAnim {
         #[default]
         #[file("clear.png")]
@@ -54,5 +68,6 @@ impl LightAnimRadius for FireflyLightAnim {
 
 pub(super) fn register_light_anim(app: &mut App) {
     app.add_plugins(PlayerLightAnimPlugin::default());
+    app.add_plugins(LightStatic64AnimPlugin::default());
     app.add_plugins(FireflyLightAnimPlugin::default());
 }

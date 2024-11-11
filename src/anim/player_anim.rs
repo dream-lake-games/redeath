@@ -145,6 +145,22 @@ derive_anim!(
 );
 type DashFadeAnimPlugin = AnimDefnPlugin<DashFadeAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum FriendAnim {
+        #[default]
+        #[file("player/cutscenes/friend_stand.png")]
+        #[size(22, 22)]
+        #[render_layers(StaticLayer)]
+        Stand,
+        #[file("player/cutscenes/friend_run.png")]
+        #[size(22, 22)]
+        #[length(5)]
+        #[render_layers(StaticLayer)]
+        Run,
+    }
+);
+type FriendAnimPlugin = AnimDefnPlugin<FriendAnim, AnimTimeRes>;
+
 pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(PlayerAnimPlugin::default());
     app.add_plugins(JumpSmokeAnimPlugin::default());
@@ -152,4 +168,5 @@ pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(RunSmokeAnimPlugin::default());
     app.add_plugins(DashDieAnimPlugin::default());
     app.add_plugins(DashFadeAnimPlugin::default());
+    app.add_plugins(FriendAnimPlugin::default());
 }
