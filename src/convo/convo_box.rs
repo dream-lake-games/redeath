@@ -1,3 +1,5 @@
+use std::ops::SubAssign;
+
 use bevy::ecs::query::QuerySingleError;
 
 use crate::prelude::*;
@@ -17,7 +19,7 @@ impl ConvoBox {
             name: Name::new("box_root"),
             root: ConvoBoxRoot,
             spatial: SpatialBundle {
-                // visibility: Visibility::Hidden,
+                visibility: Visibility::Hidden,
                 transform: Transform::from_translation(Vec3::new(
                     0.0,
                     -56.0 * TextLayer::growth_factor() as f32,
@@ -91,10 +93,18 @@ impl ConvoManager {
 /// Finishes loading a single box, despawning stale ones
 fn finish_loading_box(
     mut commands: Commands,
-    mut loading: Query<(Entity, &mut ConvoBoxRootLoading, &mut Visibility), With<ConvoBoxRoot>>,
+    mut loading: Query<
+        (
+            Entity,
+            &mut ConvoBoxRootLoading,
+            &mut Visibility,
+            &ConvoSpeaker,
+        ),
+        With<ConvoBoxRoot>,
+    >,
     stale: Query<Entity, (With<ConvoBoxRoot>, Without<ConvoBoxRootLoading>)>,
 ) {
-    let (eid, mut loading, mut viz) = match loading.get_single_mut() {
+    let (eid, mut loading, mut viz, speaker) = match loading.get_single_mut() {
         Ok(loading) => loading,
         Err(QuerySingleError::NoEntities(_)) => return,
         Err(QuerySingleError::MultipleEntities(_)) => {
@@ -105,7 +115,12 @@ fn finish_loading_box(
     loading.frames_left = loading.frames_left.saturating_sub(1);
     if loading.frames_left == 0 {
         commands.entity(eid).remove::<ConvoBoxRootLoading>();
-        *viz = Visibility::Inherited;
+        match speaker {
+            ConvoSpeaker::Silence(_) => {}
+            _ => {
+                *viz = Visibility::Inherited;
+            }
+        }
         commands.entity(eid).insert(ConvoTextStarted);
         for oid in &stale {
             commands.entity(oid).despawn_recursive();
@@ -115,14 +130,16 @@ fn finish_loading_box(
 
 fn update_managers(
     mut manager_q: Query<(Entity, &mut ConvoManager)>,
-    boxes_q: Query<(
+    mut boxes_q: Query<(
         Entity,
         &ConvoBoxRoot,
         Option<&ConvoTextStarted>,
         Option<&ConvoTextDone>,
+        &mut ConvoSpeaker,
     )>,
     mut commands: Commands,
     butt: Res<ButtInput>,
+    time: Res<Time>,
 ) {
     let (eid, mut manager) = match manager_q.get_single_mut() {
         Ok(manager) => manager,
@@ -146,9 +163,32 @@ fn update_managers(
             return;
         }
 
-        let has_forward_input = butt.just_pressed(ButtKind::A) | butt.just_pressed(ButtKind::Enter);
-        if !has_forward_input {
-            return;
+        let special_silence = boxes_q
+            .iter_mut()
+            .filter(|multi| {
+                multi.2.is_none()
+                    && multi.3.is_some()
+                    && matches!(multi.4.as_ref(), ConvoSpeaker::Silence(_))
+            })
+            .next();
+        match special_silence {
+            Some(mut multi) => match multi.4.as_mut() {
+                ConvoSpeaker::Silence(inner) => {
+                    inner.sub_assign(time.delta_seconds());
+                    if *inner <= 0.0 {
+                        if let Some(next_box) = manager.boxes.pop() {
+                            commands.spawn(next_box);
+                        } else {
+                            for multi in &boxes_q {
+                                commands.entity(multi.0).despawn_recursive();
+                            }
+                        }
+                        return;
+                    }
+                }
+                _ => {}
+            },
+            None => {}
         }
 
         let started = boxes_q
@@ -159,6 +199,12 @@ fn update_managers(
             .iter()
             .filter(|multi| multi.3.is_some())
             .collect::<Vec<_>>();
+
+        let has_forward_input = butt.just_pressed(ButtKind::A) | butt.just_pressed(ButtKind::Enter);
+        if !has_forward_input {
+            return;
+        }
+
         match (started.is_empty(), done.is_empty()) {
             (true, true) => unreachable!(),
             (false, _) => {
@@ -181,5 +227,6 @@ fn update_managers(
 }
 
 pub(super) fn register_convo_box(app: &mut App) {
+    reg_types!(app, ConvoSpeaker);
     app.add_systems(Update, (finish_loading_box, update_managers));
 }

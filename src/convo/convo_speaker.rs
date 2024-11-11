@@ -1,8 +1,10 @@
 use crate::prelude::*;
 
-#[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Reflect, PartialEq)]
 pub enum ConvoSpeaker {
+    Silence(f32),
     Lenny,
+    Friend,
 }
 
 #[derive(Component, Clone, Copy, Debug, Reflect, PartialEq, Eq)]
@@ -42,8 +44,12 @@ impl Component for ConvoSpeaker {
             }
 
             match (speaker, emotion) {
+                (ConvoSpeaker::Silence(_), _) => {}
                 (ConvoSpeaker::Lenny, _) => {
                     static_portrait!(world, "convo/lenny/default.png");
+                }
+                (ConvoSpeaker::Friend, _) => {
+                    static_portrait!(world, "convo/friend/default.png");
                 }
             }
         });

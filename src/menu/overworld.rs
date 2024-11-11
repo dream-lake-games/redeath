@@ -56,7 +56,7 @@ fn update_overworld(butts: Res<ButtInput>, mut commands: Commands) {
     if butts.pressed(ButtKind::Enter) || butts.pressed(ButtKind::A) {
         commands.trigger(StartTransition::to(
             WorldLoadingState {
-                kind: WorldKind::Lake,
+                kind: WorldKind::Canyon,
                 level_iid: "d32f7850-73f0-11ef-ab29-c106faf0247d".to_string(),
             }
             .to_meta_state(),

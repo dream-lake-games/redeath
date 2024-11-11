@@ -22,7 +22,7 @@ pub enum PlayerMetaState {
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum WorldKind {
-    Lake,
+    Canyon,
 }
 #[derive(Clone, Debug, Reflect)]
 pub struct WorldKindData {
@@ -31,7 +31,7 @@ pub struct WorldKindData {
 impl WorldKind {
     pub fn to_data(&self) -> WorldKindData {
         match self {
-            Self::Lake => WorldKindData {
+            Self::Canyon => WorldKindData {
                 ldtk_path: "worlds/lake.ldtk".into(),
             },
         }

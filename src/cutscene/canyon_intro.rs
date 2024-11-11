@@ -53,7 +53,7 @@ fn init_puppet(mut player_q: Query<(&Pos, &mut AnimMan<PlayerAnim>)>, mut comman
 decl_cutscene_event!(
     StartIntroConvo,
     fn start_intro_convo(_trigger: Trigger<StartIntroConvo>, mut commands: Commands) {
-        commands.trigger(StartConvoLake::Hello);
+        commands.trigger(StartConvoCanyon::Hello);
     }
 );
 
@@ -61,9 +61,9 @@ fn update() {}
 
 fn on_exit() {}
 
-pub(super) fn register_lake_intro(app: &mut App) {
-    add_common_systems!(app, LakeIntro);
-    add_puppet_init!(app, LakeIntro);
+pub(super) fn register_canyon_intro(app: &mut App) {
+    add_common_systems!(app, CanyonIntro);
+    add_puppet_init!(app, CanyonIntro);
 
-    add_update_systems!(app, LakeIntro, update_friend);
+    add_update_systems!(app, CanyonIntro, update_friend);
 }

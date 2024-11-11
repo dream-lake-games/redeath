@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
+mod canyon_intro;
 mod cutscene_macros;
-mod lake_intro;
 
 mod cutlude {
     use crate::prelude::*;
@@ -73,6 +73,6 @@ impl Plugin for CutscenePlugin {
             drive_do_in_seconds.run_if(not(in_state(CutsceneState::None))),
         );
 
-        lake_intro::register_lake_intro(app);
+        canyon_intro::register_canyon_intro(app);
     }
 }

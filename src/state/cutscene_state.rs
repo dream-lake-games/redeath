@@ -4,5 +4,5 @@ use crate::prelude::*;
 pub enum CutsceneState {
     #[default]
     None,
-    LakeIntro,
+    CanyonIntro,
 }

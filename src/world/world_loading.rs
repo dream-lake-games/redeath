@@ -12,12 +12,12 @@ fn on_enter_loading(
     let kind = loading_state.get().kind;
     let level_iid = loading_state.get().level_iid.clone();
     match kind {
-        WorldKind::Lake => {
+        WorldKind::Canyon => {
             // Common things
             songs.fade_to(Song::Elegy);
             storm.show_rain();
             commands.trigger(StartMyLdtkLoad {
-                world_path: "worlds/lake.ldtk".to_string(),
+                world_path: kind.to_data().ldtk_path,
                 level_iid: level_iid.clone(),
             });
             commands.spawn(BlackScreenImage);
@@ -53,7 +53,7 @@ fn on_enter_loading(
             match level_iid.as_str() {
                 "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
                     //
-                    cutscene_state.set(CutsceneState::LakeIntro);
+                    cutscene_state.set(CutsceneState::CanyonIntro);
                 }
                 _ => panic!("bad level_iid"),
             }

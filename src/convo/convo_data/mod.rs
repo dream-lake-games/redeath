@@ -1,11 +1,11 @@
 use crate::prelude::*;
 
-pub mod convo_lake;
+pub mod convo_canyon;
 
-pub use convo_lake::*;
+pub use convo_canyon::*;
 
 pub(super) fn register_convo_data(app: &mut App) {
-    app.add_plugins(ConvoLakePlugin::new());
+    app.add_plugins(ConvoCanyonPlugin::new());
 }
 
 pub struct ConvoDataPlugin<T: ConvoKind> {

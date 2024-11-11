@@ -27,7 +27,7 @@ struct ConvoTextProgress {
 }
 impl ConvoTextProgress {
     const fn word_time() -> f32 {
-        0.03
+        0.06
     }
 
     fn new(content: String) -> Self {
@@ -47,6 +47,7 @@ impl ConvoTextProgress {
             Some(word) => {
                 self.shown += &word;
                 self.shown += " ";
+                self.time_till_next_word = Self::word_time();
                 true
             }
             None => false,
