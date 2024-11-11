@@ -53,7 +53,7 @@ impl ComputedStates for WorldKind {
     type SourceStates = (Option<WorldLoadingState>, Option<WorldState>);
     fn compute(sources: Self::SourceStates) -> Option<Self> {
         match sources {
-            (Some(WorldLoadingState { kind }), None) => Some(kind),
+            (Some(WorldLoadingState { kind, .. }), None) => Some(kind),
             (None, Some(WorldState { kind, .. })) => Some(kind),
             _ => None,
         }

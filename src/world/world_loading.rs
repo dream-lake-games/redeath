@@ -1,47 +1,64 @@
 use crate::prelude::*;
 
 fn on_enter_loading(
+    loading_state: Res<State<WorldLoadingState>>,
     mut commands: Commands,
     mut songs: ResMut<SongManager>,
-    mut rain_manager: ResMut<RainManager>,
+    mut storm: ResMut<StormManager>,
+    mut cutscene_state: ResMut<NextState<CutsceneState>>,
 ) {
     commands.trigger(UnloadMyLdtk);
-    commands.trigger(StartMyLdtkLoad {
-        world_path: "worlds/lake.ldtk".to_string(),
-        level_iid: "d32f7850-73f0-11ef-ab29-c106faf0247d".to_string(),
-    });
-    songs.fade_to(Song::Elegy);
-    commands.spawn(BlackScreenImage);
-    commands.spawn(BgClouds::new(
-        "environment/bg/clouds_far.png",
-        480,
-        184,
-        0.0,
-        0.01,
-        1.0,
-    ));
-    commands.spawn(
-        ParallaxScreenImage::new_bg("environment/bg/mountains_far.png", 720, 184, 5.0)
-            .with_parallax_x(0.03),
-    );
-    commands.spawn(BgClouds::new(
-        "environment/bg/clouds_close.png",
-        480,
-        184,
-        10.0,
-        0.02,
-        3.0,
-    ));
-    commands.spawn(
-        ParallaxScreenImage::new_bg("environment/bg/mountains_close.png", 720, 184, 15.0)
-            .with_parallax_x(0.12),
-    );
-    commands.trigger(SpawnStarsEvent {
-        num3s: 12,
-        num5s: 24,
-        num7s: 12,
-    });
-    rain_manager.show();
+
+    let kind = loading_state.get().kind;
+    let level_iid = loading_state.get().level_iid.clone();
+    match kind {
+        WorldKind::Lake => {
+            // Common things
+            songs.fade_to(Song::Elegy);
+            storm.show_rain();
+            commands.trigger(StartMyLdtkLoad {
+                world_path: "worlds/lake.ldtk".to_string(),
+                level_iid: level_iid.clone(),
+            });
+            commands.spawn(BlackScreenImage);
+            commands.spawn(BgClouds::new(
+                "environment/bg/clouds_far.png",
+                480,
+                184,
+                0.0,
+                0.01,
+                1.0,
+            ));
+            commands.spawn(
+                ParallaxScreenImage::new_bg("environment/bg/mountains_far.png", 720, 184, 5.0)
+                    .with_parallax_x(0.03),
+            );
+            commands.spawn(BgClouds::new(
+                "environment/bg/clouds_close.png",
+                480,
+                184,
+                10.0,
+                0.02,
+                3.0,
+            ));
+            commands.spawn(
+                ParallaxScreenImage::new_bg("environment/bg/mountains_close.png", 720, 184, 15.0)
+                    .with_parallax_x(0.12),
+            );
+            commands.trigger(SpawnStarsEvent {
+                num3s: 12,
+                num5s: 24,
+                num7s: 12,
+            });
+            match level_iid.as_str() {
+                "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
+                    //
+                    cutscene_state.set(CutsceneState::LakeIntro);
+                }
+                _ => panic!("bad level_iid"),
+            }
+        }
+    }
 }
 
 fn update_loading(

@@ -254,6 +254,6 @@ pub(super) fn register_player_juice(app: &mut App) {
         (juice_during_dash, juice_wall_slide, player_impact_sounds)
             .in_set(PlayerSet)
             .after(PhysicsSet)
-            .run_if(in_state(PlayerMetaState::Playing).or_else(in_state(PlayerMetaState::Puppet))),
+            .run_if(in_state(PlayerMetaState::Playing)),
     );
 }

@@ -3,16 +3,16 @@ use crate::prelude::*;
 use super::parallax::{ParallaxX, ParallaxY};
 
 #[derive(Default, Resource)]
-pub struct RainManager {
-    last_shown: bool,
-    shown: bool,
+pub struct StormManager {
+    last_show_rain: bool,
+    show_rain: bool,
 }
-impl RainManager {
-    pub fn show(&mut self) {
-        self.shown = true;
+impl StormManager {
+    pub fn show_rain(&mut self) {
+        self.show_rain = true;
     }
-    pub fn hide(&mut self) {
-        self.shown = false;
+    pub fn hide_rain(&mut self) {
+        self.show_rain = false;
     }
 }
 
@@ -73,21 +73,21 @@ impl Component for Lightning {
 }
 
 fn update_rain(
-    mut manager: ResMut<RainManager>,
+    mut manager: ResMut<StormManager>,
     mut commands: Commands,
     root: Res<WorldDetailRoot>,
     existing_q: Query<Entity, With<AnimMan<RainTallAnim>>>,
 ) {
-    match (manager.last_shown, manager.shown) {
+    match (manager.last_show_rain, manager.show_rain) {
         (false, true) => {
             //shutup rust
             commands.spawn(RainTallBundle::new()).set_parent(root.eid());
-            manager.last_shown = true;
+            manager.last_show_rain = true;
         }
         (true, false) => {
             for eid in &existing_q {
                 commands.entity(eid).despawn_recursive();
-                manager.last_shown = false;
+                manager.last_show_rain = false;
             }
         }
         _ => {}
@@ -95,7 +95,7 @@ fn update_rain(
 }
 
 pub(super) fn register_rain(app: &mut App) {
-    app.insert_resource(RainManager::default());
+    app.insert_resource(StormManager::default());
 
     app.add_systems(Update, update_rain);
 }

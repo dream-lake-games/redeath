@@ -64,6 +64,11 @@ derive_anim!(
         #[file("clear.png")]
         #[size(1, 1)]
         AfterDeath,
+        // CUTSCENES
+        #[file("player/cutscenes/edge_sitting.png")]
+        #[size(22, 22)]
+        #[render_layers(StaticLayer)]
+        EdgeSitting,
     }
 );
 type PlayerAnimPlugin = AnimDefnPlugin<PlayerAnim, AnimTimeRes>;

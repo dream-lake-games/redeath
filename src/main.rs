@@ -3,6 +3,7 @@ pub mod bgfg;
 pub mod camera;
 pub mod consts;
 pub mod convo;
+mod cutscene;
 pub mod debug;
 pub mod input;
 pub mod layer;
@@ -85,6 +86,7 @@ fn main() {
     app.add_plugins(CameraPlugin)
         .add_plugins(BgFgPlugin)
         .add_plugins(ConvoPlugin)
+        .add_plugins(cutscene::CutscenePlugin)
         .add_plugins(debug::DebugPlugin)
         .add_plugins(InputPlugin)
         .add_plugins(LayerPlugin)

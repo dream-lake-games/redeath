@@ -78,6 +78,7 @@ fn spawn_player(
     mut commands: Commands,
     active_spawn_pos: Query<(&Pos, &SpawnedLid), (With<SpawnPointActive>, Without<DynamicCamera>)>,
     world_state: Res<State<WorldState>>,
+    cutscene_state: Res<State<CutsceneState>>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
     root: Res<WorldRoot>,
     mut camera_pos: Query<&mut Pos, (With<DynamicCamera>, Without<SpawnPointActive>)>,
@@ -103,7 +104,10 @@ fn spawn_player(
         .set_parent(root.eid())
         .id();
     let mut world_state = world_state.get().clone();
-    world_state.player_meta_state = PlayerMetaState::Playing;
+    world_state.player_meta_state = match cutscene_state.get() {
+        CutsceneState::None => PlayerMetaState::Playing,
+        _ => PlayerMetaState::Puppet,
+    };
     next_meta_state.set(world_state.to_meta_state());
     let mut cam_pos = camera_pos.single_mut();
     *cam_pos = spawn_pos.clone();

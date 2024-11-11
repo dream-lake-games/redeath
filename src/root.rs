@@ -145,6 +145,7 @@ impl_root_init!(
     ObserveRoot,
     SoundRoot,
     ConvoRoot,
+    CutsceneRoot,
 );
 
 impl_subroot_init!(

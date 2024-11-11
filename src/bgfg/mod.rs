@@ -8,7 +8,7 @@ mod storm;
 pub use bg_clouds::BgClouds;
 pub use bg_stars::SpawnStarsEvent;
 pub use parallax::{BlackScreenImage, ParallaxScreenImage};
-pub use storm::{Lightning, RainManager};
+pub use storm::{Lightning, StormManager};
 
 pub(super) struct BgFgPlugin;
 impl Plugin for BgFgPlugin {

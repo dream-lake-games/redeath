@@ -1,14 +1,16 @@
 use crate::prelude::*;
 
 pub mod computed;
-pub mod menu;
-pub mod world;
-pub mod world_loading;
+pub mod cutscene_state;
+pub mod menu_state;
+pub mod world_loading_state;
+pub mod world_state;
 
 pub(crate) use computed::*;
-pub use menu::*;
-pub use world::*;
-pub use world_loading::*;
+pub use cutscene_state::*;
+pub use menu_state::*;
+pub use world_loading_state::*;
+pub use world_state::*;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
 pub enum MetaState {
@@ -61,6 +63,7 @@ impl Plugin for StatePlugin {
         app.insert_state(TransitionState::default());
         app.insert_state(PauseState::Unpaused);
         app.insert_state(ConvoMetaState::None);
+        app.insert_state(CutsceneState::None);
 
         app.add_computed_state::<MetaStateKind>();
         app.add_computed_state::<PhysicsState>();

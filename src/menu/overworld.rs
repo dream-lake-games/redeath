@@ -57,6 +57,7 @@ fn update_overworld(butts: Res<ButtInput>, mut commands: Commands) {
         commands.trigger(StartTransition::to(
             WorldLoadingState {
                 kind: WorldKind::Lake,
+                level_iid: "d32f7850-73f0-11ef-ab29-c106faf0247d".to_string(),
             }
             .to_meta_state(),
         ));

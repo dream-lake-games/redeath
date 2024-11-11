@@ -150,6 +150,6 @@ pub(super) fn register_player_animation(app: &mut App) {
             .after(PlayerDeathSet)
             .after(InputSet)
             .after(PhysicsSet)
-            .run_if(in_state(PlayerMetaState::Puppet).or_else(in_state(PlayerMetaState::Playing))),
+            .run_if(in_state(PlayerMetaState::Playing)),
     );
 }
