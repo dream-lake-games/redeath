@@ -9,3 +9,12 @@ macro_rules! reg_basic_fns {
     };
 }
 pub(super) use reg_basic_fns;
+
+macro_rules! decl_cutscene_event {
+    ($event_name:ident, $fun:item) => {
+        #[derive(Event, Clone)]
+        struct $event_name;
+        $fun
+    };
+}
+pub(super) use decl_cutscene_event;
