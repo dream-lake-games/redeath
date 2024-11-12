@@ -98,11 +98,13 @@ fn normal_movement_animation(
     if touching.down() {
         // On the ground
         if dyno.vel.x.abs() < 1.0 {
-            // Not moving
-            if dir.y < 0.0 {
-                anim.set_state(PlayerAnim::Squat);
-            } else {
-                anim.set_state(PlayerAnim::Stand);
+            if anim.get_state() != PlayerAnim::EdgeSitup {
+                // Not moving
+                if dir.y < 0.0 {
+                    anim.set_state(PlayerAnim::Squat);
+                } else {
+                    anim.set_state(PlayerAnim::Stand);
+                }
             }
         } else {
             // Moving

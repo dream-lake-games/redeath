@@ -86,6 +86,12 @@ derive_anim!(
         #[size(22, 22)]
         #[render_layers(StaticLayer)]
         EdgeSitting,
+        #[file("player/cutscenes/edge_situp.png")]
+        #[size(22, 22)]
+        #[render_layers(StaticLayer)]
+        #[length(2)]
+        #[next(Stand)]
+        EdgeSitup,
     }
 );
 type PlayerAnimPlugin = AnimDefnPlugin<PlayerAnim, AnimTimeRes>;

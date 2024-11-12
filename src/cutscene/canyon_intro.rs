@@ -73,10 +73,14 @@ decl_cutscene_event!(
 fn end_cutscene(
     trigger: Trigger<ConvoCanyonEnded>,
     mut cutscene_state: ResMut<NextState<CutsceneState>>,
+    mut player_anim: Query<&mut AnimMan<PlayerAnim>>,
 ) {
     match trigger.event() {
         ConvoCanyonEnded::Intro => {
             cutscene_state.set(CutsceneState::None);
+            for mut anim in &mut player_anim {
+                anim.set_state(PlayerAnim::EdgeSitup);
+            }
         }
     }
 }
