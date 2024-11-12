@@ -43,6 +43,10 @@ defn_songs!([
     Elegy,
     "music/elegy.ogg",
     0.14,
+    // https://opengameart.org/content/10-free-chiptune-tracks-a-bag-of-chips
+    SinisterAbode,
+    "music/sinister_abode.ogg",
+    0.2,
 ]);
 
 pub(super) fn register_song_defns(app: &mut App) {
