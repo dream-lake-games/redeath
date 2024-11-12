@@ -10,11 +10,20 @@ pub enum OneSound {
     Ignore,
 }
 
+#[derive(Component)]
+pub struct LoopSound;
+
 fn spawn_sound_effects(
     mut commands: Commands,
     existing: Query<(Entity, &SoundEffect), With<PlaybackSettings>>,
     new: Query<
-        (Entity, &SoundEffect, Option<&SoundMult>, Option<&OneSound>),
+        (
+            Entity,
+            &SoundEffect,
+            Option<&SoundMult>,
+            Option<&OneSound>,
+            Option<&LoopSound>,
+        ),
         Without<PlaybackSettings>,
     >,
     sound_root: Res<SoundRoot>,
@@ -30,7 +39,7 @@ fn spawn_sound_effects(
             }
         };
     }
-    for (eid, se, omult, oone) in &new {
+    for (eid, se, omult, oone, repeat) in &new {
         let surviving = match oone {
             Some(OneSound::Replace) => {
                 for eid in exist_map.get(se).unwrap_or(&vec![]) {
@@ -48,7 +57,11 @@ fn spawn_sound_effects(
                 .insert(AudioBundle {
                     source: asset_server.load(se.path()),
                     settings: PlaybackSettings {
-                        mode: PlaybackMode::Despawn,
+                        mode: if repeat.is_none() {
+                            PlaybackMode::Despawn
+                        } else {
+                            PlaybackMode::Loop
+                        },
                         volume: Volume::new(mult),
                         ..default()
                     },

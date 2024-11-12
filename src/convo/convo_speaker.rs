@@ -1,3 +1,5 @@
+use bevy::audio::{PlaybackMode, Volume};
+
 use crate::prelude::*;
 
 #[derive(Clone, Copy, Debug, Reflect, PartialEq)]
@@ -42,14 +44,38 @@ impl Component for ConvoSpeaker {
                         .set_parent(eid);
                 };
             }
+            macro_rules! convo_sound {
+                ($world:expr, $path:literal$(, $mult:literal$(,)?)?) => {
+                    #[allow(unused_mut)]
+                    let mut base_mult = 0.2;
+                    $(
+                        base_mult = $mult;
+                    )?
+                    let ass = world.resource::<AssetServer>();
+                    let hand = ass.load($path);
+                    $world
+                        .commands()
+                        .spawn(AudioBundle {
+                            source: hand,
+                            settings: PlaybackSettings {
+                                mode: PlaybackMode::Despawn,
+                                volume: Volume::new(base_mult),
+                                ..default()
+                            },
+                        })
+                        .set_parent(eid);
+                };
+            }
 
             match (speaker, emotion) {
                 (ConvoSpeaker::Silence(_), _) => {}
                 (ConvoSpeaker::Lenny, _) => {
                     static_portrait!(world, "convo/lenny/default.png");
+                    convo_sound!(world, "convo/lenny/firstdraft.ogg");
                 }
                 (ConvoSpeaker::Friend, _) => {
                     static_portrait!(world, "convo/friend/default.png");
+                    convo_sound!(world, "convo/friend/firstdraft.ogg");
                 }
             }
         });

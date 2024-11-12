@@ -46,7 +46,7 @@ defn_songs!([
     // https://opengameart.org/content/10-free-chiptune-tracks-a-bag-of-chips
     SinisterAbode,
     "music/sinister_abode.ogg",
-    0.2,
+    0.1,
 ]);
 
 pub(super) fn register_song_defns(app: &mut App) {

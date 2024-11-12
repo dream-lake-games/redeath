@@ -65,6 +65,7 @@ fn enter_dying(
     commands.trigger(
         StartTransition::to(world_state.to_meta_state()).with_world_pos(player_pos.as_vec2()),
     );
+    commands.spawn(SoundEffect::PlayerDeath1);
 }
 
 fn exit_dying(mut commands: Commands, player: Query<Entity, With<Player>>) {

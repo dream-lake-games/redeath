@@ -3,7 +3,7 @@ use crate::prelude::*;
 fn on_enter_loading(
     loading_state: Res<State<WorldLoadingState>>,
     mut commands: Commands,
-    mut songs: ResMut<SongManager>,
+    // mut songs: ResMut<SongManager>,
     mut storm: ResMut<StormManager>,
     mut cutscene_state: ResMut<NextState<CutsceneState>>,
 ) {
@@ -14,7 +14,8 @@ fn on_enter_loading(
     match kind {
         WorldKind::Canyon => {
             // Common things
-            songs.fade_to(Song::SinisterAbode);
+            // songs.fade_to(Song::Elegy);
+            commands.spawn(MediumRainBundle::new());
             storm.show_rain();
             commands.trigger(StartMyLdtkLoad {
                 world_path: kind.to_data().ldtk_path,

@@ -51,7 +51,40 @@ defn_effects!([
     PlayerThunder,
     "sound/player/thunder.ogg",
     0.01,
+    PlayerDeath1,
+    "sound/player/death1.ogg",
+    0.02,
+    ReplenishBreak,
+    "sound/replenish/break.ogg",
+    0.025,
+    ReplenishSpawn,
+    "sound/replenish/spawn.ogg",
+    0.02,
+    MediumRain,
+    "sound/world/8bit_medium_rain.ogg",
+    0.02,
 ]);
+
+// Persistent, looped sounds should have public structs from here for management
+#[derive(Component)]
+pub struct MediumRainSound;
+#[derive(Bundle)]
+pub struct MediumRainBundle {
+    name: Name,
+    rain: MediumRainSound,
+    sound: SoundEffect,
+    looped: LoopSound,
+}
+impl MediumRainBundle {
+    pub fn new() -> Self {
+        Self {
+            name: Name::new("medium_rain"),
+            rain: MediumRainSound,
+            sound: SoundEffect::MediumRain,
+            looped: LoopSound,
+        }
+    }
+}
 
 pub(super) fn register_effect_defns(app: &mut App) {
     app.insert_resource(SoundMults::default());

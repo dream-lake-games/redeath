@@ -36,7 +36,7 @@ impl MyLdtkEntity for ReplenishBundle {
 #[derive(Component)]
 struct Replenishing(f32);
 
-fn add_replenishing(
+fn maybe_break(
     mut replenishes: Query<
         (
             Entity,
@@ -54,11 +54,12 @@ fn add_replenishing(
                 .entity(eid)
                 .insert(Replenishing(ReplenishBundle::replenish_time()));
             light.set_state(ReplenishLightAnim::None);
+            commands.spawn(SoundEffect::ReplenishBreak);
         }
     }
 }
 
-fn update_replenishing(
+fn maybe_spawn(
     bullet_time: Res<BulletTime>,
     mut replenishes: Query<(
         Entity,
@@ -75,6 +76,7 @@ fn update_replenishing(
             commands.entity(eid).insert(ReplenishBundle::trigger_tx());
             anim.set_state(ReplenishAnim::Spawn);
             light.set_state(ReplenishLightAnim::Spawn);
+            commands.spawn(SoundEffect::ReplenishSpawn);
         }
     }
 }
@@ -85,10 +87,5 @@ pub(super) fn register_replenish(app: &mut App) {
         "Replenish",
     ));
 
-    app.add_systems(
-        Update,
-        (add_replenishing, update_replenishing)
-            .chain()
-            .after(PlayerSet),
-    );
+    app.add_systems(Update, (maybe_break, maybe_spawn).chain().after(PlayerSet));
 }

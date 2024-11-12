@@ -18,7 +18,7 @@ impl FriendBundle {
             pos,
             dyno: Dyno::new(36.0, 0.0),
             spatial: pos.to_spatial(ZIX_PLAYER - 0.5),
-            anim: AnimMan::new(FriendAnim::Run),
+            anim: AnimMan::new(FriendAnim::Run).with_observe_ix_changes(),
             light: default(),
         }
     }
@@ -39,16 +39,28 @@ fn update_friend(
         commands.spawn(DoInSeconds::new(StartIntroConvo, 0.2));
     }
 }
+fn friend_step_sounds(trigger: Trigger<AnimIxChange<FriendAnim>>, mut commands: Commands) {
+    if trigger.event().state == FriendAnim::Run && trigger.event().ix == 0 {
+        commands.spawn(SoundEffect::PlayerRunStep);
+    }
+}
 
 fn on_enter(root: Res<CutsceneRoot>, mut commands: Commands) {
     commands.observe(start_intro_convo).set_parent(root.eid());
     commands.observe(end_cutscene).set_parent(root.eid());
+    commands.observe(friend_step_sounds).set_parent(root.eid());
 }
 
-fn init_puppet(mut player_q: Query<(&Pos, &mut AnimMan<PlayerAnim>)>, mut commands: Commands) {
+fn init_puppet(
+    mut player_q: Query<(&Pos, &mut AnimMan<PlayerAnim>)>,
+    mut commands: Commands,
+    world_detail_root: Res<WorldDetailRoot>,
+) {
     let (pos, mut player_anim) = player_q.single_mut();
     player_anim.set_state(PlayerAnim::EdgeSitting);
-    commands.spawn(FriendBundle::new(pos.translated(Vec2::new(-128.0, 10.0))));
+    commands
+        .spawn(FriendBundle::new(pos.translated(Vec2::new(-128.0, 10.0))))
+        .set_parent(world_detail_root.eid());
 }
 
 decl_cutscene_event!(
@@ -71,12 +83,17 @@ fn end_cutscene(
 
 fn update() {}
 
-fn on_exit(meta_state: Res<State<MetaState>>, mut next_meta_state: ResMut<NextState<MetaState>>) {
+fn on_exit(
+    meta_state: Res<State<MetaState>>,
+    mut next_meta_state: ResMut<NextState<MetaState>>,
+    mut song_manager: ResMut<SongManager>,
+) {
     let MetaState::World(mut world_state) = meta_state.get().clone() else {
         panic!("canyon_intro bad exit");
     };
     world_state.player_meta_state = PlayerMetaState::Playing;
     next_meta_state.set(world_state.to_meta_state());
+    song_manager.fade_to(Song::SinisterAbode);
 }
 
 pub(super) fn register_canyon_intro(app: &mut App) {
