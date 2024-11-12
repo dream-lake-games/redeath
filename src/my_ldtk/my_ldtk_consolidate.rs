@@ -25,7 +25,11 @@ fn consolidate_int_cells(
     mut commands: Commands,
 ) {
     fn get_key(pos: &Pos, slid: String) -> (i32, i32, String) {
-        ((pos.x / 8.0) as i32, (pos.y / 8.0) as i32, slid)
+        (
+            (pos.x / 8.0).floor() as i32,
+            (pos.y / 8.0).floor() as i32,
+            slid,
+        )
     }
 
     let mut solid8x8_keys: Vec<(i32, i32, String)> =

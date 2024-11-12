@@ -13,11 +13,21 @@ macro_rules! go_next {
 }
 
 fn oob_death(
-    oob_player: Query<Entity, (With<Player>, With<PhysicalLidOob>)>,
+    oob_player: Query<(Entity, &Pos, &PhysicalLid), (With<Player>, With<PhysicalLidOob>)>,
     meta_state: Res<State<MetaState>>,
     mut next_state: ResMut<NextState<MetaState>>,
+    level_rects: Res<LevelRects>,
 ) {
     if !oob_player.is_empty() {
+        let (_, pos, plid) = oob_player.single();
+        if let Some(lid) = &plid.last_known_iid {
+            if let Some(rect) = level_rects.get(lid) {
+                if rect.min.y < pos.y {
+                    // Don't kill when oob on top
+                    return;
+                }
+            }
+        }
         go_next!(meta_state, next_state, Dying);
     }
 }

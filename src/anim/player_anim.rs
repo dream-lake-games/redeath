@@ -5,64 +5,81 @@ derive_anim!(
         #[default]
         #[file("player/movement/stand.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         Stand,
         #[file("player/movement/squat.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         Squat,
         #[file("player/movement/run.png")]
         #[size(22, 22)]
         #[length(5)]
+        #[render_layers(StaticLayer)]
         Run,
         #[file("player/movement/jump.png")]
         #[size(22, 22)]
         #[length(2)]
         #[next(AirUp)]
+        #[render_layers(StaticLayer)]
         Jump,
         #[file("player/movement/air_up.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         AirUp,
         #[file("player/movement/air_up_exhausted.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         AirUpExhausted,
         #[file("player/movement/air_down.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         AirDown,
         #[file("player/movement/air_down_exhausted.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         AirDownExhausted,
         #[file("player/movement/land.png")]
         #[size(22, 22)]
         #[length(2)]
         #[next(Stand)]
+        #[render_layers(StaticLayer)]
         Land,
         #[file("player/movement/wall_slide.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         WallSlide,
         #[file("player/movement/wall_slide_exhausted.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         WallSlideExhausted,
         #[file("player/movement/wall_jump.png")]
         #[size(22, 22)]
         #[next(AirUp)]
+        #[render_layers(StaticLayer)]
         WallJump,
         #[file("player/movement/wall_jump_exhausted.png")]
         #[size(22, 22)]
         #[next(AirUpExhausted)]
+        #[render_layers(StaticLayer)]
         WallJumpExhausted,
         #[file("player/movement/dash.png")]
         #[size(22, 22)]
+        #[render_layers(StaticLayer)]
         Dash,
         #[file("player/movement/wall_push.png")]
         #[size(22, 22)]
         #[length(8)]
+        #[render_layers(StaticLayer)]
         WallPush,
         #[file("player/movement/death1.png")]
         #[size(22, 22)]
         #[length(9)]
         #[next(AfterDeath)]
+        #[render_layers(StaticLayer)]
         Death,
         #[file("clear.png")]
         #[size(1, 1)]
+        #[render_layers(StaticLayer)]
         AfterDeath,
         // CUTSCENES
         #[file("player/cutscenes/edge_sitting.png")]

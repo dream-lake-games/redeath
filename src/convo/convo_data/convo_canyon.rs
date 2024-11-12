@@ -5,7 +5,7 @@ use crate::prelude::*;
 decl_convo!(
     ConvoCanyon,
     (
-        Hello,
+        Intro,
         [
             (
                 ConvoSpeaker::Friend,

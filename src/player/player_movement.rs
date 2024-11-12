@@ -182,6 +182,26 @@ fn update_can_dash_from_ground(
     }
 }
 
+fn update_can_dash_from_replenish(
+    player: Query<(Entity, &TriggerRxCtrl), (With<Player>, Without<CanDash>)>,
+    trigger_colls: Res<TriggerColls>,
+    mut commands: Commands,
+) {
+    let Ok((eid, trx_ctrl)) = player.get_single() else {
+        // Means the player can already dash
+        return;
+    };
+    let replenish_coll = trigger_colls
+        .get_refs(&trx_ctrl.coll_keys)
+        .into_iter()
+        .filter(|coll| coll.tx_kind == TriggerTxKind::Replenish)
+        .next();
+    if let Some(coll) = replenish_coll {
+        commands.entity(eid).insert(CanDash);
+        commands.entity(coll.tx_ctrl).remove::<TriggerTxCtrl>();
+    }
+}
+
 fn maybe_start_dash(
     mut player: Query<(Entity, &mut Dyno, &AnimMan<PlayerAnim>), (With<Player>, With<CanDash>)>,
     butt: Res<ButtInput>,
@@ -386,6 +406,22 @@ fn update_breaking(
     }
 }
 
+fn keep_inside_edge_level(
+    mut player_q: Query<(&mut Pos, &PhysicalLid), With<Player>>,
+    level_rects: Res<LevelRects>,
+) {
+    let (mut player_pos, plid) = player_q.single_mut();
+    let Some(lid) = &plid.last_known_iid else {
+        return;
+    };
+    let Some(rect) = level_rects.get(lid) else {
+        warn!("hmm looks weird keep inside edge");
+        return;
+    };
+    player_pos.x = player_pos.x.min(rect.max.x - 4.0);
+    player_pos.x = player_pos.x.max(rect.min.x + 4.0);
+}
+
 pub(super) fn register_player_movement(app: &mut App) {
     app.insert_resource(PlayerMovementConsts::default());
 
@@ -411,12 +447,14 @@ pub(super) fn register_player_movement(app: &mut App) {
             update_can_jump,
             update_current_dash,
             update_can_dash_from_ground,
+            update_can_dash_from_replenish,
             maybe_start_dash,
             maybe_start_regular_jump,
             maybe_start_wall_jump,
             move_horizontally,
             limit_speed,
             update_breaking,
+            keep_inside_edge_level,
         )
             .chain()
             .before(AnimSet)

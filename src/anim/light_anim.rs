@@ -66,8 +66,34 @@ impl LightAnimRadius for FireflyLightAnim {
     const RADIUS: f32 = 8.0;
 }
 
+derive_anim!(
+    pub enum ReplenishLightAnim {
+        #[default]
+        #[file("light/replenish_spawn.png")]
+        #[size(48, 48)]
+        #[length(3)]
+        #[next(Pulse)]
+        #[render_layers(LightLayer)]
+        Spawn,
+        #[file("light/replenish_pulse.png")]
+        #[size(48, 48)]
+        #[length(10)]
+        #[fps(8.0)]
+        #[render_layers(LightLayer)]
+        Pulse,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        None,
+    }
+);
+type ReplinishLightAnimPlugin = AnimDefnPlugin<ReplenishLightAnim, AnimTimeRes>;
+impl LightAnimRadius for ReplenishLightAnim {
+    const RADIUS: f32 = 12.0;
+}
+
 pub(super) fn register_light_anim(app: &mut App) {
     app.add_plugins(PlayerLightAnimPlugin::default());
     app.add_plugins(LightStatic64AnimPlugin::default());
     app.add_plugins(FireflyLightAnimPlugin::default());
+    app.add_plugins(ReplinishLightAnimPlugin::default());
 }

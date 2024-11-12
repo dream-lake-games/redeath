@@ -52,8 +52,7 @@ fn on_enter_loading(
             });
             match level_iid.as_str() {
                 "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
-                    //
-                    cutscene_state.set(CutsceneState::CanyonIntro);
+                    // cutscene_state.set(CutsceneState::CanyonIntro);
                 }
                 _ => panic!("bad level_iid"),
             }

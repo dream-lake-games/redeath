@@ -33,6 +33,7 @@ pub const ZIX_PLAYER: f32 = 50.0;
 pub const ZIX_TRANSITION: i32 = 200;
 pub const ZIX_PLANK_FALL: f32 = 5.0;
 pub const ZIX_FRAGILE_ICE: f32 = 5.1;
+pub const ZIX_ITEMS: f32 = 40.0;
 
 pub const ZIX_RAIN: f32 = 100.0;
 
