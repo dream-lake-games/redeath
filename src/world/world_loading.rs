@@ -3,7 +3,7 @@ use crate::prelude::*;
 fn on_enter_loading(
     loading_state: Res<State<WorldLoadingState>>,
     mut commands: Commands,
-    // mut songs: ResMut<SongManager>,
+    mut song_manager: ResMut<SongManager>,
     mut storm: ResMut<StormManager>,
     mut cutscene_state: ResMut<NextState<CutsceneState>>,
 ) {
@@ -14,7 +14,7 @@ fn on_enter_loading(
     match kind {
         WorldKind::Canyon => {
             // Common things
-            // songs.fade_to(Song::Elegy);
+            song_manager.fade_to(Song::SinisterAbode);
             commands.spawn(MediumRainBundle::new());
             storm.show_rain();
             commands.trigger(StartMyLdtkLoad {
@@ -53,7 +53,7 @@ fn on_enter_loading(
             });
             match level_iid.as_str() {
                 "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
-                    cutscene_state.set(CutsceneState::CanyonIntro);
+                    // cutscene_state.set(CutsceneState::CanyonIntro);
                 }
                 _ => panic!("bad level_iid"),
             }

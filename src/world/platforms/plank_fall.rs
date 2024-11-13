@@ -28,10 +28,25 @@ impl Component for ParentStable {
         hooks.on_add(|mut world, eid, _| {
             let pos = world.get::<Pos>(eid).unwrap().clone();
             let parent = world.resource::<PlatformRoot>().eid();
-            world
+            let child = world
                 .commands()
                 .spawn(PlankFallBundle::new(pos, eid))
-                .set_parent(parent);
+                .set_parent(parent)
+                .id();
+            world.commands().entity(eid).insert(RememberChild { child });
+        });
+    }
+}
+
+struct RememberChild {
+    child: Entity,
+}
+impl Component for RememberChild {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+    fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
+        hooks.on_remove(|mut world, eid, _| {
+            let remember_child = world.get::<RememberChild>(eid).expect("myself").child;
+            world.commands().entity(remember_child).despawn_recursive();
         });
     }
 }

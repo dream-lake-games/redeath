@@ -418,8 +418,18 @@ fn keep_inside_edge_level(
         warn!("hmm looks weird keep inside edge");
         return;
     };
-    player_pos.x = player_pos.x.min(rect.max.x - 4.0);
-    player_pos.x = player_pos.x.max(rect.min.x + 4.0);
+    let right_in_some_level = level_rects
+        .values()
+        .any(|rect| rect.contains(player_pos.translated(Vec2::new(4.0, 0.0)).as_vec2()));
+    let left_in_some_level = level_rects
+        .values()
+        .any(|rect| rect.contains(player_pos.translated(Vec2::new(-4.0, 0.0)).as_vec2()));
+    if !right_in_some_level {
+        player_pos.x = player_pos.x.min(rect.max.x - 4.0);
+    }
+    if !left_in_some_level {
+        player_pos.x = player_pos.x.max(rect.min.x + 4.0);
+    }
 }
 
 pub(super) fn register_player_movement(app: &mut App) {

@@ -32,12 +32,12 @@ pub fn camera_clamp_logic(pos: &mut Pos, level_rects: &LevelRects) {
     let Some(bounds) = level_rects.current else {
         return;
     };
-    pos.x = pos.x.clamp(
-        bounds.min.x + SCREEN_WIDTH_f32 / 2.0,
+    pos.x = f32::min(
+        f32::max(pos.x, bounds.min.x + SCREEN_WIDTH_f32 / 2.0),
         bounds.max.x - SCREEN_WIDTH_f32 / 2.0,
     );
-    pos.y = pos.y.clamp(
-        bounds.min.y + SCREEN_HEIGHT_f32 / 2.0,
+    pos.y = f32::min(
+        f32::max(pos.y, bounds.min.y + SCREEN_HEIGHT_f32 / 2.0),
         bounds.max.y - SCREEN_HEIGHT_f32 / 2.0,
     );
 }
