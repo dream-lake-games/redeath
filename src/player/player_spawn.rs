@@ -113,6 +113,12 @@ fn spawn_player(
     *cam_pos = spawn_pos.clone();
     *camera_mode = DynamicCameraMode::Follow(player_eid);
     camera_clamp_logic(&mut cam_pos, &level_rects);
+
+    commands.spawn(ConvoOneoff::medium(
+        player_eid,
+        Vec2::new(4.0, 0.0),
+        "hello!",
+    ));
 }
 
 fn exit_spawning(player: Query<&Pos, With<Player>>, mut commands: Commands) {
