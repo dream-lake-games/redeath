@@ -117,7 +117,7 @@ fn spawn_player(
     commands.spawn(ConvoOneoff::medium(
         player_eid,
         Vec2::new(4.0, 0.0),
-        "hello!",
+        "hello! this is a longer sentence to test how the text handles at wrapping and all that fun stuff",
     ));
 }
 

@@ -1,3 +1,5 @@
+use bevy::text::Text2dBounds;
+
 use crate::prelude::*;
 
 #[derive(Component, Clone, Copy, PartialEq, Eq)]
@@ -57,6 +59,32 @@ impl Component for ConvoOneoffText {
                             scale: (Vec2::ONE * TextLayer::growth_factor() as f32).extend(1.0),
                             ..default()
                         },
+                        ..default()
+                    },
+                    TextLayer::to_render_layers(),
+                ))
+                .set_parent(eid);
+            world
+                .commands()
+                .spawn((
+                    Name::new("text"),
+                    Text2dBundle {
+                        text: Text::from_section(
+                            text.content.clone(),
+                            TextStyle {
+                                font_size: 36.0,
+                                ..default()
+                            },
+                        )
+                        .with_justify(JustifyText::Center),
+                        transform: Transform::from_translation(
+                            (Vec2::new(18.0, 30.0) * TextLayer::growth_factor() as f32)
+                                .extend(ZIX_CONVO_TEXT),
+                        ),
+                        text_2d_bounds: Text2dBounds {
+                            size: Vec2::new(38.0, 28.0) * TextLayer::growth_factor() as f32,
+                        },
+                        text_anchor: bevy::sprite::Anchor::CenterLeft,
                         ..default()
                     },
                     TextLayer::to_render_layers(),
