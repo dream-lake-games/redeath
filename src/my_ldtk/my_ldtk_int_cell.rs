@@ -72,6 +72,12 @@ fn duplicate_tilemap_root(
         tile_size,
         type_,
     ) = tilemap_q.get(older_brother).unwrap();
+    let mut transform = transform.clone();
+    // Nasty hack :(
+    if tile_size.x == 16.0 && tile_size.y == 16.0 {
+        // Idk why but yeah
+        transform.translation.y -= 8.0;
+    }
     commands
         .spawn((
             name.clone(),
@@ -139,11 +145,8 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
             .id();
         // Holy fuck this api is cursed
         let key = (B::RenderLayers::to_i32(), level_iid.to_string());
-        if let Some(new_dad) = new_dad_map.get(&key).cloned() {
-            commands.entity(ldtk_eid).set_parent(new_dad);
-            commands.entity(ldtk_eid).insert(TilemapId(new_dad));
-            let mut flip = tile_flip.get_mut(ldtk_eid).unwrap();
-            flip.x = flip.x;
+        let new_dad = if let Some(new_dad) = new_dad_map.get(&key).cloned() {
+            new_dad
         } else {
             let new_dad = duplicate_tilemap_root(
                 DuplicateTilemapRoot {
@@ -154,7 +157,13 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
                 &mut commands,
             );
             new_dad_map.insert(key, new_dad);
-        }
+            new_dad
+        };
+
+        commands.entity(ldtk_eid).set_parent(new_dad);
+        commands.entity(ldtk_eid).insert(TilemapId(new_dad));
+        let mut flip = tile_flip.get_mut(ldtk_eid).unwrap();
+        flip.x = flip.x;
         // Remember our child, but remove wrapper
         commands
             .entity(ldtk_eid)
