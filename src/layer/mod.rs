@@ -345,7 +345,7 @@ fn setup_layer_materials(
                 Name::new(format!("{name}_intermediate_camera")),
                 Camera2dBundle {
                     camera: Camera {
-                        order: zix as isize,
+                        order: zix as isize + 1,
                         target: RenderTarget::Image(intermediate_image.clone()),
                         clear_color: ClearColorConfig::Custom(COLOR_NONE),
                         ..default()
