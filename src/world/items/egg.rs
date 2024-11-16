@@ -265,7 +265,7 @@ fn egg_ghost_juice(
     mut commands: Commands,
 ) {
     for (pos, dyno, mut anim) in &mut ghosts {
-        if dyno.vel.length() < 100.0 {
+        if dyno.vel.length() < 16.0 {
             anim.set_state(EggGhostAnim::EggGhostStraight);
         } else {
             if dyno.vel.x.abs() > dyno.vel.y.abs() {
