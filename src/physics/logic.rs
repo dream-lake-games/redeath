@@ -176,6 +176,9 @@ fn resolve_collisions(
                         add_coll_rec();
                         do_push(&mut my_thbox);
                         *my_vel = old_par + Vec2::new(0.0, tx_dyno.vel.y);
+                        if old_perp.dot(push) > 0.0 {
+                            *my_vel += old_perp;
+                        }
                     }
                     (StaticRxKind::DefaultBreaker, StaticTxKind::SolidFragile) => {
                         commands.entity(other_stx_comp.ctrl).insert(FragileBroken);

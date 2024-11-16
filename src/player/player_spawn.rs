@@ -114,11 +114,11 @@ fn spawn_player(
     *camera_mode = DynamicCameraMode::Follow(player_eid);
     camera_clamp_logic(&mut cam_pos, &level_rects);
 
-    commands.spawn(ConvoOneoff::medium(
-        player_eid,
-        Vec2::new(4.0, 0.0),
-        "hello! this is a longer sentence to test how the text handles at wrapping and all that fun stuff",
-    ));
+    // commands.spawn(ConvoOneoff::medium(
+    //     player_eid,
+    //     Vec2::new(4.0, 0.0),
+    //     "hello! this is a longer sentence to test how the text handles at wrapping and all that fun stuff",
+    // ));
 }
 
 fn exit_spawning(player: Query<&Pos, With<Player>>, mut commands: Commands) {

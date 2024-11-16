@@ -9,6 +9,7 @@ pub enum TriggerTxKind {
     Player,
     Spikes,
     Replenish,
+    Egg,
 }
 #[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq, std::hash::Hash)]
 pub enum TriggerRxKind {

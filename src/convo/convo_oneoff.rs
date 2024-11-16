@@ -41,6 +41,9 @@ impl Component for ConvoOneoffText {
                 .clone();
             let text = world.get::<Self>(eid).expect("myself").clone();
             let bg_hand = world.resource::<AssetServer>().load(size.bg_path());
+            let font_hand = world
+                .resource::<AssetServer>()
+                .load("fonts/KodeMono/KodeMono-Bold.ttf");
             world.commands().entity(eid).insert((
                 Name::new("convo_oneoff_parent"),
                 SpatialBundle {
@@ -73,6 +76,7 @@ impl Component for ConvoOneoffText {
                             text.content.clone(),
                             TextStyle {
                                 font_size: 36.0,
+                                font: font_hand,
                                 ..default()
                             },
                         )

@@ -68,7 +68,7 @@ fn quantize(color: vec3<f32>) -> i32 {
 }
 
 // wgsl is annoying and/or i am bad at it
-fn hacky_to_int(val: f32) -> i32 {
+fn hacky_to_up(val: f32) -> i32 {
     if (val < 0.01) {
         return 0;
     } else if (val < 0.02) {
@@ -77,27 +77,38 @@ fn hacky_to_int(val: f32) -> i32 {
         return 2;
     } else if (val < 0.12) {
         return 3;
-    } else if (val < 0.5) {
+    } else if (val < 0.25) {
         return 4;
-    } else if (val < 0.6) {
+    } else if (val < 0.4) {
         return 5;
-    } else if (val < 0.7) {
-        return 6;
     } else {
-        return 7;
+        return 6;
+    }
+}
+
+// wgsl is annoying and/or i am bad at it
+fn hacky_to_down(val: f32) -> i32 {
+    if (val < 0.01) {
+        return 0;
+    } else if (val < 0.02) {
+        return 1;
+    } else if (val < 0.07) {
+        return 2;
+    } else if (val < 0.12) {
+        return 3;
+    } else if (val < 0.25) {
+        return 4;
+    } else if (val < 0.4) {
+        return 5;
+    } else {
+        return 6;
     }
 }
 
 fn get_shift(shift: vec4<f32>) -> i32 {
-    // if (shift.x > 0.0) {
-    //     return 1;
-    // } else {
-    //     return 0;
-    // }
-    let up = hacky_to_int(shift.x);
-    let down = hacky_to_int(shift.y);
+    let up = hacky_to_up(shift.y);
+    let down = hacky_to_down(shift.x);
     return up - down;
-    // return up;
 }
 
 fn as_final_palette(quantized: i32) -> vec4<f32> {

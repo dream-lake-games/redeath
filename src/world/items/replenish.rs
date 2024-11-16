@@ -8,6 +8,7 @@ struct ReplenishBundle {
     trigger_tx: TriggerTx,
     anim: AnimMan<ReplenishAnim>,
     light: Light<ReplenishLightAnim>,
+    bob: Bob,
 }
 impl ReplenishBundle {
     fn trigger_tx() -> TriggerTx {
@@ -27,8 +28,9 @@ impl MyLdtkEntity for ReplenishBundle {
             pos,
             spatial: pos.to_spatial(ZIX_ITEMS),
             trigger_tx: Self::trigger_tx(),
-            anim: default(),
+            anim: AnimMan::default().with_initial_ix(thread_rng().gen_range(0..10)),
             light: default(),
+            bob: Bob::vert(pos, 3.0, 1.1),
         }
     }
 }
@@ -87,5 +89,11 @@ pub(super) fn register_replenish(app: &mut App) {
         "Replenish",
     ));
 
-    app.add_systems(Update, (maybe_break, maybe_spawn).chain().after(PlayerSet));
+    app.add_systems(
+        Update,
+        (maybe_break, maybe_spawn)
+            .chain()
+            .after(PlayerSet)
+            .run_if(in_state(MetaStateKind::World)),
+    );
 }
