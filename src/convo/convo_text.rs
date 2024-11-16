@@ -76,6 +76,9 @@ impl Component for ConvoText {
     fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
         hooks.on_add(|mut world, eid, _| {
             let content = world.get::<Self>(eid).unwrap().text.clone();
+            let font_hand = world
+                .resource::<AssetServer>()
+                .load("fonts/KodeMono/KodeMono-Medium.ttf");
             world
                 .commands()
                 .spawn((
@@ -86,6 +89,7 @@ impl Component for ConvoText {
                             "",
                             TextStyle {
                                 font_size: 36.0,
+                                font: font_hand,
                                 ..default()
                             },
                         )

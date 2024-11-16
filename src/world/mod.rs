@@ -6,7 +6,7 @@ mod plants;
 mod platforms;
 mod world_loading;
 
-pub struct ShutupRust;
+pub use items::*;
 
 pub(super) struct WorldPlugin;
 impl Plugin for WorldPlugin {
