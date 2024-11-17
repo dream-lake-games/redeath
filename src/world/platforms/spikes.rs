@@ -57,8 +57,9 @@ impl SpikeGroupOffset {
     }
     fn rotate(&mut self) {
         if self.col_offset == 0 {
-            self.col_offset = (self.col_offset + 1) % 2;
+            self.col_offset = 1;
         } else {
+            self.col_offset = 0;
             self.row_offset = (self.row_offset + 1) % 2;
         }
     }
@@ -85,11 +86,24 @@ fn add_spike_group_info(
     }
 }
 
-fn rotate_spike_group_offsets(mut offsets: Query<&mut SpikeGroupOffset>) {
+#[derive(Resource, Default)]
+struct SpikeRotationScratch {
+    time_since_last_rotate: f32,
+}
+
+fn rotate_spike_group_offsets(
+    mut offsets: Query<&mut SpikeGroupOffset>,
+    mut scratch: ResMut<SpikeRotationScratch>,
+    bullet_time: Res<BulletTime>,
+) {
+    scratch.time_since_last_rotate += bullet_time.delta_seconds();
+    if scratch.time_since_last_rotate < 0.167 {
+        return;
+    }
+    scratch.time_since_last_rotate = 0.0;
+
     for mut offset in &mut offsets {
-        if thread_rng().gen_bool(0.1) {
-            offset.rotate();
-        }
+        offset.rotate();
     }
 }
 
@@ -105,6 +119,7 @@ fn update_tilemap_ixs(
 
 pub(super) fn register_spikes(app: &mut App) {
     app.add_plugins(MyLdtkIntCellPlugin::<SpikesBundle>::single("Spikes", 1));
+    app.insert_resource(SpikeRotationScratch::default());
 
     app.add_systems(
         Update,
