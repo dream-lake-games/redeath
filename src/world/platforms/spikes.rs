@@ -100,7 +100,7 @@ fn rotate_spike_group_offsets(
     if scratch.time_since_last_rotate < 0.167 {
         return;
     }
-    scratch.time_since_last_rotate = 0.0;
+    scratch.time_since_last_rotate = 0.0 + thread_rng().gen_range(-0.03..0.03);
 
     for mut offset in &mut offsets {
         offset.rotate();
