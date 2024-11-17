@@ -98,7 +98,9 @@ impl Component for MyLdtkChild {
                 .get::<Self>(eid)
                 .expect("myself should exist")
                 .child_eid;
-            world.commands().entity(my_child).despawn_recursive();
+            if let Some(comms) = world.commands().get_entity(my_child) {
+                comms.despawn_recursive();
+            }
         });
     }
 }

@@ -26,7 +26,7 @@ impl MyLdtkEntity for ReplenishBundle {
         Self {
             name: Name::new("replenish"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS),
+            spatial: pos.to_spatial(ZIX_ITEMS - 0.2),
             trigger_tx: Self::trigger_tx(),
             anim: AnimMan::default().with_initial_ix(thread_rng().gen_range(0..10)),
             light: default(),

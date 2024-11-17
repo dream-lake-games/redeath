@@ -59,36 +59,36 @@ derive_anim!(
         #[file("items/egg_ghost_spawn.png")]
         #[size(24, 24)]
         #[length(4)]
-        #[next(EggGhostStraight)]
+        #[next(Straight)]
         #[render_layers(StaticLayer)]
         Spawn,
         #[file("items/egg_ghost_straight.png")]
         #[size(24, 24)]
         #[render_layers(StaticLayer)]
-        EggGhostStraight,
+        Straight,
         #[file("items/egg_ghost_left.png")]
         #[size(24, 24)]
         #[render_layers(StaticLayer)]
-        EggGhostLeft,
+        Left,
         #[file("items/egg_ghost_right.png")]
         #[size(24, 24)]
         #[render_layers(StaticLayer)]
-        EggGhostRight,
+        Right,
         #[file("items/egg_ghost_up.png")]
         #[size(24, 24)]
         #[render_layers(StaticLayer)]
-        EggGhostUp,
+        Up,
         #[file("items/egg_ghost_down.png")]
         #[size(24, 24)]
         #[render_layers(StaticLayer)]
-        EggGhostDown,
-        #[file("items/egg_ghost_grabbed.png")]
+        Down,
+        #[file("items/egg_ghost_popped.png")]
         #[size(24, 24)]
         #[length(9)]
         #[fps(8.0)]
         #[render_layers(StaticLayer)]
         #[next(Despawn)]
-        EggGhostGrabbed,
+        Popped,
     }
 );
 type EggGhostAnimPlugin = AnimDefnPlugin<EggGhostAnim, AnimTimeRes>;
@@ -107,9 +107,30 @@ derive_anim!(
 );
 type EggGhostFadeAnimPlugin = AnimDefnPlugin<EggGhostFadeAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum EggBlockAnim {
+        #[default]
+        #[file("environment/egg_block/size_16x16_solid.png")]
+        #[size(16, 16)]
+        #[render_layers(StaticLayer)]
+        Solid,
+        #[file("environment/egg_block/size_16x16_pop.png")]
+        #[size(16, 16)]
+        #[length(6)]
+        #[render_layers(StaticLayer)]
+        #[next(None)]
+        Pop,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        None,
+    }
+);
+type EggBlockAnimPlugin = AnimDefnPlugin<EggBlockAnim, AnimTimeRes>;
+
 pub(super) fn register_items_anim(app: &mut App) {
     app.add_plugins(ReplenishAnimPlugin::default());
     app.add_plugins(EggAnimPlugin::default());
     app.add_plugins(EggGhostAnimPlugin::default());
     app.add_plugins(EggGhostFadeAnimPlugin::default());
+    app.add_plugins(EggBlockAnimPlugin::default());
 }

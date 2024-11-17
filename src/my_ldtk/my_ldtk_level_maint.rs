@@ -141,7 +141,9 @@ fn handle_physical_lids(
 /// NOTE: You CAN assume that this is fired only after all things in that level spawn
 /// NOTE: You CAN assume that when this is called, SpawnedLid(In)Active and PhysicalLid(In)Active are correct
 #[derive(Event)]
-pub struct LevelChangeEvent;
+pub struct LevelChangeEvent {
+    pub iid: String,
+}
 #[derive(Resource)]
 pub(super) struct LastLevelSelection(String);
 fn watch_level_selection(
@@ -153,13 +155,13 @@ fn watch_level_selection(
     match (level_selection.as_ref(), last_level_selection.as_mut()) {
         (Some(ls), Some(lls)) => {
             if ls.to_iid() != lls.0 {
-                commands.trigger(LevelChangeEvent);
+                commands.trigger(LevelChangeEvent { iid: ls.to_iid() });
                 lls.0 = ls.to_iid();
             }
         }
         (Some(ls), None) => match my_ldtk_load.into_inner() {
             MyLdtkLoadState::Loaded => {
-                commands.trigger(LevelChangeEvent);
+                commands.trigger(LevelChangeEvent { iid: ls.to_iid() });
                 commands.insert_resource(LastLevelSelection(ls.to_iid()));
             }
             _ => {

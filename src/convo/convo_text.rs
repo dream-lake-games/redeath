@@ -60,11 +60,12 @@ impl ConvoTextProgress {
     }
 }
 
-fn make_text_section(content: String) -> TextSection {
+fn make_text_section(content: String, hand: Handle<Font>) -> TextSection {
     TextSection::new(
         content,
         TextStyle {
             font_size: 36.0,
+            font: hand,
             ..default()
         },
     )
@@ -153,9 +154,12 @@ fn update_text(
     }
 }
 
-fn show_text(mut text_q: Query<(&mut Text, &ConvoTextProgress)>) {
+fn show_text(mut text_q: Query<(&mut Text, &ConvoTextProgress)>, ass: Res<AssetServer>) {
     for (mut text, progress) in &mut text_q {
-        text.sections = vec![make_text_section(progress.shown.clone())];
+        text.sections = vec![make_text_section(
+            progress.shown.clone(),
+            ass.load("fonts/KodeMono/KodeMono-Medium.ttf"),
+        )];
     }
 }
 
