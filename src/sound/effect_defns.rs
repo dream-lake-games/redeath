@@ -59,7 +59,7 @@ defn_effects!([
     0.02,
     ReplenishSpawn,
     "sound/replenish/spawn.ogg",
-    0.015,
+    0.0075,
     MediumRain,
     "sound/world/8bit_medium_rain.ogg",
     0.02,
@@ -68,6 +68,9 @@ defn_effects!([
     0.02,
     EggBreakAll,
     "sound/egg/break_all.ogg",
+    0.03,
+    CoinBell,
+    "sound/coin/collect.ogg",
     0.02,
 ]);
 

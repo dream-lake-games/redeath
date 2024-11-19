@@ -127,10 +127,30 @@ derive_anim!(
 );
 type EggBlockAnimPlugin = AnimDefnPlugin<EggBlockAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum CoinAnim {
+        #[default]
+        #[file("items/coin_spin.png")]
+        #[size(24, 24)]
+        #[length(9)]
+        #[fps(8.0)]
+        #[render_layers(StaticLayer)]
+        Spin,
+        #[file("items/coin_pop.png")]
+        #[size(24, 24)]
+        #[length(5)]
+        #[render_layers(StaticLayer)]
+        #[next(Remove)]
+        Pop,
+    }
+);
+type CoinAnimPlugin = AnimDefnPlugin<CoinAnim, AnimTimeRes>;
+
 pub(super) fn register_items_anim(app: &mut App) {
     app.add_plugins(ReplenishAnimPlugin::default());
     app.add_plugins(EggAnimPlugin::default());
     app.add_plugins(EggGhostAnimPlugin::default());
     app.add_plugins(EggGhostFadeAnimPlugin::default());
     app.add_plugins(EggBlockAnimPlugin::default());
+    app.add_plugins(CoinAnimPlugin::default());
 }

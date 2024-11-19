@@ -90,6 +90,7 @@ derive_anim!(
         #[size(22, 22)]
         #[render_layers(StaticLayer)]
         #[length(2)]
+        #[fps(12.0)]
         #[next(Stand)]
         EdgeSitup,
     }

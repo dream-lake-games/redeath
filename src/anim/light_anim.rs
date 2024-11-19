@@ -88,7 +88,29 @@ derive_anim!(
 );
 type ReplinishLightAnimPlugin = AnimDefnPlugin<ReplenishLightAnim, AnimTimeRes>;
 impl LightAnimRadius for ReplenishLightAnim {
-    const RADIUS: f32 = 12.0;
+    const RADIUS: f32 = 24.0;
+}
+
+derive_anim!(
+    pub enum CoinLightAnim {
+        #[default]
+        #[file("light/coin_pulse.png")]
+        #[size(48, 48)]
+        #[length(6)]
+        #[fps(8.0)]
+        #[render_layers(LightLayer)]
+        Pulse,
+        #[file("light/coin_pop.png")]
+        #[size(48, 48)]
+        #[length(3)]
+        #[render_layers(LightLayer)]
+        #[next(Remove)]
+        Pop,
+    }
+);
+type CoinLightAnimPlugin = AnimDefnPlugin<CoinLightAnim, AnimTimeRes>;
+impl LightAnimRadius for CoinLightAnim {
+    const RADIUS: f32 = 24.0;
 }
 
 pub(super) fn register_light_anim(app: &mut App) {
@@ -96,4 +118,5 @@ pub(super) fn register_light_anim(app: &mut App) {
     app.add_plugins(LightStatic64AnimPlugin::default());
     app.add_plugins(FireflyLightAnimPlugin::default());
     app.add_plugins(ReplinishLightAnimPlugin::default());
+    app.add_plugins(CoinLightAnimPlugin::default());
 }

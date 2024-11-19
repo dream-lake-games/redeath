@@ -83,6 +83,28 @@ fn maybe_spawn(
     }
 }
 
+fn reset_replenishes_after_dying(
+    mut replenishes: Query<
+        (
+            Entity,
+            &mut AnimMan<ReplenishAnim>,
+            &mut AnimMan<ReplenishLightAnim>,
+            Option<&TriggerTxCtrl>,
+        ),
+        Without<TriggerTxCtrl>,
+    >,
+    mut commands: Commands,
+) {
+    for (eid, mut anim, mut light, ttx_ctrl) in &mut replenishes {
+        commands.entity(eid).remove::<Replenishing>();
+        if ttx_ctrl.is_none() {
+            commands.entity(eid).insert(ReplenishBundle::trigger_tx());
+        }
+        anim.set_state(ReplenishAnim::Pulse);
+        light.set_state(ReplenishLightAnim::Pulse);
+    }
+}
+
 pub(super) fn register_replenish(app: &mut App) {
     app.add_plugins(MyLdtkEntityPlugin::<ReplenishBundle>::new(
         "Entities",
@@ -95,5 +117,10 @@ pub(super) fn register_replenish(app: &mut App) {
             .chain()
             .after(PlayerSet)
             .run_if(in_state(MetaStateKind::World)),
+    );
+
+    app.add_systems(
+        OnEnter(PlayerMetaState::Spawning),
+        reset_replenishes_after_dying,
     );
 }

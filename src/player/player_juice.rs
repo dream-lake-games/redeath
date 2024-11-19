@@ -17,8 +17,8 @@ impl Default for PlayerJuiceConsts {
     fn default() -> Self {
         Self {
             impact_sound_floor: 2.0,
-            impact_sound_ceiling: 144.0,
-            impact_sound_mult: 0.08,
+            impact_sound_ceiling: 164.0,
+            impact_sound_mult: 0.11,
             dash_global_shift_time: 0.2,
             dash_stop_time_time: 0.1,
         }

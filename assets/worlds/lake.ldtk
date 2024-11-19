@@ -11,7 +11,7 @@
 	"iid": "d32f5140-73f0-11ef-ab29-ed383a1054e6",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 224,
+	"nextUid": 225,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -2689,6 +2689,41 @@
 			"pivotX": 0,
 			"pivotY": 0,
 			"fieldDefs": []
+		},
+		{
+			"identifier": "Coin",
+			"uid": 224,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 24,
+			"height": 24,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#E4A672",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 215,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 215, "x": 24, "y": 0, "w": 8, "h": 8 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -3093,6 +3128,38 @@
 							"fieldInstances": [],
 							"__worldX": 176,
 							"__worldY": -104
+						},
+						{
+							"__identifier": "Coin",
+							"__grid": [11,15],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 215, "x": 24, "y": 0, "w": 8, "h": 8 },
+							"__smartColor": "#E4A672",
+							"iid": "133b59c0-9b00-11ef-8886-4dd058fa6889",
+							"width": 24,
+							"height": 24,
+							"defUid": 224,
+							"px": [88,120],
+							"fieldInstances": [],
+							"__worldX": 88,
+							"__worldY": -64
+						},
+						{
+							"__identifier": "Coin",
+							"__grid": [28,12],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 215, "x": 24, "y": 0, "w": 8, "h": 8 },
+							"__smartColor": "#E4A672",
+							"iid": "d524f680-9b00-11ef-8886-e5e6c57b70c0",
+							"width": 24,
+							"height": 24,
+							"defUid": 224,
+							"px": [224,96],
+							"fieldInstances": [],
+							"__worldX": 224,
+							"__worldY": -88
 						}
 					]
 				},
@@ -7264,6 +7331,22 @@
 							"fieldInstances": [],
 							"__worldX": 712,
 							"__worldY": 144
+						},
+						{
+							"__identifier": "Coin",
+							"__grid": [33,4],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 215, "x": 24, "y": 0, "w": 8, "h": 8 },
+							"__smartColor": "#E4A672",
+							"iid": "170c5ef0-9b00-11ef-8886-e3cff495a57c",
+							"width": 24,
+							"height": 24,
+							"defUid": 224,
+							"px": [264,32],
+							"fieldInstances": [],
+							"__worldX": 800,
+							"__worldY": 24
 						}
 					]
 				},

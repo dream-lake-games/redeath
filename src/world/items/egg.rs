@@ -13,7 +13,7 @@ struct EggBundle {
     bob: Bob,
 }
 impl MyLdtkEntity for EggBundle {
-    type Root = WorldRoot;
+    type Root = ItemsRoot;
     fn from_ldtk(pos: Pos, _fields: &HashMap<String, FieldValue>, _iid: String) -> Self {
         Self {
             name: Name::new("egg"),
@@ -312,6 +312,7 @@ fn observe_block_pops(
     mut ghosts: Query<(Entity, &mut AnimMan<EggGhostAnim>, &mut Dyno, &SpawnedLid)>,
     mut bullet_time: ResMut<BulletTime>,
     mut commands: Commands,
+    mut camera_shake: ResMut<CameraShake>,
 ) {
     let iid = &trigger.event().iid;
     for (eid, mut anim, mut dyno, slid) in &mut ghosts {
@@ -322,8 +323,9 @@ fn observe_block_pops(
         dyno.vel *= 0.1;
         commands.entity(eid).remove::<ChaseEntity>();
     }
-    bullet_time.set_temp(BulletTimeSpeed::Slow, 0.2);
+    bullet_time.set_temp(BulletTimeSpeed::Stopped, 0.2);
     commands.spawn(SoundEffect::EggBreakAll);
+    camera_shake.shake(0.15, -1..=1, -1..=1);
 }
 
 fn reset_eggs_helper(
