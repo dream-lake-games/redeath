@@ -18,6 +18,12 @@ impl ConvoOneoffSize {
             Self::Medium => Vec2::new(30.0, 25.0),
         }
     }
+
+    fn text_offset(&self) -> Vec2 {
+        match self {
+            Self::Medium => Vec2::new(16.0, 30.0),
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -29,6 +35,9 @@ struct ConvoOneoffText {
 impl ConvoOneoffText {
     fn induced_bg_offset(&self, size: &ConvoOneoffSize) -> Vec2 {
         (self.offset + size.bg_offset()) * TextLayer::growth_factor() as f32
+    }
+    fn induced_text_offset(&self, size: &ConvoOneoffSize) -> Vec2 {
+        (self.offset + size.text_offset()) * TextLayer::growth_factor() as f32
     }
 }
 impl Component for ConvoOneoffText {
@@ -75,15 +84,14 @@ impl Component for ConvoOneoffText {
                         text: Text::from_section(
                             text.content.clone(),
                             TextStyle {
-                                font_size: 36.0,
+                                font_size: 42.0,
                                 font: font_hand,
                                 ..default()
                             },
                         )
                         .with_justify(JustifyText::Center),
                         transform: Transform::from_translation(
-                            (Vec2::new(18.0, 30.0) * TextLayer::growth_factor() as f32)
-                                .extend(ZIX_CONVO_TEXT),
+                            text.induced_text_offset(&size).extend(ZIX_CONVO_TEXT),
                         ),
                         text_2d_bounds: Text2dBounds {
                             size: Vec2::new(38.0, 28.0) * TextLayer::growth_factor() as f32,

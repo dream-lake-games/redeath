@@ -91,6 +91,8 @@ fn on_exit(
     meta_state: Res<State<MetaState>>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
     mut song_manager: ResMut<SongManager>,
+    mut commands: Commands,
+    friend: Query<Entity, With<AnimMan<FriendAnim>>>,
 ) {
     let MetaState::World(mut world_state) = meta_state.get().clone() else {
         panic!("canyon_intro bad exit");
@@ -98,6 +100,14 @@ fn on_exit(
     world_state.player_meta_state = PlayerMetaState::Playing;
     next_meta_state.set(world_state.to_meta_state());
     song_manager.fade_to(Song::SinisterAbode);
+
+    if let Ok(eid) = friend.get_single() {
+        commands.spawn(ConvoOneoff::medium(
+            eid,
+            Vec2::new(4.0, 7.0),
+            "ASD to move \n\n J to Jump",
+        ));
+    }
 }
 
 pub(super) fn register_canyon_intro(app: &mut App) {

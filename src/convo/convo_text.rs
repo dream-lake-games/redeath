@@ -64,7 +64,7 @@ fn make_text_section(content: String, hand: Handle<Font>) -> TextSection {
     TextSection::new(
         content,
         TextStyle {
-            font_size: 36.0,
+            font_size: 40.0,
             font: hand,
             ..default()
         },
