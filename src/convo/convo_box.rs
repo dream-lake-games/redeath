@@ -10,11 +10,12 @@ pub struct ConvoBox {
     root: ConvoBoxRoot,
     spatial: SpatialBundle,
     pub speaker: ConvoSpeaker,
-    pub emotion: ConvoEmotion,
+    pub portrait: ConvoPortrait,
+    pub sound: ConvoSound,
     pub text: ConvoText,
 }
 impl ConvoBox {
-    pub fn new(speaker: ConvoSpeaker, emotion: ConvoEmotion, text: ConvoText) -> Self {
+    pub fn new(speaker: ConvoSpeaker, portrait: &str, sound: &str, text: ConvoText) -> Self {
         Self {
             name: Name::new("box_root"),
             root: ConvoBoxRoot,
@@ -28,7 +29,12 @@ impl ConvoBox {
                 ..default()
             },
             speaker,
-            emotion,
+            portrait: ConvoPortrait {
+                key: portrait.to_string(),
+            },
+            sound: ConvoSound {
+                key: sound.to_string(),
+            },
             text,
         }
     }

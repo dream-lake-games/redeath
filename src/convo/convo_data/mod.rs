@@ -26,11 +26,12 @@ macro_rules! decl_convo {
             (
                 $variant:ident,
                 [$(
-                    (
-                        $speaker:expr,
-                        $emotion:expr,
-                        $text:literal$(,)?
-                    )$(,)?
+                    {
+                        speaker: $speaker:expr,
+                        portrait: $portrait:literal,
+                        sound: $sound:literal,
+                        text: $text:literal$(,)?
+                    }$(,)?
                 )+]$(,)?
             )
             $(,)?
@@ -50,7 +51,7 @@ macro_rules! decl_convo {
                     $(
                         Self::$variant => vec![
                             $(
-                                ConvoBox::new($speaker, $emotion, ConvoText::simple($text)),
+                                ConvoBox::new($speaker, $portrait, $sound, ConvoText::simple($text)),
                             )+
                         ],
                     )+

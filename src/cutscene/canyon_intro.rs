@@ -40,7 +40,7 @@ fn update_friend(
     }
 }
 fn friend_step_sounds(trigger: Trigger<AnimIxChange<FriendAnim>>, mut commands: Commands) {
-    if trigger.event().state == FriendAnim::Run && trigger.event().ix == 0 {
+    if trigger.event().state == FriendAnim::Run && trigger.event().ix == 4 {
         commands.spawn(SoundEffect::PlayerRunStep);
     }
 }

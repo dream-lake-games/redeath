@@ -9,9 +9,14 @@ pub enum ConvoSpeaker {
     Friend,
 }
 
-#[derive(Component, Clone, Copy, Debug, Reflect, PartialEq, Eq)]
-pub enum ConvoEmotion {
-    Default,
+#[derive(Component, Clone, Debug, Reflect)]
+pub struct ConvoPortrait {
+    pub key: String,
+}
+
+#[derive(Component, Clone, Debug, Reflect)]
+pub struct ConvoSound {
+    pub key: String,
 }
 
 impl Component for ConvoSpeaker {
@@ -20,7 +25,8 @@ impl Component for ConvoSpeaker {
     fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
         hooks.on_add(|mut world, eid, _| {
             let speaker = world.get::<ConvoSpeaker>(eid).expect("myself").clone();
-            let emotion = world.get::<ConvoEmotion>(eid).expect("myself").clone();
+            let portrait = world.get::<ConvoPortrait>(eid).expect("myself").clone();
+            let sound = world.get::<ConvoSound>(eid).expect("myself").clone();
 
             macro_rules! static_portrait {
                 ($world:expr, $path:literal) => {
@@ -44,8 +50,19 @@ impl Component for ConvoSpeaker {
                         .set_parent(eid);
                 };
             }
+
+            match (speaker, portrait.key.as_str()) {
+                (ConvoSpeaker::Silence(_), _) => {}
+                (ConvoSpeaker::Lenny, _) => {
+                    static_portrait!(world, "convo/lenny/portrait/default.png");
+                }
+                (ConvoSpeaker::Friend, _) => {
+                    static_portrait!(world, "convo/friend/portrait/default.png");
+                }
+            }
+
             macro_rules! convo_sound {
-                ($world:expr, $path:literal$(, $mult:literal$(,)?)?) => {
+                ($world:expr, $path:expr$(, $mult:literal$(,)?)?) => {
                     #[allow(unused_mut)]
                     let mut base_mult = 0.2;
                     $(
@@ -67,15 +84,13 @@ impl Component for ConvoSpeaker {
                 };
             }
 
-            match (speaker, emotion) {
+            match (speaker, sound.key.as_str()) {
                 (ConvoSpeaker::Silence(_), _) => {}
-                (ConvoSpeaker::Lenny, _) => {
-                    static_portrait!(world, "convo/lenny/default.png");
-                    convo_sound!(world, "convo/lenny/firstdraft.ogg");
+                (ConvoSpeaker::Lenny, key) => {
+                    convo_sound!(world, format!("convo/lenny/sound/{key}.ogg"));
                 }
-                (ConvoSpeaker::Friend, _) => {
-                    static_portrait!(world, "convo/friend/default.png");
-                    convo_sound!(world, "convo/friend/firstdraft.ogg");
+                (ConvoSpeaker::Friend, key) => {
+                    convo_sound!(world, format!("convo/friend/sound/{key}.ogg"));
                 }
             }
         });

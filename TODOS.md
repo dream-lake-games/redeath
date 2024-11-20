@@ -30,3 +30,7 @@ A speaker:
 A conversation:
 
 - Collection of text boxes
+
+# More conversation
+
+Farm the rest of those sound effects, and refactor the system so it just takes a string. Then make the conversation feel great.
