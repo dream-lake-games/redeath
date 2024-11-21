@@ -39,7 +39,7 @@ fn update_my_level_rects(
     }
     level_rects.current = None;
     if let Some(LevelSelection::Iid(iid)) = selection.map(|inner| inner.into_inner()) {
-        level_rects.current = level_rects.map.get(&iid.to_string()).cloned()
+        level_rects.current = level_rects.map.get(&iid.to_string()).cloned();
     }
 }
 
@@ -183,13 +183,15 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
         Update,
         (handle_spawned_lids, handle_physical_lids)
             .after(update_my_level_rects)
-            .in_set(MyLdtkLevelMaint),
+            .in_set(MyLdtkLevelMaint)
+            .run_if(in_state(MetaStateKind::World)),
     );
     app.add_systems(
         Update,
         watch_level_selection
             .after(handle_spawned_lids)
             .after(handle_physical_lids)
-            .in_set(MyLdtkLevelMaint),
+            .in_set(MyLdtkLevelMaint)
+            .run_if(in_state(MetaStateKind::World)),
     );
 }

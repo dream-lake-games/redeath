@@ -1,6 +1,7 @@
 use crate::prelude::*;
 
 mod draw_hitboxes;
+mod reload;
 
 fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut _commands: Commands) {
     // Gizmo config
@@ -26,5 +27,6 @@ impl Plugin for DebugPlugin {
         app.add_systems(Startup, debug_startup.after(RootInit));
         app.add_systems(Update, debug_update);
         draw_hitboxes::register_draw_hitboxes(app);
+        reload::register_reload(app);
     }
 }

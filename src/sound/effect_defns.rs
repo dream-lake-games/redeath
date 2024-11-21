@@ -47,7 +47,7 @@ defn_effects!([
     0.005,
     PlayerRunStep,
     "sound/player/jump.ogg",
-    0.005,
+    0.007,
     PlayerThunder,
     "sound/player/thunder.ogg",
     0.01,

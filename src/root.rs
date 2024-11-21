@@ -154,4 +154,5 @@ impl_subroot_init!(
     LightRoot(WorldRoot),
     BgFgRoot(WorldRoot),
     ItemsRoot(WorldRoot),
+    WorldMetaRoot(WorldRoot),
 );

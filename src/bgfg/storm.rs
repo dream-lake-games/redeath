@@ -92,6 +92,10 @@ fn update_rain(
         }
         _ => {}
     }
+    if existing_q.is_empty() {
+        manager.show_rain = false;
+        manager.last_show_rain = false;
+    }
 }
 
 pub(super) fn register_rain(app: &mut App) {

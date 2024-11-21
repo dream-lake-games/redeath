@@ -142,8 +142,12 @@ impl Component for LightClaimed {
             let actual_mesh = myself.actual_mesh;
             let mut manager = world.resource_mut::<LightManager>();
             manager.free(rl);
-            world.commands().entity(camera).despawn_recursive();
-            world.commands().entity(actual_mesh).despawn_recursive();
+            if let Some(comms) = world.commands().get_entity(camera) {
+                comms.despawn_recursive();
+            }
+            if let Some(comms) = world.commands().get_entity(actual_mesh) {
+                comms.despawn_recursive();
+            }
         });
     }
 }

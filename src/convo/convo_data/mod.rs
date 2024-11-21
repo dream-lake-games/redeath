@@ -158,7 +158,6 @@ macro_rules! decl_convo {
                         next_state.set(ConvoMetaState::None);
                         let myself = world.get::<Self>(eid).expect("myself").to_base_variant();
                         world.commands().trigger([<$name Ended>]::from_base_variant(myself));
-                        println!("should have triggered end...");
                     });
                 }
             }

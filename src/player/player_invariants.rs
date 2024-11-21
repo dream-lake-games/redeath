@@ -19,5 +19,8 @@ fn player_meta_state_checks(
 }
 
 pub(super) fn register_player_invariants(app: &mut App) {
-    app.add_systems(First, player_meta_state_checks);
+    app.add_systems(
+        PostUpdate,
+        player_meta_state_checks.run_if(in_state(MetaStateKind::World)),
+    );
 }

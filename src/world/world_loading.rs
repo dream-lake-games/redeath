@@ -14,7 +14,6 @@ fn on_enter_loading(
     match kind {
         WorldKind::Canyon => {
             // Common things
-            // song_manager.fade_to(Song::SinisterAbode);
             commands.spawn(MediumRainBundle::new());
             storm.show_rain();
             commands.trigger(StartMyLdtkLoad {
@@ -51,11 +50,14 @@ fn on_enter_loading(
                 num5s: 24,
                 num7s: 12,
             });
+            song_manager.fade_to(Song::SinisterAbode);
             match level_iid.as_str() {
                 "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
-                    cutscene_state.set(CutsceneState::CanyonIntro);
+                    // cutscene_state.set(CutsceneState::CanyonIntro);
                 }
-                _ => panic!("bad level_iid"),
+                _ => {
+                    // panic!("bad level_iid");
+                }
             }
         }
     }

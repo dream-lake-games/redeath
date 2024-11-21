@@ -17,7 +17,7 @@ struct SpawnPointBundle {
     pos: Pos,
 }
 impl MyLdtkEntity for SpawnPointBundle {
-    type Root = WorldRoot;
+    type Root = WorldMetaRoot;
     fn from_ldtk(pos: Pos, _fields: &HashMap<String, FieldValue>, _iid: String) -> Self {
         Self {
             name: Name::new("SpawnPoint"),
@@ -28,27 +28,18 @@ impl MyLdtkEntity for SpawnPointBundle {
 }
 
 fn calculate_new_spawn_point(
+    needle: Pos,
     potential: &Query<(Entity, &Pos), (With<SpawnPoint>, With<SpawnedLidActive>)>,
 ) -> Option<Entity> {
-    // This logic finds the spawn point that is closest to the bottom left
-    let mut result = None;
-    let mut min_pos = None;
-    for (eid, pos) in potential {
-        match (result.as_mut(), min_pos.as_mut()) {
-            (None, _) => {
-                result = Some(eid);
-                min_pos = Some(pos);
-            }
-            (Some(old_eid), Some(old_pos)) => {
-                if pos.x < old_pos.x || (pos.x == old_pos.y && pos.y < old_pos.y) {
-                    *old_eid = eid;
-                    *old_pos = pos;
-                }
-            }
-            _ => unreachable!(),
-        }
-    }
-    result
+    // This logic finds the spawn point that is closest to the needle
+    potential
+        .iter()
+        .min_by_key(|(_, pos)| {
+            let dx = pos.x - needle.x;
+            let dy = pos.y - needle.y;
+            (dx * dx + dy * dy) as i32 // Using Manhattan distance for simplicity
+        })
+        .map(|(eid, _)| eid)
 }
 
 fn set_spawn_point_on_level_change(
@@ -57,6 +48,7 @@ fn set_spawn_point_on_level_change(
     existing: Query<Entity, With<SpawnPointActive>>,
     potential: Query<(Entity, &Pos), (With<SpawnPoint>, With<SpawnedLidActive>)>,
     meta_state_kind: Res<State<MetaStateKind>>,
+    player_pos: Query<&Pos, With<Player>>,
 ) {
     if !matches!(
         meta_state_kind.get(),
@@ -67,7 +59,11 @@ fn set_spawn_point_on_level_change(
     for eid in &existing {
         commands.entity(eid).remove::<SpawnPointActive>();
     }
-    if let Some(eid) = calculate_new_spawn_point(&potential) {
+    let needle = player_pos
+        .get_single()
+        .map(|thing| thing.clone())
+        .unwrap_or(Pos::new(-100000.0, -100000.0));
+    if let Some(eid) = calculate_new_spawn_point(needle, &potential) {
         commands.entity(eid).insert(SpawnPointActive);
     } else {
         warn!("Unable to find new spawn point to make active after changing level");
@@ -80,7 +76,7 @@ fn spawn_player(
     world_state: Res<State<WorldState>>,
     cutscene_state: Res<State<CutsceneState>>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
-    root: Res<WorldRoot>,
+    root: Res<WorldMetaRoot>,
     mut camera_pos: Query<&mut Pos, (With<DynamicCamera>, Without<SpawnPointActive>)>,
     mut camera_mode: ResMut<DynamicCameraMode>,
     level_rects: Res<LevelRects>,

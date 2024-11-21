@@ -111,7 +111,7 @@ fn break_eggs(
     existing_youngest: Query<Entity, With<YoungestEggGhost>>,
     player: Query<Entity, With<Player>>,
     mut commands: Commands,
-    root: Res<WorldRoot>,
+    root: Res<WorldMetaRoot>,
 ) {
     let would_chase = existing_youngest
         .get_single()

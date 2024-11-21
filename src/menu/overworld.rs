@@ -2,6 +2,8 @@ use crate::prelude::*;
 
 use super::menu_common::*;
 
+const HACK_LOAD: &'static str = "110ac140-9b00-11ef-8886-8370cf5b4bfa";
+
 #[derive(Bundle)]
 struct MenuPlatformBundle<const DUMMY: u32> {}
 impl<const DUMMY: u32> MyLdtkIntCell for MenuPlatformBundle<DUMMY> {
@@ -57,7 +59,7 @@ fn update_overworld(butts: Res<ButtInput>, mut commands: Commands) {
         commands.trigger(StartTransition::to(
             WorldLoadingState {
                 kind: WorldKind::Canyon,
-                level_iid: "d32f7850-73f0-11ef-ab29-c106faf0247d".to_string(),
+                level_iid: HACK_LOAD.to_string(),
             }
             .to_meta_state(),
         ));
