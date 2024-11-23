@@ -9,6 +9,7 @@ mod player_anim;
 mod star_anim;
 mod storm_anim;
 mod transition_anim;
+mod tut_anim;
 
 pub use animals_anim::*;
 pub use common_platform_anim::*;
@@ -19,6 +20,7 @@ pub use player_anim::*;
 pub use star_anim::*;
 pub use storm_anim::*;
 pub use transition_anim::TransitionAnim;
+pub use tut_anim::*;
 
 #[derive(Bundle)]
 pub struct EphemeralAnim<StateMachine: AnimStateMachine> {
@@ -90,5 +92,6 @@ impl Plugin for MyAnimPlugin {
         storm_anim::register_storm_anim(app);
         star_anim::register_star_anim(app);
         transition_anim::register_transition_anim(app);
+        tut_anim::register_tut_anim(app);
     }
 }

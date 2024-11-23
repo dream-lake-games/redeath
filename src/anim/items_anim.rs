@@ -146,17 +146,6 @@ derive_anim!(
 );
 type CoinAnimPlugin = AnimDefnPlugin<CoinAnim, AnimTimeRes>;
 
-derive_anim!(
-    pub enum SkellyDashAnim {
-        #[default]
-        #[file("items/skelly_dash.png")]
-        #[size(32, 24)]
-        #[render_layers(StaticLayer)]
-        Spin,
-    }
-);
-type SkellyDashAnimPlugin = AnimDefnPlugin<SkellyDashAnim, AnimTimeRes>;
-
 pub(super) fn register_items_anim(app: &mut App) {
     app.add_plugins(ReplenishAnimPlugin::default());
     app.add_plugins(EggAnimPlugin::default());
@@ -164,5 +153,4 @@ pub(super) fn register_items_anim(app: &mut App) {
     app.add_plugins(EggGhostFadeAnimPlugin::default());
     app.add_plugins(EggBlockAnimPlugin::default());
     app.add_plugins(CoinAnimPlugin::default());
-    app.add_plugins(SkellyDashAnimPlugin::default());
 }

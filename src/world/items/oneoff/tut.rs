@@ -8,7 +8,7 @@ impl Component for SkellyDash {
             world.commands().spawn(ConvoOneoff::medium(
                 eid,
                 Vec2::new(-5.0, -3.0),
-                "Press K to dash in ANY cardinal direction",
+                "Press K to dash",
             ));
         });
     }
@@ -35,9 +35,40 @@ impl MyLdtkEntity for SkellyDashBundle {
     }
 }
 
-pub(super) fn register_skelly_dash(app: &mut App) {
+#[derive(Bundle)]
+struct DashDrawingBundle {
+    name: Name,
+    pos: Pos,
+    spatial: SpatialBundle,
+    anim: AnimMan<DashDrawingAnim>,
+}
+impl MyLdtkEntity for DashDrawingBundle {
+    type Root = WorldDetailRoot;
+    fn from_ldtk(pos: Pos, fields: &HashMap<String, FieldValue>, _iid: String) -> Self {
+        let Some(FieldValue::String(Some(text))) = fields.get("Kind") else {
+            panic!("ahh dash drawing");
+        };
+        let anim = match text.as_str() {
+            "Up" => AnimMan::new(DashDrawingAnim::Up),
+            "Diagonal" => AnimMan::new(DashDrawingAnim::Diagonal),
+            _ => AnimMan::new(DashDrawingAnim::Right),
+        };
+        Self {
+            name: Name::new("skelly_dash"),
+            pos,
+            spatial: pos.to_spatial(ZIX_ITEMS + 0.03),
+            anim,
+        }
+    }
+}
+
+pub(super) fn register_tut(app: &mut App) {
     app.add_plugins(MyLdtkEntityPlugin::<SkellyDashBundle>::new(
         "Entities",
         "SkellyDash",
+    ));
+    app.add_plugins(MyLdtkEntityPlugin::<DashDrawingBundle>::new(
+        "Entities",
+        "DashDrawing",
     ));
 }

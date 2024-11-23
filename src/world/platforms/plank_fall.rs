@@ -46,7 +46,9 @@ impl Component for RememberChild {
     fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
         hooks.on_remove(|mut world, eid, _| {
             let remember_child = world.get::<RememberChild>(eid).expect("myself").child;
-            world.commands().entity(remember_child).despawn_recursive();
+            if let Some(comms) = world.commands().get_entity(remember_child) {
+                comms.despawn_recursive();
+            }
         });
     }
 }

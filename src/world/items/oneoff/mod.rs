@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
-mod skelly_dash;
+mod tut;
 
 pub(super) fn register_oneoff(app: &mut App) {
-    skelly_dash::register_skelly_dash(app);
+    tut::register_tut(app);
 }
