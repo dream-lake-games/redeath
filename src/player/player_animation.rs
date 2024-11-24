@@ -31,13 +31,13 @@ fn start_jump_animation(
 }
 
 fn maybe_start_land_animation(
-    mut player: Query<(&mut AnimMan<PlayerAnim>, &TouchingDir), With<Player>>,
+    mut player: Query<(&mut AnimMan<PlayerAnim>, &ForcefulTouchingDir), With<Player>>,
 ) {
-    let (mut anim, touching) = player.single_mut();
+    let (mut anim, forceful_touching) = player.single_mut();
     if matches!(
         anim.get_state(),
         PlayerAnim::AirDown | PlayerAnim::AirDownExhausted
-    ) && touching.down()
+    ) && forceful_touching.down()
     {
         anim.set_state(PlayerAnim::Land);
     }
@@ -47,7 +47,7 @@ fn normal_movement_animation(
     mut player: Query<
         (
             &mut AnimMan<PlayerAnim>,
-            &TouchingDir,
+            &ForcefulTouchingDir,
             &Dyno,
             Option<&Dashing>,
             Option<&CanDash>,
@@ -56,7 +56,7 @@ fn normal_movement_animation(
     >,
     dir: Res<DirInput>,
 ) {
-    let (mut anim, touching, dyno, dashing, can_dash) = player.single_mut();
+    let (mut anim, forceful_touching, dyno, dashing, can_dash) = player.single_mut();
 
     // Dashing overrides everything
     if dashing.is_some() {
@@ -70,10 +70,10 @@ fn normal_movement_animation(
     // Then wall sliding (note anim logic is slightly different from vel logic — be warned)
     // Okay it's actually not that scary it's just that anim also comes into play when sliding and moving up,
     // whereas vel only changes when going down
-    let wall_sliding = !touching.down()
-        && (touching.right() && dyno.vel.x > 0.0 || touching.left() && dyno.vel.x < 0.0);
+    let wall_sliding =
+        !forceful_touching.down() && forceful_touching.right() || forceful_touching.left();
     if wall_sliding {
-        anim.set_flip_x(touching.right());
+        anim.set_flip_x(forceful_touching.right());
         if can_dash.is_some() {
             anim.set_state(PlayerAnim::WallSlide);
         } else {
@@ -95,7 +95,7 @@ fn normal_movement_animation(
     }
 
     // Finally do running and inair if we get here
-    if touching.down() {
+    if forceful_touching.down() {
         // On the ground
         if dyno.vel.x.abs() < 1.0 {
             if anim.get_state() != PlayerAnim::EdgeSitup {
@@ -108,8 +108,8 @@ fn normal_movement_animation(
             }
         } else {
             // Moving
-            let pushing_wall =
-                (dyno.vel.x > 0.0 && touching.right()) || (dyno.vel.x < 0.0 && touching.left());
+            let pushing_wall = (dyno.vel.x > 0.0 && forceful_touching.right())
+                || (dyno.vel.x < 0.0 && forceful_touching.left());
             if pushing_wall {
                 anim.set_state(PlayerAnim::WallPush);
             } else {

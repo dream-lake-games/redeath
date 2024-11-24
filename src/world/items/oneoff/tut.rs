@@ -48,11 +48,15 @@ impl MyLdtkEntity for DashDrawingBundle {
         let Some(FieldValue::String(Some(text))) = fields.get("Kind") else {
             panic!("ahh dash drawing");
         };
+        let Some(FieldValue::Bool(flipx)) = fields.get("FlipX") else {
+            panic!("ahh dash drawing2");
+        };
         let anim = match text.as_str() {
             "Up" => AnimMan::new(DashDrawingAnim::Up),
             "Diagonal" => AnimMan::new(DashDrawingAnim::Diagonal),
             _ => AnimMan::new(DashDrawingAnim::Right),
-        };
+        }
+        .with_flip_x(*flipx);
         Self {
             name: Name::new("skelly_dash"),
             pos,

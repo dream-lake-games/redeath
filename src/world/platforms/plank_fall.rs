@@ -237,6 +237,24 @@ fn update_canaries(
     }
 }
 
+fn reset_on_spawn(
+    currently_falling: Query<Entity, (With<AnimMan<PlankFallAnim>>, With<Gravity>)>,
+    waiting_parents: Query<Entity, With<ParentWaiting>>,
+    mut commands: Commands,
+) {
+    for eid in currently_falling.iter() {
+        if let Some(comms) = commands.get_entity(eid) {
+            comms.despawn_recursive();
+        }
+    }
+    for eid in &waiting_parents {
+        if let Some(mut comms) = commands.get_entity(eid) {
+            comms.remove::<ParentWaiting>();
+            comms.insert(ParentStable);
+        }
+    }
+}
+
 pub(super) fn register_plank_fall(app: &mut App) {
     app.add_plugins(MyLdtkIntCellPlugin::<PlankFallParentBundle>::single(
         "CommonPlatforms",
@@ -256,4 +274,6 @@ pub(super) fn register_plank_fall(app: &mut App) {
             .run_if(in_state(MetaStateKind::World))
             .after(PhysicsSet),
     );
+
+    app.add_systems(OnEnter(PlayerMetaState::Spawning), reset_on_spawn);
 }

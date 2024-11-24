@@ -43,11 +43,11 @@ impl Default for PlayerMovementConsts {
 
 fn update_touching(
     player: Query<(Entity, &StaticRxCtrl), With<Player>>,
-    colls: Res<StaticColls>,
+    colls_res: Res<StaticColls>,
     mut commands: Commands,
 ) {
     let (eid, srx_ctrl) = player.single();
-    let colls = colls.get_refs(&srx_ctrl.coll_keys).by_rx_hbox();
+    let colls = colls_res.get_refs(&srx_ctrl.coll_keys).by_rx_hbox();
     let marker_tx_kinds = |marker: u32| {
         colls
             .get(&marker)
@@ -81,11 +81,53 @@ fn update_touching(
     commands.entity(eid).insert(touching);
 }
 
+fn update_forceful_touching(
+    mut commands: Commands,
+    player: Query<(Entity, &Dyno, &StaticRxCtrl, &TouchingDir), With<Player>>,
+    colls_res: Res<StaticColls>,
+    dynos: Query<&Dyno>,
+    dir_input: Res<DirInput>,
+) {
+    let (eid, player_dyno, srx_ctrl, touching) = player.single();
+    let colls = colls_res.get_refs(&srx_ctrl.coll_keys).by_rx_hbox();
+
+    // Because we haven't moved horizontally yet, we don't know if we are pushing into a wall
+    // Adjust here for horizontal checks
+    let player_vel = player_dyno.vel + Vec2::new(dir_input.x * 0.1, 0.0);
+
+    let marker_vels = |marker: u32| {
+        let colls = colls.get(&marker).unwrap();
+        colls.iter().map(|coll| {
+            let dyno = dynos.get(coll.tx_ctrl).cloned().unwrap_or_default();
+            dyno.vel
+        })
+    };
+
+    let mut forceful = ForcefulTouchingDir::default();
+    if touching.right() {
+        let mut relevant = marker_vels(PLAYER_RIGHT_HBOX);
+        forceful.set_right(relevant.any(|vel| vel.x < player_vel.x));
+    }
+    if touching.up() {
+        let mut relevant = marker_vels(PLAYER_ABOVE_HBOX);
+        forceful.set_up(relevant.any(|vel| vel.y < player_vel.y));
+    }
+    if touching.left() {
+        let mut relevant = marker_vels(PLAYER_LEFT_HBOX);
+        forceful.set_left(relevant.any(|vel| vel.x > player_vel.x));
+    }
+    if touching.down() {
+        let mut relevant = marker_vels(PLAYER_BELOW_HBOX);
+        forceful.set_down(relevant.any(|vel| vel.y > player_vel.y));
+    }
+    commands.entity(eid).insert(forceful);
+}
+
 fn update_can_jump(
     mut player: Query<
         (
             Entity,
-            &TouchingDir,
+            &ForcefulTouchingDir,
             Option<&mut CanRegularJump>,
             Option<&mut CanWallJumpFromLeft>,
             Option<&mut CanWallJumpFromRight>,
@@ -98,10 +140,10 @@ fn update_can_jump(
     mut commands: Commands,
     consts: Res<PlayerMovementConsts>,
 ) {
-    let (eid, touching, mut can_regular, mut can_wall_left, mut can_wall_right, mut post_jump) =
+    let (eid, forceful, mut can_regular, mut can_wall_left, mut can_wall_right, mut post_jump) =
         player.single_mut();
     // Update regular jump
-    if touching.down() {
+    if forceful.down() {
         commands.entity(eid).insert(CanRegularJump {
             coyote_time: consts.coyote_time,
         });
@@ -114,7 +156,7 @@ fn update_can_jump(
         }
     }
     // Update left wall jump
-    if touching.left() {
+    if forceful.left() {
         commands.entity(eid).insert(CanWallJumpFromLeft {
             coyote_time: consts.coyote_time,
         });
@@ -127,7 +169,7 @@ fn update_can_jump(
         }
     }
     // Update right wall jump
-    if touching.right() {
+    if forceful.right() {
         commands.entity(eid).insert(CanWallJumpFromRight {
             coyote_time: consts.coyote_time,
         });
@@ -438,7 +480,8 @@ pub(super) fn register_player_movement(app: &mut App) {
     // Update touching. Should happen first and whenever there's a spawned player.
     app.add_systems(
         Update,
-        update_touching
+        (update_touching, update_forceful_touching)
+            .chain()
             .before(AnimSet)
             .in_set(PlayerSet)
             .in_set(PlayerMovementSet)
@@ -450,7 +493,7 @@ pub(super) fn register_player_movement(app: &mut App) {
                     .or_else(in_state(PlayerMetaState::Dying)),
             ),
     );
-    // Then do the actual movement stuff
+    // Then do the actual movement stuff, only in playing states
     app.add_systems(
         Update,
         (
@@ -472,7 +515,7 @@ pub(super) fn register_player_movement(app: &mut App) {
             .in_set(PlayerMovementSet)
             .after(InputSet)
             .after(PhysicsSet)
-            .after(update_touching)
+            .after(update_forceful_touching)
             .run_if(in_state(PlayerMetaState::Playing)),
     );
 }

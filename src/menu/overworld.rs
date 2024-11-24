@@ -2,8 +2,11 @@ use crate::prelude::*;
 
 use super::menu_common::*;
 
-const HACK_LOAD: &'static str = "d32f7850-73f0-11ef-ab29-c106faf0247d";
-// const HACK_LOAD: &'static str = "b1399660-9b00-11ef-8497-f5c7f49b60f7";
+// STARTER LEVEL
+// const HACK_LOAD: &'static str = "d32f7850-73f0-11ef-ab29-c106faf0247d";
+
+// SCRATCH LEVEL
+const HACK_LOAD: &'static str = "bfe3baf0-9b00-11ef-8497-2bea4ad2d670";
 
 #[derive(Bundle)]
 struct MenuPlatformBundle<const DUMMY: u32> {}

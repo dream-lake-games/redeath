@@ -117,6 +117,37 @@ mod playerlude {
             *self.map.get(&Dir4::Right).unwrap_or(&false)
         }
     }
+    #[derive(Component, Default)]
+    pub struct ForcefulTouchingDir {
+        inner: TouchingDir,
+    }
+    impl ForcefulTouchingDir {
+        pub fn set_up(&mut self, val: bool) {
+            self.inner.map.insert(Dir4::Up, val);
+        }
+        pub fn set_down(&mut self, val: bool) {
+            self.inner.map.insert(Dir4::Down, val);
+        }
+        pub fn set_left(&mut self, val: bool) {
+            self.inner.map.insert(Dir4::Left, val);
+        }
+        pub fn set_right(&mut self, val: bool) {
+            self.inner.map.insert(Dir4::Right, val);
+        }
+        #[allow(dead_code)]
+        pub fn up(&self) -> bool {
+            self.inner.up()
+        }
+        pub fn down(&self) -> bool {
+            self.inner.down()
+        }
+        pub fn left(&self) -> bool {
+            self.inner.left()
+        }
+        pub fn right(&self) -> bool {
+            self.inner.right()
+        }
+    }
 }
 
 /// The set that contains all player related systems
