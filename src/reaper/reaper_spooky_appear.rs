@@ -105,9 +105,8 @@ fn maybe_start_appearing(
                 comms.insert(Light::<LightStatic64Anim>::default());
                 if preappear.will_convo {
                     comms.insert(ReaperSpookyConvoing);
-                } else {
-                    comms.insert(ReaperSpookyAppearInner::default());
                 }
+                comms.insert(ReaperSpookyAppearInner::default());
                 comms.remove::<ReaperSpookyPreAppear>();
             }
             if song_manager.get_current() == Song::NoSong {
@@ -123,7 +122,10 @@ fn maybe_start_appearing(
 }
 
 fn update_reaper_spooky_appeared(
-    mut reapers: Query<(&mut ReaperSpookyAppearInner, &mut AnimMan<ReaperAnim>)>,
+    mut reapers: Query<
+        (&mut ReaperSpookyAppearInner, &mut AnimMan<ReaperAnim>),
+        Without<ReaperSpookyConvoing>,
+    >,
     bullet_time: Res<BulletTime>,
     mut camera_shake: ResMut<CameraShake>,
     mut commands: Commands,
@@ -149,8 +151,8 @@ fn remove_reaper_spooky_convoing(
     ents: Query<Entity, With<ReaperSpookyConvoing>>,
 ) {
     for eid in &ents {
-        if let Some(comms) = commands.get_entity(eid) {
-            comms.despawn_recursive();
+        if let Some(mut comms) = commands.get_entity(eid) {
+            comms.remove::<ReaperSpookyConvoing>();
         }
     }
 }

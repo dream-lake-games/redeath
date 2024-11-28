@@ -11,7 +11,7 @@
 	"iid": "d32f5140-73f0-11ef-ab29-ed383a1054e6",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 262,
+	"nextUid": 263,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -2559,7 +2559,7 @@
 			"fieldDefs": []
 		},
 		{
-			"identifier": "ConvoStartTrigger",
+			"identifier": "CutsceneStartTrigger",
 			"uid": 210,
 			"tags": [],
 			"exportToToc": false,
@@ -2593,7 +2593,7 @@
 			"pivotY": 0,
 			"fieldDefs": [
 				{
-					"identifier": "Convo",
+					"identifier": "Cutscene",
 					"doc": null,
 					"__type": "String",
 					"uid": 211,
@@ -3055,6 +3055,43 @@
 					"regex": null,
 					"acceptFileTypes": null,
 					"defaultOverride": { "id": "V_Float", "params": [64] },
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				},
+				{
+					"identifier": "Convo",
+					"doc": null,
+					"__type": "Bool",
+					"uid": 262,
+					"type": "F_Bool",
+					"isArray": false,
+					"canBeNull": false,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "NameAndValue",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -28700,7 +28737,8 @@
 							"fieldInstances": [
 								{ "__identifier": "TriggerXOffset", "__type": "Float", "__value": -160, "__tile": null, "defUid": 249, "realEditorValues": [{ "id": "V_Float", "params": [-160] }] },
 								{ "__identifier": "TriggerYOffset", "__type": "Float", "__value": 16, "__tile": null, "defUid": 250, "realEditorValues": [{ "id": "V_Float", "params": [16] }] },
-								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 64, "__tile": null, "defUid": 251, "realEditorValues": [] }
+								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 64, "__tile": null, "defUid": 251, "realEditorValues": [] },
+								{ "__identifier": "Convo", "__type": "Bool", "__value": false, "__tile": null, "defUid": 262, "realEditorValues": [] }
 							],
 							"__worldX": 1224,
 							"__worldY": -2616
@@ -30320,7 +30358,8 @@
 							"fieldInstances": [
 								{ "__identifier": "TriggerXOffset", "__type": "Float", "__value": -120, "__tile": null, "defUid": 249, "realEditorValues": [{ "id": "V_Float", "params": [-120] }] },
 								{ "__identifier": "TriggerYOffset", "__type": "Float", "__value": -110, "__tile": null, "defUid": 250, "realEditorValues": [{ "id": "V_Float", "params": [-110] }] },
-								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 64, "__tile": null, "defUid": 251, "realEditorValues": [] }
+								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 64, "__tile": null, "defUid": 251, "realEditorValues": [] },
+								{ "__identifier": "Convo", "__type": "Bool", "__value": false, "__tile": null, "defUid": 262, "realEditorValues": [] }
 							],
 							"__worldX": 1400,
 							"__worldY": -2728
@@ -30340,7 +30379,8 @@
 							"fieldInstances": [
 								{ "__identifier": "TriggerXOffset", "__type": "Float", "__value": -90, "__tile": null, "defUid": 249, "realEditorValues": [{ "id": "V_Float", "params": [-90] }] },
 								{ "__identifier": "TriggerYOffset", "__type": "Float", "__value": 100, "__tile": null, "defUid": 250, "realEditorValues": [{ "id": "V_Float", "params": [100] }] },
-								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 300, "__tile": null, "defUid": 251, "realEditorValues": [{ "id": "V_Float", "params": [300] }] }
+								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 300, "__tile": null, "defUid": 251, "realEditorValues": [{ "id": "V_Float", "params": [300] }] },
+								{ "__identifier": "Convo", "__type": "Bool", "__value": false, "__tile": null, "defUid": 262, "realEditorValues": [] }
 							],
 							"__worldX": 1504,
 							"__worldY": -2672
@@ -30520,6 +30560,22 @@
 							"fieldInstances": [],
 							"__worldX": 1696,
 							"__worldY": -2752
+						},
+						{
+							"__identifier": "SpawnPoint",
+							"__grid": [55,17],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#D6FF64",
+							"iid": "d287ea60-9b00-11ef-909d-0bb55d602992",
+							"width": 8,
+							"height": 16,
+							"defUid": 208,
+							"px": [440,136],
+							"fieldInstances": [],
+							"__worldX": 1712,
+							"__worldY": -2728
 						}
 					]
 				},
@@ -42393,7 +42449,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "SpawnPoint",
-							"__grid": [3,9],
+							"__grid": [2,9],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -42402,9 +42458,9 @@
 							"width": 8,
 							"height": 16,
 							"defUid": 208,
-							"px": [24,72],
+							"px": [16,72],
 							"fieldInstances": [],
-							"__worldX": 1768,
+							"__worldX": 1760,
 							"__worldY": -2728
 						},
 						{
@@ -42424,7 +42480,7 @@
 							"__worldY": -2728
 						},
 						{
-							"__identifier": "ConvoStartTrigger",
+							"__identifier": "CutsceneStartTrigger",
 							"__grid": [11,7],
 							"__pivot": [0,0],
 							"__tags": [],
@@ -42435,7 +42491,10 @@
 							"height": 32,
 							"defUid": 210,
 							"px": [88,56],
-							"fieldInstances": [{ "__identifier": "Convo", "__type": "String", "__value": "", "__tile": null, "defUid": 211, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "Cutscene", "__type": "String", "__value": "CanyonConfrontReaper", "__tile": null, "defUid": 211, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["CanyonConfrontReaper"]
+							}] }],
 							"__worldX": 1832,
 							"__worldY": -2744
 						},
@@ -42452,9 +42511,13 @@
 							"defUid": 248,
 							"px": [176,64],
 							"fieldInstances": [
-								{ "__identifier": "TriggerXOffset", "__type": "Float", "__value": -180, "__tile": null, "defUid": 249, "realEditorValues": [{ "id": "V_Float", "params": [-180] }] },
+								{ "__identifier": "TriggerXOffset", "__type": "Float", "__value": -160, "__tile": null, "defUid": 249, "realEditorValues": [{ "id": "V_Float", "params": [-160] }] },
 								{ "__identifier": "TriggerYOffset", "__type": "Float", "__value": 0, "__tile": null, "defUid": 250, "realEditorValues": [] },
-								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 64, "__tile": null, "defUid": 251, "realEditorValues": [] }
+								{ "__identifier": "TriggerHeight", "__type": "Float", "__value": 64, "__tile": null, "defUid": 251, "realEditorValues": [] },
+								{ "__identifier": "Convo", "__type": "Bool", "__value": true, "__tile": null, "defUid": 262, "realEditorValues": [{
+									"id": "V_Bool",
+									"params": [ true ]
+								}] }
 							],
 							"__worldX": 1920,
 							"__worldY": -2736

@@ -99,20 +99,88 @@ decl_convo! {
             },
         ],
     ),
+
     (
         ConfrontReaper,
         [
             {
-                speaker: ConvoSpeaker::Friend,
+                speaker: ConvoSpeaker::Lenny,
                 portrait: "default",
-                sound: "TalkingSynth_5",
-                text: "You've been coming here a lot lately.",
+                sound: "TalkingSynth_9",
+                text: "Why do you keep running away?",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (1)",
+                text: "I could ask you the same thing.",
+            },
+            {
+                speaker: ConvoSpeaker::Lenny,
+                portrait: "default",
+                sound: "TalkingSynth_3",
+                text: "I'm tired of waiting. I'm tired of being scared.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (2)",
+                text: "And what? You think that means you deserve to get into heaven early?",
+            },
+            {
+                speaker: ConvoSpeaker::Lenny,
+                portrait: "default",
+                sound: "TalkingSynth_2",
+                text: "Well, no. I just want to do something. I can't keep feeling sorry for myself.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (3)",
+                text: "Oh child, I don't think you understand how purgatory works.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (4)",
+                text: "You see, you were an okay person. Like most people. Not good, not bad. Just okay.",
+            },
+            {
+                speaker: ConvoSpeaker::Lenny,
+                portrait: "default",
+                sound: "TalkingSynth_18",
+                text: "...thanks.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (5)",
+                text: "We have pity on you, so you're on the proverbial waitlist so to speak.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (6)",
+                text: "But until your day comes you must sit and think about what you did — and more importantly didn't — do.",
+            },
+            {
+                speaker: ConvoSpeaker::Lenny,
+                portrait: "default",
+                sound: "TalkingSynth_20",
+                text: "I'm sorry, I... I can't accept that. Now please, you're in my way.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (1)",
+                text: "In that case, I too am sorry, child. You have a nice death going for you.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (2)",
+                text: "It'd be a shame if something happened to it.",
             },
         ],
     ),
 }
-
-/// What the...
-///
-///
-struct UghRust;

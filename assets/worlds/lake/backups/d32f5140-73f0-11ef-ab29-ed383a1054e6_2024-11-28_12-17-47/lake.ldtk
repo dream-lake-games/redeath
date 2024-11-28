@@ -30560,6 +30560,22 @@
 							"fieldInstances": [],
 							"__worldX": 1696,
 							"__worldY": -2752
+						},
+						{
+							"__identifier": "SpawnPoint",
+							"__grid": [55,17],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#D6FF64",
+							"iid": "d287ea60-9b00-11ef-909d-0bb55d602992",
+							"width": 8,
+							"height": 16,
+							"defUid": 208,
+							"px": [440,136],
+							"fieldInstances": [],
+							"__worldX": 1712,
+							"__worldY": -2728
 						}
 					]
 				},
@@ -42433,7 +42449,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "SpawnPoint",
-							"__grid": [3,9],
+							"__grid": [2,9],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -42442,9 +42458,9 @@
 							"width": 8,
 							"height": 16,
 							"defUid": 208,
-							"px": [24,72],
+							"px": [16,72],
 							"fieldInstances": [],
-							"__worldX": 1768,
+							"__worldX": 1760,
 							"__worldY": -2728
 						},
 						{
@@ -42475,7 +42491,10 @@
 							"height": 32,
 							"defUid": 210,
 							"px": [88,56],
-							"fieldInstances": [{ "__identifier": "Cutscene", "__type": "String", "__value": "", "__tile": null, "defUid": 211, "realEditorValues": [] }],
+							"fieldInstances": [{ "__identifier": "Cutscene", "__type": "String", "__value": "CanyonConfrontReaper", "__tile": null, "defUid": 211, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["CanyonConfrontReaper"]
+							}] }],
 							"__worldX": 1832,
 							"__worldY": -2744
 						},

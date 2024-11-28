@@ -46,6 +46,17 @@ fn clear_root(mut commands: Commands, root: Res<CutsceneRoot>) {
     }
 }
 
+fn force_puppet(
+    meta_state: Res<State<MetaState>>,
+    mut next_meta_state: ResMut<NextState<MetaState>>,
+) {
+    let MetaState::World(mut world_state) = meta_state.get().clone() else {
+        return;
+    };
+    world_state.player_meta_state = PlayerMetaState::Puppet;
+    next_meta_state.set(world_state.to_meta_state());
+}
+
 #[derive(Component)]
 struct DoInSecondsInner {
     time_left: f32,
@@ -66,8 +77,8 @@ fn drive_do_in_seconds(
 pub(super) struct CutscenePlugin;
 impl Plugin for CutscenePlugin {
     fn build(&self, app: &mut App) {
-        // Clear the root always
-        app.add_systems(OnExit(CutsceneState::None), clear_root);
+        // Clear the root and force puppet always
+        app.add_systems(OnExit(CutsceneState::None), (clear_root, force_puppet));
         app.add_systems(OnEnter(CutsceneState::None), clear_root);
         // Drive do in seconds
         app.add_systems(

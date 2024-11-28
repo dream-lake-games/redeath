@@ -55,6 +55,9 @@ defn_songs!([
     FightAmidstTheDestructionIntro,
     "music/Fight Amidst the Destruction -intro -end -2x -lofi.ogg",
     0.07,
+    FightAmidstTheDestructionLoop,
+    "music/Fight Amidst the Destruction -longloop.ogg",
+    0.1,
 ]);
 
 pub(super) fn register_song_defns(app: &mut App) {

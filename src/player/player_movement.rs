@@ -497,7 +497,6 @@ pub(super) fn register_player_movement(app: &mut App) {
         Update,
         (
             update_can_jump,
-            update_current_dash,
             update_can_dash_from_ground,
             update_can_dash_from_replenish,
             maybe_start_dash,
@@ -516,5 +515,18 @@ pub(super) fn register_player_movement(app: &mut App) {
             .after(PhysicsSet)
             .after(update_forceful_touching)
             .run_if(in_state(PlayerMetaState::Playing)),
+    );
+    // Lol except this stuff, which should happen for puppets so they end
+    app.add_systems(
+        Update,
+        (update_current_dash,)
+            .chain()
+            .before(AnimSet)
+            .in_set(PlayerSet)
+            .in_set(PlayerMovementSet)
+            .after(InputSet)
+            .after(PhysicsSet)
+            .after(keep_inside_edge_level)
+            .run_if(in_state(PlayerMetaState::Playing).or_else(in_state(PlayerMetaState::Puppet))),
     );
 }

@@ -44,7 +44,7 @@ Tonight
 - [x] Reaper scary moments
 - [x] And also fix clouds
 - [x] Weird player wall jump thing with passup
-- [ ] Reaper conversation
+- [x] Reaper conversation
 
 - [ ] THEN break from reaper and do screen transitions
     - [ ] First make it take time and have the screen scroll

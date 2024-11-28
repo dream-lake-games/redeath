@@ -7,6 +7,7 @@ pub enum ConvoSpeaker {
     Silence(f32),
     Lenny,
     Friend,
+    Reaper,
 }
 
 #[derive(Component, Clone, Debug, Reflect)]
@@ -59,6 +60,9 @@ impl Component for ConvoSpeaker {
                 (ConvoSpeaker::Friend, _) => {
                     static_portrait!(world, "convo/friend/portrait/default.png");
                 }
+                (ConvoSpeaker::Reaper, _) => {
+                    static_portrait!(world, "convo/reaper/portrait/default.png");
+                }
             }
 
             macro_rules! convo_sound {
@@ -91,6 +95,9 @@ impl Component for ConvoSpeaker {
                 }
                 (ConvoSpeaker::Friend, key) => {
                     convo_sound!(world, format!("convo/friend/sound/{key}.ogg"));
+                }
+                (ConvoSpeaker::Reaper, key) => {
+                    convo_sound!(world, format!("convo/reaper/sound/{key}.ogg"));
                 }
             }
         });
