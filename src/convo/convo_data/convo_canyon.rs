@@ -99,4 +99,20 @@ decl_convo! {
             },
         ],
     ),
+    (
+        ConfrontReaper,
+        [
+            {
+                speaker: ConvoSpeaker::Friend,
+                portrait: "default",
+                sound: "TalkingSynth_5",
+                text: "You've been coming here a lot lately.",
+            },
+        ],
+    ),
 }
+
+/// What the...
+///
+///
+struct UghRust;

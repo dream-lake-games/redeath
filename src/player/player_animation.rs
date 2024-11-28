@@ -71,7 +71,7 @@ fn normal_movement_animation(
     // Okay it's actually not that scary it's just that anim also comes into play when sliding and moving up,
     // whereas vel only changes when going down
     let wall_sliding =
-        !forceful_touching.down() && forceful_touching.right() || forceful_touching.left();
+        !forceful_touching.down() && (forceful_touching.right() || forceful_touching.left());
     if wall_sliding {
         anim.set_flip_x(forceful_touching.right());
         if can_dash.is_some() {

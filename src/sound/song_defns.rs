@@ -47,6 +47,14 @@ defn_songs!([
     SinisterAbode,
     "music/sinister_abode.ogg",
     0.1,
+    // https://opengameart.org/content/wrong-rite-theme
+    WrongRite,
+    "music/Wrong Rite Theme.ogg",
+    0.1,
+    // https://opengameart.org/content/fight-amidst-the-destruction
+    FightAmidstTheDestructionIntro,
+    "music/Fight Amidst the Destruction -intro -end -2x -lofi.ogg",
+    0.07,
 ]);
 
 pub(super) fn register_song_defns(app: &mut App) {

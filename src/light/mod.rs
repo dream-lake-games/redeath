@@ -21,9 +21,9 @@ impl Plugin for LightPlugin {
         app.add_plugins(Material2dPlugin::<LightCutoutMat>::default());
         app.add_plugins(Material2dPlugin::<LightMat>::default());
         app.insert_resource(BaseLights {
-            ambience: Color::srgba(0.7, 0.7, 0.7, 1.0),
-            detail: Color::srgba(0.4, 0.4, 0.4, 1.0),
-            main: Color::srgba(0.6, 0.6, 0.6, 1.0),
+            ambience: Color::srgba(0.64, 0.64, 0.64, 1.0),
+            detail: Color::srgba(0.35, 0.35, 0.35, 1.0),
+            main: Color::srgba(0.5, 0.5, 0.5, 1.0),
         });
 
         light_interaction::register_light_interaction(app);

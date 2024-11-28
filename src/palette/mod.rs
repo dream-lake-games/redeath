@@ -4,9 +4,11 @@ use crate::prelude::*;
 
 pub mod global_shift;
 pub mod palette_mats;
+pub mod wavy_palette;
 
 pub use global_shift::*;
 pub use palette_mats::*;
+pub use wavy_palette::*;
 
 pub fn color_as_vec4(color: Color) -> Vec4 {
     let linear = color.to_linear();
@@ -82,5 +84,6 @@ impl Plugin for PalettePlugin {
         app.add_plugins(Material2dPlugin::<ShiftedPaletteMat>::default());
 
         global_shift::register_global_shift(app);
+        wavy_palette::register_wavy_palette(app);
     }
 }

@@ -65,7 +65,7 @@ defn_effects!([
     0.02,
     EggBreakSingle,
     "sound/egg/break_single.ogg",
-    0.02,
+    0.015,
     EggBreakAll,
     "sound/egg/break_all.ogg",
     0.03,

@@ -1,7 +1,9 @@
 use crate::prelude::*;
 
+mod canyon_confront_reaper;
 mod canyon_intro;
 mod cutscene_macros;
+mod cutscene_trigger;
 
 mod cutlude {
     use crate::prelude::*;
@@ -73,6 +75,9 @@ impl Plugin for CutscenePlugin {
             drive_do_in_seconds.run_if(not(in_state(CutsceneState::None))),
         );
 
+        cutscene_trigger::register_cutscene_trigger(app);
+
         canyon_intro::register_canyon_intro(app);
+        canyon_confront_reaper::register_canyon_confront_reaper(app);
     }
 }

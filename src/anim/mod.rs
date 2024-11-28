@@ -6,6 +6,7 @@ mod items_anim;
 mod light_anim;
 mod menu_anim;
 mod player_anim;
+mod reaper_anim;
 mod star_anim;
 mod storm_anim;
 mod transition_anim;
@@ -17,6 +18,7 @@ pub use items_anim::*;
 pub use light_anim::*;
 pub use menu_anim::*;
 pub use player_anim::*;
+pub use reaper_anim::*;
 pub use star_anim::*;
 pub use storm_anim::*;
 pub use transition_anim::TransitionAnim;
@@ -93,5 +95,6 @@ impl Plugin for MyAnimPlugin {
         star_anim::register_star_anim(app);
         transition_anim::register_transition_anim(app);
         tut_anim::register_tut_anim(app);
+        reaper_anim::register_reaper_anim(app);
     }
 }

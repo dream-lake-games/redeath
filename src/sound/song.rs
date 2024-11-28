@@ -20,7 +20,7 @@ pub struct SongManager {
     transition: Option<SongTransition>,
 }
 impl SongManager {
-    const FADE_TIME: f32 = 0.2;
+    const FADE_TIME: f32 = 0.5;
 
     pub fn fade_to(&mut self, song: Song) {
         if song == self.current && self.transition.is_none() {
@@ -32,6 +32,10 @@ impl SongManager {
             fade_out: Some(Timer::from_seconds(Self::FADE_TIME, TimerMode::Once)),
             fade_in: None,
         });
+    }
+
+    pub fn get_current(&self) -> Song {
+        self.current
     }
 }
 

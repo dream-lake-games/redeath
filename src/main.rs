@@ -15,6 +15,7 @@ pub mod my_ldtk;
 pub mod palette;
 pub mod physics;
 pub mod player;
+pub mod reaper;
 pub mod root;
 pub mod savefile;
 pub mod sound;
@@ -26,8 +27,8 @@ pub mod world;
 pub mod prelude {
     pub use super::{
         anim::*, bgfg::*, camera::*, consts::*, convo::*, input::*, layer::*, lazy::*, light::*,
-        math::*, my_ldtk::*, palette::*, physics::*, player::*, root::*, savefile::*, sound::*,
-        state::*, transition::*, types::*, world::*,
+        math::*, my_ldtk::*, palette::*, physics::*, player::*, reaper::*, root::*, savefile::*,
+        sound::*, state::*, transition::*, types::*, world::*,
     };
     pub use bevy::{
         color::palettes::tailwind,
@@ -97,6 +98,7 @@ fn main() {
         .add_plugins(PalettePlugin)
         .add_plugins(PhysicsPlugin)
         .add_plugins(PlayerPlugin)
+        .add_plugins(ReaperPlugin)
         .add_plugins(RootPlugin)
         .add_plugins(SavefilePlugin)
         .add_plugins(SoundPlugin)

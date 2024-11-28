@@ -55,8 +55,8 @@ impl ConvoTextProgress {
     }
 
     fn finish(&mut self) {
-        self.shown += &self.words_left.join(" ");
-        self.words_left.clear();
+        let remaining_words: Vec<_> = self.words_left.drain(..).rev().collect();
+        self.shown += &remaining_words.join(" ");
     }
 }
 

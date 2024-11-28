@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 pub mod effect;
 pub mod effect_defns;
+mod level_change_song_swaps;
 pub mod song;
 pub mod song_defns;
 
@@ -34,6 +35,7 @@ impl Plugin for SoundPlugin {
         app.add_plugins(SongPlugin);
         app.add_plugins(SoundEffectPlugin);
         effect_defns::register_effect_defns(app);
+        level_change_song_swaps::register_level_change_song_swaps(app);
         song_defns::register_song_defns(app);
     }
 }

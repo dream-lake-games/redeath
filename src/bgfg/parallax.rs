@@ -2,7 +2,7 @@ use crate::prelude::*;
 
 #[derive(Clone, Debug, Reflect)]
 pub(super) struct ParallaxX {
-    scratch: f32,
+    pub(super) scratch: f32,
     pub(super) mult: f32,
     pub(super) wrap_size: f32,
 }

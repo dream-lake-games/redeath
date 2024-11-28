@@ -75,12 +75,10 @@ fn end_cutscene(
     mut cutscene_state: ResMut<NextState<CutsceneState>>,
     mut player_anim: Query<&mut AnimMan<PlayerAnim>>,
 ) {
-    match trigger.event() {
-        ConvoCanyonEnded::Intro => {
-            cutscene_state.set(CutsceneState::None);
-            for mut anim in &mut player_anim {
-                anim.set_state(PlayerAnim::EdgeSitup);
-            }
+    if matches!(trigger.event(), ConvoCanyonEnded::Intro) {
+        cutscene_state.set(CutsceneState::None);
+        for mut anim in &mut player_anim {
+            anim.set_state(PlayerAnim::EdgeSitup);
         }
     }
 }
@@ -105,7 +103,7 @@ fn on_exit(
         commands.spawn(ConvoOneoff::medium(
             eid,
             Vec2::new(4.0, 7.0),
-            "ASD to move \n\n J to Jump",
+            "WASD to move \n\n J to Jump",
         ));
     }
 }

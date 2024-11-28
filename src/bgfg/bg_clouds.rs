@@ -1,5 +1,7 @@
 use crate::prelude::*;
 
+use super::parallax::ParallaxX;
+
 #[derive(Component)]
 struct CloudXVel(f32);
 
@@ -19,9 +21,9 @@ impl BgClouds {
     }
 }
 
-fn update_bg_clouds(mut clouds: Query<(&mut Transform, &CloudXVel)>, bullet_time: Res<BulletTime>) {
-    for (mut tran, vel) in &mut clouds {
-        tran.translation.x += bullet_time.delta_seconds() * vel.0;
+fn update_bg_clouds(mut clouds: Query<(&mut ParallaxX, &CloudXVel)>, bullet_time: Res<BulletTime>) {
+    for (mut px, vel) in &mut clouds {
+        px.scratch += bullet_time.delta_seconds() * vel.0;
     }
 }
 

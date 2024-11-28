@@ -212,14 +212,14 @@ fn update_current_dash(
 /// NOTE: Other ways of restoring dash are not handled here.
 ///       This is only for giving your dash back when you are on the ground and not dashing
 fn update_can_dash_from_ground(
-    player: Query<(Entity, &TouchingDir), (With<Player>, Without<Dashing>)>,
+    player: Query<(Entity, &ForcefulTouchingDir), (With<Player>, Without<Dashing>)>,
     mut commands: Commands,
 ) {
-    let Ok((eid, touching)) = player.get_single() else {
+    let Ok((eid, forceful_touching)) = player.get_single() else {
         // Means player is dashing
         return;
     };
-    if touching.down() {
+    if forceful_touching.down() {
         commands.entity(eid).insert(CanDash);
     }
 }
@@ -349,24 +349,24 @@ fn maybe_start_wall_jump(
 
 fn move_horizontally(
     mut player: Query<
-        (&mut Dyno, &TouchingDir, Option<&PostJump>),
+        (&mut Dyno, &ForcefulTouchingDir, Option<&PostJump>),
         (With<Player>, Without<Dashing>),
     >,
     dir: Res<DirInput>,
     consts: Res<PlayerMovementConsts>,
     bullet_time: Res<BulletTime>,
 ) {
-    let Ok((mut dyno, touching, post_jump)) = player.get_single_mut() else {
+    let Ok((mut dyno, forceful_touching, post_jump)) = player.get_single_mut() else {
         // Means the player can't move horizontally rn
         return;
     };
-    let friction = if touching.down() {
+    let friction = if forceful_touching.down() {
         1.0
     } else {
         consts.air_hor_friction
     };
 
-    if !touching.down()
+    if !forceful_touching.down()
         && matches!(
             post_jump.map(|s| s.kind),
             Some(JumpKind::FromLeftWall) | Some(JumpKind::FromRightWall)
@@ -398,11 +398,11 @@ fn move_horizontally(
 }
 
 fn limit_speed(
-    mut player: Query<(&mut Dyno, &TouchingDir), (With<Player>, Without<Dashing>)>,
+    mut player: Query<(&mut Dyno, &ForcefulTouchingDir), (With<Player>, Without<Dashing>)>,
     consts: Res<PlayerMovementConsts>,
     bullet_time: Res<BulletTime>,
 ) {
-    let Ok((mut dyno, touching)) = player.get_single_mut() else {
+    let Ok((mut dyno, forceful_touching)) = player.get_single_mut() else {
         // Means the player can't move horizontally rn
         return;
     };
@@ -415,8 +415,7 @@ fn limit_speed(
         }
     }
     // Ver
-    let wall_sliding = dyno.vel.y < 0.0
-        && (touching.right() && dyno.vel.x > 0.0 || touching.left() && dyno.vel.x < 0.0);
+    let wall_sliding = dyno.vel.y < 0.0 && (forceful_touching.right() || forceful_touching.left());
     let actual_max_ver_speed = if wall_sliding {
         consts.max_wall_slide_ver_speed
     } else {

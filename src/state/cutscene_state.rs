@@ -5,4 +5,5 @@ pub enum CutsceneState {
     #[default]
     None,
     CanyonIntro,
+    CanyonConfrontReaper,
 }
