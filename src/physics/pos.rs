@@ -28,14 +28,14 @@ impl Pos {
     pub fn as_vec2(&self) -> Vec2 {
         Vec2::new(self.x, self.y)
     }
+    pub fn as_ivec2(&self) -> IVec2 {
+        IVec2::new(self.x.round() as i32, self.y.round() as i32)
+    }
     pub fn to_spatial(&self, zix: f32) -> SpatialBundle {
         SpatialBundle::from_transform(Transform::from_translation(self.as_vec2().extend(zix)))
     }
     pub fn translated(&self, offset: Vec2) -> Self {
         Self::new(self.x + offset.x, self.y + offset.y)
-    }
-    pub fn to_ivec(&self) -> IVec2 {
-        IVec2::new(self.x.round() as i32, self.y.round() as i32)
     }
 }
 impl std::ops::Add<Vec2> for Pos {
@@ -61,7 +61,7 @@ pub struct IPos {
 }
 impl IPos {
     fn new(pos: Pos) -> Self {
-        let rounded = pos.to_ivec();
+        let rounded = pos.as_ivec2();
         Self {
             cur: rounded,
             last: rounded,
@@ -76,7 +76,7 @@ impl IPos {
 fn update_ipos(mut ents: Query<(&Pos, &mut IPos)>) {
     for (pos, mut ipos) in &mut ents {
         ipos.last = ipos.cur;
-        ipos.cur = pos.to_ivec();
+        ipos.cur = pos.as_ivec2();
     }
 }
 

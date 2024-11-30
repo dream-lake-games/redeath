@@ -85,7 +85,11 @@ fn normal_movement_animation(
     // Then don't interrupt stuff
     if matches!(
         anim.get_state(),
-        PlayerAnim::Jump | PlayerAnim::WallJump | PlayerAnim::WallJumpExhausted | PlayerAnim::Land
+        PlayerAnim::Jump
+            | PlayerAnim::WallJump
+            | PlayerAnim::WallJumpExhausted
+            | PlayerAnim::Land
+            | PlayerAnim::EdgeSitting
     ) {
         // Don't interrupt these animations for normal movement
         if dyno.vel.x.abs() > 1.0 {
@@ -102,6 +106,8 @@ fn normal_movement_animation(
                 // Not moving
                 if dir.y < 0.0 {
                     anim.set_state(PlayerAnim::Squat);
+                } else if dir.y > 0.0 {
+                    anim.set_state(PlayerAnim::Lookup);
                 } else {
                     anim.set_state(PlayerAnim::Stand);
                 }

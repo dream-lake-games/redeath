@@ -108,7 +108,7 @@ fn spawn_player(
     let mut cam_pos = camera_pos.single_mut();
     *cam_pos = spawn_pos.clone();
     *camera_mode = DynamicCameraMode::Follow(player_eid);
-    camera_clamp_logic(&mut cam_pos, &level_rects);
+    *cam_pos = camera_clamp_logic(&spawn_pos, &level_rects.current.unwrap_or_default());
 }
 
 fn exit_spawning(player: Query<&Pos, With<Player>>, mut commands: Commands) {

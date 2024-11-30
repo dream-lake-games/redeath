@@ -58,6 +58,24 @@ mod playerlude {
     }
 
     #[derive(Component, Clone, Debug, Reflect)]
+    pub struct ResponsiveJump {
+        pub max_speed: f32,
+        pub max_time: f32,
+        pub time_left: f32,
+        pub jump_applied: f32,
+    }
+    impl ResponsiveJump {
+        pub fn new(max_speed: f32, max_time: f32) -> Self {
+            Self {
+                max_speed,
+                max_time,
+                time_left: max_time,
+                jump_applied: 0.0,
+            }
+        }
+    }
+
+    #[derive(Component, Clone, Debug, Reflect)]
     pub struct CanDash;
 
     #[derive(Component, Clone, Debug, Reflect)]

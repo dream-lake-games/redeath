@@ -11,6 +11,10 @@ derive_anim!(
         #[size(22, 22)]
         #[render_layers(StaticLayer)]
         Squat,
+        #[file("player/movement/lookup.png")]
+        #[size(22, 22)]
+        #[render_layers(StaticLayer)]
+        Lookup,
         #[file("player/movement/run.png")]
         #[size(22, 22)]
         #[length(5)]
@@ -185,6 +189,45 @@ derive_anim!(
 );
 type FriendAnimPlugin = AnimDefnPlugin<FriendAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum HeadSmokeAnim {
+        #[default]
+        #[file("player/smoke/head_full.png")]
+        #[size(16, 16)]
+        #[length(3)]
+        #[render_layers(StaticLayer)]
+        #[next(Despawn)]
+        HeadFull,
+    }
+);
+type HeadSmokeAnimPlugin = AnimDefnPlugin<HeadSmokeAnim, AnimTimeRes>;
+
+derive_anim!(
+    pub enum HeadSmokePartAnim {
+        #[default]
+        #[file("player/smoke/head_part1.png")]
+        #[size(16, 16)]
+        #[length(4)]
+        #[render_layers(StaticLayer)]
+        #[next(Despawn)]
+        Part1,
+        #[file("player/smoke/head_part2.png")]
+        #[size(16, 16)]
+        #[length(4)]
+        #[render_layers(StaticLayer)]
+        #[next(Despawn)]
+        Part2,
+        #[file("player/smoke/head_part3.png")]
+        #[size(16, 16)]
+        #[length(4)]
+        #[render_layers(StaticLayer)]
+        #[next(Despawn)]
+        Part3,
+    }
+);
+impl_rand_variant!(HeadSmokePartAnim);
+type HeadSmokePartAnimPlugin = AnimDefnPlugin<HeadSmokePartAnim, AnimTimeRes>;
+
 pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(PlayerAnimPlugin::default());
     app.add_plugins(JumpSmokeAnimPlugin::default());
@@ -193,4 +236,6 @@ pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(DashDieAnimPlugin::default());
     app.add_plugins(DashFadeAnimPlugin::default());
     app.add_plugins(FriendAnimPlugin::default());
+    app.add_plugins(HeadSmokeAnimPlugin::default());
+    app.add_plugins(HeadSmokePartAnimPlugin::default());
 }

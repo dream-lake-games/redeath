@@ -240,6 +240,54 @@ fn player_impact_sounds(
     }
 }
 
+fn head_smoke(player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>, mut commands: Commands) {
+    let Ok((pos, anim)) = player.get_single() else {
+        return;
+    };
+
+    // Figure out the smoke pos
+    let x_offset = match anim.get_state() {
+        PlayerAnim::WallSlide => 1,
+        _ => 0,
+    } * if anim.get_flip_x() { -1 } else { 1 };
+    let y_offset = match anim.get_state() {
+        PlayerAnim::Squat => -1,
+        _ => 1,
+    };
+    let smoke_pos = pos.translated(Vec2::new(x_offset as f32, y_offset as f32));
+
+    // Spawn the particles always
+    commands.spawn(EphemeralAnim::new(
+        HeadSmokePartAnim::random(),
+        thread_rng().gen_bool(0.5),
+        smoke_pos,
+        ZIX_PLAYER - 0.05,
+    ));
+
+    // Don't spawn anything else in these cases
+    if matches!(
+        anim.get_state(),
+        PlayerAnim::EdgeSitting
+            | PlayerAnim::EdgeSitup
+            | PlayerAnim::AirDownExhausted
+            | PlayerAnim::AirUpExhausted
+            | PlayerAnim::WallSlideExhausted
+            | PlayerAnim::WallJumpExhausted
+            | PlayerAnim::Dash
+            | PlayerAnim::Death
+    ) {
+        return;
+    }
+
+    // Otherwise we need the lil base of the thingy
+    commands.spawn(EphemeralAnim::new(
+        HeadSmokeAnim::HeadFull,
+        anim.get_flip_x(),
+        smoke_pos,
+        ZIX_PLAYER - 0.06,
+    ));
+}
+
 pub(super) fn register_player_juice(app: &mut App) {
     app.insert_resource(PlayerJuiceConsts::default());
     debug_resource!(app, PlayerJuiceConsts);
@@ -251,7 +299,12 @@ pub(super) fn register_player_juice(app: &mut App) {
 
     app.add_systems(
         Update,
-        (juice_during_dash, juice_wall_slide, player_impact_sounds)
+        (
+            juice_during_dash,
+            juice_wall_slide,
+            player_impact_sounds,
+            head_smoke,
+        )
             .in_set(PlayerSet)
             .after(PhysicsSet)
             .run_if(in_state(PlayerMetaState::Playing)),

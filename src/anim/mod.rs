@@ -53,18 +53,25 @@ fn drive_anim_time_res(
     bullet_time: Res<BulletTime>,
     time: Res<Time>,
     paused: Res<State<PauseState>>,
+    level_scroll_kind: Res<State<LevelScrollStateKind>>,
 ) {
     let paused_delta = match paused.get() {
         PauseState::Paused => 0.0,
         PauseState::Unpaused => 1.0,
     };
+    let level_scroll_delta = match level_scroll_kind.get() {
+        LevelScrollStateKind::None => 1.0,
+        LevelScrollStateKind::Some => 0.0,
+    };
 
-    anim_time
-        .class_map
-        .insert(ANIM_TIME_BULLET, paused_delta * bullet_time.delta_seconds());
-    anim_time
-        .class_map
-        .insert(ANIM_TIME_REAL, paused_delta * time.delta_seconds());
+    anim_time.class_map.insert(
+        ANIM_TIME_BULLET,
+        paused_delta * level_scroll_delta * bullet_time.delta_seconds(),
+    );
+    anim_time.class_map.insert(
+        ANIM_TIME_REAL,
+        paused_delta * level_scroll_delta * time.delta_seconds(),
+    );
     anim_time
         .class_map
         .insert(ANIM_TIME_BULLET_ALWAYS, bullet_time.delta_seconds());

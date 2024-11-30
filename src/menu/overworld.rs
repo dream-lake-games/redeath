@@ -6,7 +6,7 @@ use super::menu_common::*;
 // const HACK_LOAD: &'static str = "d32f7850-73f0-11ef-ab29-c106faf0247d";
 
 // SCRATCH LEVEL
-const HACK_LOAD: &'static str = "6112f790-9b00-11ef-909d-6723ae1562f2";
+const HACK_LOAD: &'static str = "76be1050-9b00-11ef-8497-ddd2fce80b92";
 
 #[derive(Bundle)]
 struct MenuPlatformBundle<const DUMMY: u32> {}

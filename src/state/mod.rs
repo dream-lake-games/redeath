@@ -45,6 +45,18 @@ impl TransitionState {
     }
 }
 
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
+pub struct LevelScrollStateInner {
+    pub from_pos: IVec2,
+    pub to_pos: IVec2,
+    pub time_milli: u32,
+}
+
+#[derive(Clone, Default, Debug, Eq, Hash, PartialEq, Reflect, States)]
+pub struct LevelScrollState {
+    pub active: Option<LevelScrollStateInner>,
+}
+
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Reflect, States)]
 pub enum ConvoMetaState {
     #[default]
@@ -65,6 +77,7 @@ impl Plugin for StatePlugin {
         app.insert_state(PauseState::Unpaused);
         app.insert_state(ConvoMetaState::None);
         app.insert_state(CutsceneState::None);
+        app.insert_state(LevelScrollState::default());
 
         app.add_computed_state::<MetaStateKind>();
         app.add_computed_state::<PhysicsState>();
@@ -75,5 +88,6 @@ impl Plugin for StatePlugin {
         app.add_computed_state::<WorldState>();
         app.add_computed_state::<LevelState>();
         app.add_computed_state::<PlayerMetaState>();
+        app.add_computed_state::<LevelScrollStateKind>();
     }
 }

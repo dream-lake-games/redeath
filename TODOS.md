@@ -46,21 +46,28 @@ Tonight
 - [x] Weird player wall jump thing with passup
 - [x] Reaper conversation
 
-- [ ] THEN break from reaper and do screen transitions
-    - [ ] First make it take time and have the screen scroll
-    - [ ] Then try and figure out how celeste does vertical ones
-        - [ ] Maybe a platform you can squat down through?
-        - [ ] And then always set yvel to same amount?
+- [x] THEN break from reaper and do screen transitions
+    - [x] First make it take time and have the screen scroll
+    - [x] Then try and figure out how celeste does vertical ones
+        - [x] And then always set yvel to same amount?
+        - I should maybe still make the squatable vertical? Idk
 
-- [ ] THEN go for a bike ride
+- [x] THEN go for a bike ride
 
 - [ ] THEN crush these quick things to get back into it
-- [ ] Also make the circle transitions look smoother
-- [ ] And add particle effects for head that do a better job showing if you can dash
-- [ ] Also juice a look up animation
-- [ ] Jump depend on press duration
+- [x] Also make the circle transitions look smoother
+- [x] And add particle effects for head that do a better job showing if you can dash
+- [x] Also juice a look up animation
+- [x] Jump depend on press duration
+- [x] Fix compilation warnings
+- [ ] Fix gh lfs
+- [ ] Fix despawn in animation crate to try to get comms (I think)
+
+- [ ] Psych try to do the CRT thing quickly and easily
 
 - [ ] THEN go for more gameplay elements
     - [ ] Wall that eats you
-    - [ ]
+    - [ ] Reaper fucking stuff up
+
+
 

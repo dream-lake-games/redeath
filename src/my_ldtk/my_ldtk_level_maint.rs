@@ -143,6 +143,7 @@ fn handle_physical_lids(
 #[derive(Event)]
 pub struct LevelChangeEvent {
     pub iid: String,
+    pub last_iid: Option<String>,
 }
 #[derive(Resource)]
 pub(super) struct LastLevelSelection(String);
@@ -155,13 +156,19 @@ fn watch_level_selection(
     match (level_selection.as_ref(), last_level_selection.as_mut()) {
         (Some(ls), Some(lls)) => {
             if ls.to_iid() != lls.0 {
-                commands.trigger(LevelChangeEvent { iid: ls.to_iid() });
+                commands.trigger(LevelChangeEvent {
+                    iid: ls.to_iid(),
+                    last_iid: Some(lls.0.clone()),
+                });
                 lls.0 = ls.to_iid();
             }
         }
         (Some(ls), None) => match my_ldtk_load.into_inner() {
             MyLdtkLoadState::Loaded => {
-                commands.trigger(LevelChangeEvent { iid: ls.to_iid() });
+                commands.trigger(LevelChangeEvent {
+                    iid: ls.to_iid(),
+                    last_iid: None,
+                });
                 commands.insert_resource(LastLevelSelection(ls.to_iid()));
             }
             _ => {

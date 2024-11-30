@@ -15,13 +15,17 @@ struct PlayerMovementConsts {
     max_wall_slide_ver_speed: f32,
     /// How quickly to slow down back to max speed when over max speed (for instance, post-dash)
     over_max_slowdown_acc: f32,
-    /// Jump speed
-    jump_speed: f32,
     /// How long after a wall jump to mess with input?
     post_jump_time: f32,
     dash_speed: f32,
     dash_time: f32,
     coyote_time: f32,
+    /// If player holds jump, how much speed (roughly) should they have at end
+    jump_max_speed: f32,
+    /// How long does player need to hold jump to get max speed
+    jump_max_time: f32,
+    /// How much of the jump should be insta-applied to prevent really degen jumps
+    jump_insta_apply: f32,
 }
 impl Default for PlayerMovementConsts {
     fn default() -> Self {
@@ -32,11 +36,13 @@ impl Default for PlayerMovementConsts {
             max_ver_speed: 190.0,
             max_wall_slide_ver_speed: 40.0,
             over_max_slowdown_acc: 960.0,
-            jump_speed: 190.0,
             post_jump_time: 0.136,
             dash_speed: 160.0,
             dash_time: 0.25,
             coyote_time: 0.1,
+            jump_max_speed: 210.0,
+            jump_max_time: 0.1,
+            jump_insta_apply: 0.3,
         }
     }
 }
@@ -280,22 +286,25 @@ fn maybe_start_dash(
 }
 
 fn maybe_start_regular_jump(
-    mut player: Query<(Entity, &mut Dyno), (With<Player>, With<CanRegularJump>, Without<Dashing>)>,
+    player: Query<Entity, (With<Player>, With<CanRegularJump>, Without<Dashing>)>,
     butt: Res<ButtInput>,
     consts: Res<PlayerMovementConsts>,
     mut commands: Commands,
 ) {
-    let Ok((eid, mut dyno)) = player.get_single_mut() else {
+    let Ok(eid) = player.get_single() else {
         // Means the player can't jump rn
         return;
     };
     if butt.just_pressed(ButtKind::A) {
-        dyno.vel.y = consts.jump_speed;
         let kind = JumpKind::Regular;
         commands.entity(eid).insert(PostJump {
             kind,
             time_left: consts.post_jump_time,
         });
+        commands.entity(eid).insert(ResponsiveJump::new(
+            consts.jump_max_speed,
+            consts.jump_max_time,
+        ));
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
@@ -329,7 +338,6 @@ fn maybe_start_wall_jump(
     if butt.just_pressed(ButtKind::A) {
         let x_mul = if from_left { 1.0 } else { -1.0 };
         dyno.vel.x = consts.max_hor_speed * x_mul;
-        dyno.vel.y = consts.jump_speed;
         let kind = if from_left {
             JumpKind::FromLeftWall
         } else {
@@ -339,6 +347,10 @@ fn maybe_start_wall_jump(
             kind,
             time_left: consts.post_jump_time,
         });
+        commands.entity(eid).insert(ResponsiveJump::new(
+            consts.jump_max_speed,
+            consts.jump_max_time,
+        ));
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
@@ -394,6 +406,48 @@ fn move_horizontally(
             // Accelerate
             dyno.vel.x += dir.x.signum() * acc;
         }
+    }
+}
+
+fn update_responsive_jump(
+    mut player_q: Query<(Entity, &mut Dyno, &mut ResponsiveJump), (With<Player>, With<PostJump>)>,
+    time: Res<Time>,
+    mut commands: Commands,
+    butt: Res<ButtInput>,
+    consts: Res<PlayerMovementConsts>,
+) {
+    let Ok((eid, mut dyno, mut resp_jump)) = player_q.get_single_mut() else {
+        return;
+    };
+
+    // Hacky special case
+    if resp_jump.jump_applied <= 0.0 {
+        // NOTE: We probably don't want = here. Probably should be at least 0,
+        // but for platforms travelling up maybe we allow going faster? idk
+        let applying = resp_jump.max_speed * consts.jump_insta_apply;
+        dyno.vel.y = applying;
+        resp_jump.max_speed -= applying;
+    }
+
+    let mut do_remove = || {
+        if let Some(mut comms) = commands.get_entity(eid) {
+            comms.remove::<ResponsiveJump>();
+        }
+    };
+
+    if !butt.pressed(ButtKind::A) {
+        do_remove();
+    } else if resp_jump.time_left < 0.0 {
+        let missing = resp_jump.max_speed - resp_jump.jump_applied;
+        if missing > 0.0 {
+            dyno.vel.y += missing;
+        }
+        do_remove();
+    } else {
+        let want_to_apply = resp_jump.max_speed * time.delta_seconds() / resp_jump.max_time;
+        let want_to_apply = want_to_apply.min(resp_jump.max_speed - resp_jump.jump_applied);
+        dyno.vel.y += want_to_apply;
+        resp_jump.jump_applied += want_to_apply;
     }
 }
 
@@ -473,8 +527,30 @@ fn keep_inside_edge_level(
     }
 }
 
+fn uniform_speed_on_up_level_transition(
+    trigger: Trigger<LevelChangeEvent>,
+    level_rects: Res<LevelRects>,
+    mut player_q: Query<&mut Dyno, With<Player>>,
+    consts: Res<PlayerMovementConsts>,
+) {
+    let Ok(mut player_dyno) = player_q.get_single_mut() else {
+        return;
+    };
+    let LevelChangeEvent { iid, last_iid } = trigger.event();
+    let Some(last_iid) = last_iid else {
+        return;
+    };
+    let last_rect = level_rects[last_iid];
+    let next_rect = level_rects[iid];
+    if last_rect.max.y - 1.0 < next_rect.min.y {
+        player_dyno.vel.y = consts.max_ver_speed;
+    }
+}
+
 pub(super) fn register_player_movement(app: &mut App) {
     app.insert_resource(PlayerMovementConsts::default());
+    app.observe(uniform_speed_on_up_level_transition);
+    debug_resource!(app, PlayerMovementConsts);
 
     // Update touching. Should happen first and whenever there's a spawned player.
     app.add_systems(
@@ -503,6 +579,7 @@ pub(super) fn register_player_movement(app: &mut App) {
             maybe_start_regular_jump,
             maybe_start_wall_jump,
             move_horizontally,
+            update_responsive_jump,
             limit_speed,
             update_breaking,
             keep_inside_edge_level,
@@ -514,7 +591,8 @@ pub(super) fn register_player_movement(app: &mut App) {
             .after(InputSet)
             .after(PhysicsSet)
             .after(update_forceful_touching)
-            .run_if(in_state(PlayerMetaState::Playing)),
+            .run_if(in_state(PlayerMetaState::Playing))
+            .run_if(in_state(PhysicsState::Active)),
     );
     // Lol except this stuff, which should happen for puppets so they end
     app.add_systems(

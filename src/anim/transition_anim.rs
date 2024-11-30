@@ -14,13 +14,15 @@ derive_anim!(
         Black,
         #[file("transitions/circle_in.png")]
         #[size(360, 270)]
-        #[length(8)]
+        #[length(17)]
         #[next(Clear)]
+        #[fps(32.0)]
         #[render_layers(TransitionLayer)]
         CircleIn,
         #[file("transitions/circle_out.png")]
         #[size(360, 270)]
-        #[length(8)]
+        #[length(17)]
+        #[fps(32.0)]
         #[next(Black)]
         #[render_layers(TransitionLayer)]
         CircleOut,

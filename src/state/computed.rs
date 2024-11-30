@@ -17,15 +17,34 @@ impl ComputedStates for PlayerMetaState {
 }
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
+pub enum LevelScrollStateKind {
+    None,
+    Some,
+}
+impl ComputedStates for LevelScrollStateKind {
+    type SourceStates = LevelScrollState;
+    fn compute(sources: Self::SourceStates) -> Option<Self> {
+        match sources {
+            scroll_state => match scroll_state.active {
+                Some(_) => Some(Self::Some),
+                None => Some(Self::None),
+            },
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect)]
 pub enum PhysicsState {
     Active,
     Inactive,
 }
 impl ComputedStates for PhysicsState {
-    type SourceStates = (LevelState, PauseState, ConvoMetaState);
+    type SourceStates = (LevelState, PauseState, LevelScrollStateKind);
     fn compute(sources: Self::SourceStates) -> Option<Self> {
         match sources {
-            (LevelState { .. }, PauseState::Unpaused, _) => Some(PhysicsState::Active),
+            (LevelState { .. }, PauseState::Unpaused, LevelScrollStateKind::None) => {
+                Some(PhysicsState::Active)
+            }
             _ => Some(PhysicsState::Inactive),
         }
     }
