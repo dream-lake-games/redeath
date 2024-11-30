@@ -1,5 +1,6 @@
 use crate::prelude::*;
 
+mod cruncher;
 mod dirt;
 mod fragile_ice;
 mod pass_up;
@@ -9,6 +10,7 @@ mod spikes;
 pub(super) struct PlatformsPlugin;
 impl Plugin for PlatformsPlugin {
     fn build(&self, app: &mut App) {
+        cruncher::register_cruncher(app);
         dirt::register_dirt(app);
         fragile_ice::register_fragile_ice(app);
         pass_up::register_pass_up(app);

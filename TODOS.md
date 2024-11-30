@@ -60,8 +60,8 @@ Tonight
 - [x] Also juice a look up animation
 - [x] Jump depend on press duration
 - [x] Fix compilation warnings
-- [ ] Fix gh lfs
-- [ ] Fix despawn in animation crate to try to get comms (I think)
+- [x] Fix gh lfs
+- [x] Fix despawn in animation crate to try to get comms (I think)
 
 - [ ] Psych try to do the CRT thing quickly and easily
 

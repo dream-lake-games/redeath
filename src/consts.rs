@@ -29,6 +29,7 @@ pub const DEFAULT_ANIMATION_FPS: f32 = 16.0;
 pub const ZIX_MIN: f32 = -600.0; // Anything further back than this gets culled by the camera(s)
 pub const ZIX_MAX: f32 = 600.0; // Anything further forward than this gets culled by the camera(s)
 pub const ZIX_MENU: i32 = 100;
+pub const ZIX_CRUNCHER: f32 = 60.0;
 pub const ZIX_PLAYER: f32 = 50.0;
 pub const ZIX_TRANSITION: i32 = 200;
 pub const ZIX_PLANK_FALL: f32 = 40.0;

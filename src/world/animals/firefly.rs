@@ -183,7 +183,7 @@ fn update_firefly_lights(
         FireflyAnim::Flap => FireflyLightAnim::Grow,
         FireflyAnim::RestGround | FireflyAnim::RestWall => FireflyLightAnim::Shrink,
     };
-    let mut anim = anims.get_mut(event.eid).unwrap();
+    let mut anim = anims.get_mut(trigger.entity()).unwrap();
     anim.set_state(light_anim);
 }
 

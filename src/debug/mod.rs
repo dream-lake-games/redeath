@@ -1,3 +1,5 @@
+use final_post_processing::FinalPostProcessingMat;
+
 use crate::prelude::*;
 
 mod draw_hitboxes;
@@ -19,6 +21,23 @@ fn _spawn_light(pos: Pos, commands: &mut Commands) {
     ));
 }
 
+fn toggle_crt(
+    hands: Query<&Handle<FinalPostProcessingMat>>,
+    mut mat: ResMut<Assets<FinalPostProcessingMat>>,
+    keyboard: Res<ButtonInput<KeyCode>>,
+) {
+    if keyboard.just_pressed(KeyCode::KeyC) {
+        for hand in &hands {
+            let mat = mat.get_mut(hand.id()).unwrap();
+            if mat.enabled > 0.0 {
+                mat.enabled = 0.0;
+            } else {
+                mat.enabled = 1.0;
+            }
+        }
+    }
+}
+
 fn debug_update() {}
 
 pub(super) struct DebugPlugin;
@@ -26,6 +45,7 @@ impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, debug_startup.after(RootInit));
         app.add_systems(Update, debug_update);
+        app.add_systems(Update, toggle_crt);
         draw_hitboxes::register_draw_hitboxes(app);
         reload::register_reload(app);
     }

@@ -72,6 +72,12 @@ defn_effects!([
     CoinBell,
     "sound/coin/collect.ogg",
     0.02,
+    CruncherRealShit,
+    "sound/world/cruncher_real_shit.ogg",
+    0.01,
+    CruncherReverb,
+    "sound/world/cruncher_reverb.ogg",
+    0.02,
 ]);
 
 // Persistent, looped sounds should have public structs from here for management

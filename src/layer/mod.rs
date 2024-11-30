@@ -7,8 +7,11 @@ use bevy::render::{
     texture::BevyDefault,
     view::RenderLayers,
 };
-use bevy::sprite::Mesh2dHandle;
+use bevy::sprite::{Material2dPlugin, Mesh2dHandle};
 use bevy::window::WindowResized;
+use final_post_processing::FinalPostProcessingMat;
+
+pub mod final_post_processing;
 
 pub trait Layer: Into<RenderLayers> + Default {
     fn to_render_layers() -> RenderLayers {
@@ -180,6 +183,7 @@ fn setup_layer_materials(
     mut meshes: ResMut<Assets<Mesh>>,
     mut shifted_palette_mats: ResMut<Assets<ShiftedPaletteMat>>,
     mut light_mats: ResMut<Assets<LightMat>>,
+    mut final_mats: ResMut<Assets<FinalPostProcessingMat>>,
     base_lights: Res<BaseLights>,
 ) {
     // For the juicy palette shifting and lighting work
@@ -455,17 +459,17 @@ fn setup_layer_materials(
         .set_parent(root.eid());
 
     // This sprite just scales up and down to fill the screen
+    let final_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
+    let final_mesh: Mesh2dHandle = meshes.add(final_mesh).into();
+    let final_mat = final_mats.add(FinalPostProcessingMat::new(
+        camera_targets.final_target.clone(),
+    ));
     commands
         .spawn((
             Name::new("final_sprite"),
-            SpriteBundle {
-                sprite: Sprite {
-                    custom_size: Some(SCREEN_VEC),
-                    ..default()
-                },
-                texture: camera_targets.final_target.clone(),
-                ..default()
-            },
+            final_mesh,
+            final_mat,
+            SpatialBundle::default(),
             ResizeFinalImage,
             final_layer.clone(),
         ))
@@ -624,6 +628,8 @@ fn resize_canvases(
 pub struct LayerPlugin;
 impl Plugin for LayerPlugin {
     fn build(&self, app: &mut App) {
+        app.add_plugins(Material2dPlugin::<FinalPostProcessingMat>::default());
+
         app.insert_resource(LayerGrowth::default());
         app.insert_resource(CameraTargets::default());
         app.insert_resource(OverScreenMult(1.0));
@@ -635,5 +641,10 @@ impl Plugin for LayerPlugin {
                 .after(RootInit),
         );
         app.add_systems(Update, resize_canvases);
+
+        app.add_systems(
+            Update,
+            final_post_processing::update_final_post_processing_mats,
+        );
     }
 }
