@@ -11,27 +11,41 @@ derive_anim!(
         #[fps(8.0)]
         #[render_layers(StaticLayer)]
         Idle,
-        #[file("reaper/appear.png")]
+        #[file("reaper/appear_idle.png")]
         #[size(28, 28)]
         #[length(7)]
         #[offset(0.0, -2.0)]
         #[next(Idle)]
         #[render_layers(StaticLayer)]
-        Appear,
-        #[file("reaper/disappear.png")]
+        AppearIdle,
+        #[file("reaper/idle_disappear.png")]
         #[size(28, 28)]
         #[length(7)]
         #[offset(0.0, -2.0)]
         #[next(Despawn)]
         #[render_layers(StaticLayer)]
-        DisappearDespawn,
-        #[file("reaper/disappear.png")]
+        IdleDisappear,
+        #[file("reaper/hover.png")]
+        #[size(28, 28)]
+        #[length(5)]
+        #[offset(0.0, 2.0)]
+        #[fps(8.0)]
+        #[render_layers(StaticLayer)]
+        Hover,
+        #[file("reaper/appear_hover.png")]
+        #[size(28, 28)]
+        #[length(7)]
+        #[offset(0.0, -2.0)]
+        #[next(Hover)]
+        #[render_layers(StaticLayer)]
+        AppearHover,
+        #[file("reaper/hover_disappear.png")]
         #[size(28, 28)]
         #[length(7)]
         #[offset(0.0, -2.0)]
         #[next(None)]
         #[render_layers(StaticLayer)]
-        DisappearNone,
+        HoverDisappear,
         #[file("clear.png")]
         #[size(1, 1)]
         None,

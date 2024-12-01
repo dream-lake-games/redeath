@@ -13,7 +13,7 @@ impl Default for ReaperAttackConsts {
     fn default() -> Self {
         Self {
             pad_from_screen_edge: 24.0,
-            body_acc: 240.0,
+            body_acc: 260.0,
             body_max_speed: 80.0,
             body_close_destroy: 16.0,
             scythe_acc: 160.0,
@@ -44,7 +44,7 @@ impl MyLdtkEntity for ReaperAttackBundle {
             pos,
             dyno: default(),
             spatial: pos.to_spatial(ZIX_PLAYER - 0.5),
-            anim: AnimMan::default().with_state(ReaperAnim::None),
+            anim: AnimMan::new(ReaperAnim::None),
             light: default(),
         }
     }
@@ -82,17 +82,17 @@ fn manage_appear_disappear(
                             // Yes! Spawn!
                             pos.y = player_pos.y;
                             dyno.vel.y = 0.0;
-                            anim.set_state(ReaperAnim::Appear);
+                            anim.set_state(ReaperAnim::AppearHover);
                         }
                     }
-                    ReaperAnim::DisappearDespawn | ReaperAnim::DisappearNone => {
+                    ReaperAnim::IdleDisappear | ReaperAnim::HoverDisappear => {
                         // Do nothing
                     }
                     _ => {
-                        // Maybe despawn
+                        // Maybe disappear
                         if player_pos.x + consts.body_close_destroy > pos.x {
-                            // Yes! Despawn!
-                            anim.set_state(ReaperAnim::DisappearNone);
+                            // Yes! Disappear!
+                            anim.set_state(ReaperAnim::HoverDisappear);
                             dyno.vel.y *= 0.3;
                         }
                     }
@@ -146,7 +146,7 @@ fn manage_onscreen_movement(
         pos.x = proper_x;
         tran.translation.x = proper_x;
 
-        if !matches!(anim.get_state(), ReaperAnim::Idle) {
+        if !matches!(anim.get_state(), ReaperAnim::Hover) {
             continue;
         }
         if (player_pos.y - pos.y).abs() < 3.0 {

@@ -98,7 +98,7 @@ fn maybe_start_appearing(
             .any(|coll| coll.rx_kind == TriggerRxKind::Player)
         {
             if let Some(mut comms) = commands.get_entity(eid) {
-                comms.insert(AnimMan::<ReaperAnim>::new(ReaperAnim::Appear));
+                comms.insert(AnimMan::<ReaperAnim>::new(ReaperAnim::AppearIdle));
                 comms.insert(Light::<LightStatic64Anim>::default());
                 if preappear.will_convo {
                     comms.insert(ReaperSpookyConvoing);
@@ -130,8 +130,8 @@ fn update_reaper_spooky_appeared(
 ) {
     for (mut inner, mut anim) in &mut reapers {
         inner.time_till_disappear -= bullet_time.delta_seconds();
-        if inner.time_till_disappear <= 0.0 && anim.get_state() != ReaperAnim::DisappearDespawn {
-            anim.set_state(ReaperAnim::DisappearDespawn);
+        if inner.time_till_disappear <= 0.0 && anim.get_state() != ReaperAnim::IdleDisappear {
+            anim.set_state(ReaperAnim::IdleDisappear);
             camera_shake.shake(0.2, -1..=1, -1..=1);
             commands.spawn((SoundEffect::PlayerThunder, SoundMult(1.75)));
             commands.spawn(Lightning);
