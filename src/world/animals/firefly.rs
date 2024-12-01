@@ -192,7 +192,7 @@ pub(super) fn register_firefly(app: &mut App) {
         "Entities", "Firefly",
     ));
     app.insert_resource(FireflyConsts::default());
-    debug_resource!(app, FireflyConsts);
+    // debug_resource!(app, FireflyConsts);
 
     app.observe(update_firefly_lights);
 

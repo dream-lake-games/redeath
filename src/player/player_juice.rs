@@ -290,7 +290,7 @@ fn head_smoke(player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>, mut com
 
 pub(super) fn register_player_juice(app: &mut App) {
     app.insert_resource(PlayerJuiceConsts::default());
-    debug_resource!(app, PlayerJuiceConsts);
+    // debug_resource!(app, PlayerJuiceConsts);
 
     app.observe(juice_after_dash);
     app.observe(juice_after_jump);

@@ -103,5 +103,5 @@ impl MediumRainBundle {
 
 pub(super) fn register_effect_defns(app: &mut App) {
     app.insert_resource(SoundMults::default());
-    debug_resource!(app, SoundMults);
+    // debug_resource!(app, SoundMults);
 }

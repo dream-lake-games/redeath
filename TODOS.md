@@ -63,10 +63,12 @@ Tonight
 - [x] Fix gh lfs
 - [x] Fix despawn in animation crate to try to get comms (I think)
 
-- [ ] Psych try to do the CRT thing quickly and easily
+- [x] Psych try to do the CRT thing quickly and easily
+    - Jury still out on whether it is good to have...
 
 - [ ] THEN go for more gameplay elements
-    - [ ] Wall that eats you
+    - [x] Wall that eats you
+        - QUICK FIX: It shouldnt have the dark bg at top/bottom, so I could just put it on single platform if I wanted (don't have to surround to get the right edges)
     - [ ] Reaper fucking stuff up
 
 

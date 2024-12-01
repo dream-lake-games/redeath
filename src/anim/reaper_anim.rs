@@ -9,19 +9,32 @@ derive_anim!(
         #[length(4)]
         #[offset(0.0, 2.0)]
         #[fps(8.0)]
+        #[render_layers(StaticLayer)]
         Idle,
         #[file("reaper/appear.png")]
         #[size(28, 28)]
         #[length(7)]
         #[offset(0.0, -2.0)]
         #[next(Idle)]
+        #[render_layers(StaticLayer)]
         Appear,
         #[file("reaper/disappear.png")]
         #[size(28, 28)]
         #[length(7)]
         #[offset(0.0, -2.0)]
         #[next(Despawn)]
-        Disappear,
+        #[render_layers(StaticLayer)]
+        DisappearDespawn,
+        #[file("reaper/disappear.png")]
+        #[size(28, 28)]
+        #[length(7)]
+        #[offset(0.0, -2.0)]
+        #[next(None)]
+        #[render_layers(StaticLayer)]
+        DisappearNone,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        None,
     }
 );
 type ReaperAnimPlugin = AnimDefnPlugin<ReaperAnim, AnimTimeRes>;

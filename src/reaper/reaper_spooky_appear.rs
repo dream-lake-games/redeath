@@ -31,9 +31,6 @@ impl Component for ReaperSpookyAppearInner {
                     .with_b(-0.1, 0.01, myself.time_till_disappear / 5.0),
             );
             world
-                .resource_mut::<BulletTime>()
-                .set_temp(BulletTimeSpeed::Slow, 0.25);
-            world
                 .resource_mut::<CameraShake>()
                 .shake(0.35, -1..=1, -1..=1);
         });
@@ -133,8 +130,8 @@ fn update_reaper_spooky_appeared(
 ) {
     for (mut inner, mut anim) in &mut reapers {
         inner.time_till_disappear -= bullet_time.delta_seconds();
-        if inner.time_till_disappear <= 0.0 && anim.get_state() != ReaperAnim::Disappear {
-            anim.set_state(ReaperAnim::Disappear);
+        if inner.time_till_disappear <= 0.0 && anim.get_state() != ReaperAnim::DisappearDespawn {
+            anim.set_state(ReaperAnim::DisappearDespawn);
             camera_shake.shake(0.2, -1..=1, -1..=1);
             commands.spawn((SoundEffect::PlayerThunder, SoundMult(1.75)));
             commands.spawn(Lightning);

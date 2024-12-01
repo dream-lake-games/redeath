@@ -7,9 +7,6 @@ use super::player_bundle::PlayerBundle;
 #[derive(Component)]
 struct SpawnPoint;
 
-#[derive(Component)]
-struct SpawnPointActive;
-
 #[derive(Bundle)]
 struct SpawnPointBundle {
     name: Name,

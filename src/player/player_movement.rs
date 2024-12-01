@@ -550,7 +550,7 @@ fn uniform_speed_on_up_level_transition(
 pub(super) fn register_player_movement(app: &mut App) {
     app.insert_resource(PlayerMovementConsts::default());
     app.observe(uniform_speed_on_up_level_transition);
-    debug_resource!(app, PlayerMovementConsts);
+    // debug_resource!(app, PlayerMovementConsts);
 
     // Update touching. Should happen first and whenever there's a spawned player.
     app.add_systems(

@@ -68,7 +68,6 @@ pub(super) struct StatePlugin;
 impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         debug_resource!(app, State<MetaState>);
-        debug_resource!(app, State<MetaStateKind>);
 
         // app.insert_state(MetaState::Menu(MenuState::Bevy));
         app.insert_state(MetaState::Menu(MenuState::Savefile));

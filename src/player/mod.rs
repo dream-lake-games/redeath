@@ -175,6 +175,9 @@ pub struct PlayerSet;
 #[derive(Component)]
 pub struct Player;
 
+#[derive(Component)]
+pub struct SpawnPointActive;
+
 pub(super) struct PlayerPlugin;
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
