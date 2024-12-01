@@ -1,9 +1,8 @@
 use crate::prelude::*;
 
-pub mod reaper_attack;
+mod reaper_attack;
 pub mod reaper_spooky_appear;
 
-pub use reaper_attack::*;
 pub use reaper_spooky_appear::*;
 
 pub(super) struct ReaperPlugin;

@@ -44,20 +44,70 @@ impl MyLdtkEntity for ReaperAttackBundle {
             pos,
             dyno: default(),
             spatial: pos.to_spatial(ZIX_PLAYER - 0.5),
-            anim: default(),
+            anim: AnimMan::default().with_state(ReaperAnim::None),
             light: default(),
         }
     }
 }
 
-fn update_onscreen_dynos(
+// For appear:
+// - If ONSCREEN, and player is FAR ENOUGH AWAY, go from None -> Appear
+// - Otherwise, set None
+// NOTE: When appearing, fix the dyno/pos.y
+// For dissappear:
+// - If ONSCREEN, and NOT NONE/dissapearing, and player is CLOSE ENOUGH, force disappear
+fn manage_appear_disappear(
     mut reapers: Query<
         (
-            &mut Dyno,
             &mut Pos,
-            &mut Transform,
+            &mut Dyno,
             &mut AnimMan<ReaperAnim>,
+            Option<&SpawnedLidActive>,
         ),
+        (With<ReaperAttack>, Without<Player>),
+    >,
+    player_q: Query<&Pos, With<Player>>,
+    consts: Res<ReaperAttackConsts>,
+) {
+    let Ok(player_pos) = player_q.get_single() else {
+        return;
+    };
+    for (mut pos, mut dyno, mut anim, slid_active) in &mut reapers {
+        match slid_active {
+            Some(_) => {
+                match anim.get_state() {
+                    ReaperAnim::None => {
+                        // Maybe spawn
+                        if player_pos.x + 2.0 * consts.body_close_destroy < pos.x {
+                            // Yes! Spawn!
+                            pos.y = player_pos.y;
+                            dyno.vel.y = 0.0;
+                            anim.set_state(ReaperAnim::Appear);
+                        }
+                    }
+                    ReaperAnim::DisappearDespawn | ReaperAnim::DisappearNone => {
+                        // Do nothing
+                    }
+                    _ => {
+                        // Maybe despawn
+                        if player_pos.x + consts.body_close_destroy > pos.x {
+                            // Yes! Despawn!
+                            anim.set_state(ReaperAnim::DisappearNone);
+                            dyno.vel.y *= 0.3;
+                        }
+                    }
+                }
+            }
+            None => {
+                anim.set_state(ReaperAnim::None);
+            }
+        }
+    }
+}
+
+fn manage_onscreen_movement(
+    mut reapers: Query<
+        (&mut Dyno, &mut Pos, &mut Transform, &AnimMan<ReaperAnim>),
         (
             With<ReaperAttack>,
             With<SpawnedLidActive>,
@@ -73,6 +123,7 @@ fn update_onscreen_dynos(
     level_rects: Res<LevelRects>,
     level_selection: Res<LevelSelection>,
 ) {
+    // Figure out what the x should be for the active guy
     let Ok(player_pos) = player_q.get_single() else {
         return;
     };
@@ -82,7 +133,6 @@ fn update_onscreen_dynos(
     let LevelSelection::Iid(liid) = level_selection.into_inner() else {
         return;
     };
-
     let proper_anchor = match level_scroll.get() {
         LevelScrollStateKind::Some => {
             camera_clamp_logic(player_pos, level_rects.get(liid.as_str()).unwrap())
@@ -90,7 +140,8 @@ fn update_onscreen_dynos(
         LevelScrollStateKind::None => camera_pos.clone(),
     };
     let proper_x = proper_anchor.x + SCREEN_WIDTH_f32 / 2.0 - consts.pad_from_screen_edge;
-    for (mut dyno, mut pos, mut tran, mut anim) in &mut reapers {
+
+    for (mut dyno, mut pos, mut tran, anim) in &mut reapers {
         // Have to set both pos and transform so it doesn't have weird jitter
         pos.x = proper_x;
         tran.translation.x = proper_x;
@@ -98,7 +149,7 @@ fn update_onscreen_dynos(
         if !matches!(anim.get_state(), ReaperAnim::Idle) {
             continue;
         }
-        if (player_pos.y - pos.y).abs() < 6.0 {
+        if (player_pos.y - pos.y).abs() < 3.0 {
             dyno.vel.y -= dyno.vel.y.signum() * consts.body_acc * bullet_time.delta_seconds();
         } else {
             let dir = (player_pos.y - pos.y).signum();
@@ -108,63 +159,13 @@ fn update_onscreen_dynos(
             .vel
             .y
             .clamp(-consts.body_max_speed, consts.body_max_speed);
-
-        // Maybe destroy if player is close
-        if (player_pos.x - pos.x).abs() < consts.body_close_destroy {
-            anim.set_state(ReaperAnim::DisappearNone);
-            dyno.vel.y *= 0.3;
-        }
-    }
-}
-
-fn update_offscreen_dynos(
-    mut reapers: Query<
-        (&mut Dyno, &mut Pos),
-        (
-            With<ReaperAttack>,
-            With<SpawnedLidInactive>,
-            Without<Player>,
-        ),
-    >,
-    player_q: Query<&Pos, With<Player>>,
-) {
-    let Ok(player_pos) = player_q.get_single() else {
-        return;
-    };
-    for (mut dyno, mut pos) in &mut reapers {
-        dyno.vel = Vec2::ZERO;
-        pos.y = player_pos.y;
-    }
-}
-
-fn appear_on_spawned_lid_active(
-    _trigger: Trigger<LevelChangeEvent>,
-    mut reapers: Query<&mut AnimMan<ReaperAnim>, (With<ReaperAttack>, With<SpawnedLidActive>)>,
-) {
-    for mut anim in &mut reapers {
-        anim.set_state(ReaperAnim::Appear);
     }
 }
 
 // Resets the y and appears
-fn on_respawn(
-    mut reapers: Query<
-        (&mut Dyno, &mut Pos, &mut AnimMan<ReaperAnim>),
-        (
-            With<ReaperAttack>,
-            Without<Player>,
-            Without<SpawnPointActive>,
-        ),
-    >,
-    spawn_q: Query<&Pos, With<SpawnPointActive>>,
-) {
-    let Ok(spawn_pos) = spawn_q.get_single() else {
-        return;
-    };
-    for (mut dyno, mut pos, mut anim) in &mut reapers {
-        dyno.vel = Vec2::ZERO;
-        pos.y = spawn_pos.y;
-        anim.set_state(ReaperAnim::Appear);
+fn on_respawn(mut reapers: Query<&mut AnimMan<ReaperAnim>, With<ReaperAttack>>) {
+    for mut anim in &mut reapers {
+        anim.set_state(ReaperAnim::None);
     }
 }
 
@@ -177,11 +178,10 @@ pub(super) fn register_reaper_attack(app: &mut App) {
         "ReaperAttack",
     ));
 
-    app.observe(appear_on_spawned_lid_active);
-
     app.add_systems(
         Update,
-        (update_onscreen_dynos, update_offscreen_dynos)
+        (manage_appear_disappear, manage_onscreen_movement)
+            .chain()
             .run_if(in_state(MetaStateKind::World))
             .after(PhysicsSet)
             .after(CameraSet),
