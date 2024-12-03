@@ -409,8 +409,30 @@ fn move_horizontally(
     }
 }
 
+fn bounce_jump(
+    player_q: Query<(Entity, &TriggerRxCtrl), With<Player>>,
+    trigger_colls: Res<TriggerColls>,
+    consts: Res<PlayerMovementConsts>,
+    mut commands: Commands,
+) {
+    let Ok((eid, trx_ctrl)) = player_q.get_single() else {
+        return;
+    };
+    let hit_bounce = trigger_colls
+        .get_refs(&trx_ctrl.coll_keys)
+        .iter()
+        .any(|coll| coll.tx_kind == TriggerTxKind::Bounce);
+    if hit_bounce {
+        commands.entity(eid).insert(CanDash);
+        commands.entity(eid).insert(ResponsiveJump::new(
+            consts.jump_max_speed,
+            consts.jump_max_time,
+        ));
+    }
+}
+
 fn update_responsive_jump(
-    mut player_q: Query<(Entity, &mut Dyno, &mut ResponsiveJump), (With<Player>, With<PostJump>)>,
+    mut player_q: Query<(Entity, &mut Dyno, &mut ResponsiveJump), With<Player>>,
     time: Res<Time>,
     mut commands: Commands,
     butt: Res<ButtInput>,
@@ -579,6 +601,7 @@ pub(super) fn register_player_movement(app: &mut App) {
             maybe_start_regular_jump,
             maybe_start_wall_jump,
             move_horizontally,
+            bounce_jump,
             update_responsive_jump,
             limit_speed,
             update_breaking,

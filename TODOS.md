@@ -69,7 +69,9 @@ Tonight
 - [ ] THEN go for more gameplay elements
     - [x] Wall that eats you
         - QUICK FIX: It shouldnt have the dark bg at top/bottom, so I could just put it on single platform if I wanted (don't have to surround to get the right edges)
-    - [ ] Reaper fucking stuff up
+    - [x] Reaper fucking stuff up
+
+- [ ] Scythes should know their parent and despawn when parent doesn't exist of x is greater than parent
 
 
 
