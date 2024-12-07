@@ -31,9 +31,16 @@ pub enum BulletTimeMode {
     Temp {
         speed: BulletTimeSpeed,
         time_left: f32,
+        return_to: BulletTimeSpeed,
     },
 }
 impl BulletTimeMode {
+    fn to_speed(&self) -> BulletTimeSpeed {
+        match self {
+            BulletTimeMode::Stable { speed } | BulletTimeMode::Temp { speed, .. } => *speed,
+        }
+    }
+
     fn to_factor(&self) -> f32 {
         match self {
             BulletTimeMode::Stable { speed } | BulletTimeMode::Temp { speed, .. } => {
@@ -66,36 +73,42 @@ impl BulletTime {
         self.duration.as_secs_f32()
     }
 
-    pub fn reset(&mut self) {
-        self.mode = BulletTimeMode::Stable {
-            speed: BulletTimeSpeed::Normal,
-        }
+    pub fn reset(&mut self, to_speed: BulletTimeSpeed) {
+        self.mode = BulletTimeMode::Stable { speed: to_speed }
     }
-    pub fn set_stable(&mut self, speed: BulletTimeSpeed) {
-        self.mode = BulletTimeMode::Stable { speed }
+    pub fn set_stable(&mut self, new_speed: BulletTimeSpeed) {
+        match &mut self.mode {
+            BulletTimeMode::Stable { speed } => *speed = new_speed,
+            BulletTimeMode::Temp { return_to, .. } => *return_to = new_speed,
+        }
     }
     pub fn set_temp(&mut self, speed: BulletTimeSpeed, time: f32) {
         self.mode = BulletTimeMode::Temp {
             speed,
             time_left: time,
+            return_to: self.mode.to_speed(),
         }
     }
 }
 
 fn update_bullet_time(mut bullet_time: ResMut<BulletTime>, time: Res<Time>) {
     let reset = match &mut bullet_time.mode {
-        BulletTimeMode::Stable { .. } => false,
-        BulletTimeMode::Temp { time_left, .. } => {
+        BulletTimeMode::Stable { .. } => None,
+        BulletTimeMode::Temp {
+            return_to,
+            time_left,
+            ..
+        } => {
             *time_left -= time.delta_seconds();
             if *time_left < 0.0 {
-                true
+                Some(return_to.clone())
             } else {
-                false
+                None
             }
         }
     };
-    if reset {
-        bullet_time.reset();
+    if let Some(to_speed) = reset {
+        bullet_time.reset(to_speed);
     }
     bullet_time.duration = time.delta().mul_f32(bullet_time.mode.to_factor());
 }

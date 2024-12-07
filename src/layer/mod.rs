@@ -298,19 +298,37 @@ fn setup_layer_materials(
         root.eid(),
         MenuLayer::growth_factor(),
     );
-    setup_simple_layer(
-        "transition_image",
-        camera_targets.transition_target.clone(),
-        camera_targets.palette_target.clone(),
-        TransitionLayer::to_i32(),
-        palette.clone(),
-        &mut commands,
-        meshes.as_mut(),
-        shifted_palette_mats.as_mut(),
-        squash_layer.clone(),
-        root.eid(),
-        TransitionLayer::growth_factor(),
-    );
+    // setup_simple_layer(
+    //     "transition_image",
+    //     camera_targets.transition_target.clone(),
+    //     camera_targets.palette_target.clone(),
+    //     TransitionLayer::to_i32(),
+    //     palette.clone(),
+    //     &mut commands,
+    //     meshes.as_mut(),
+    //     shifted_palette_mats.as_mut(),
+    //     squash_layer.clone(),
+    //     root.eid(),
+    //     TransitionLayer::growth_factor(),
+    // );
+    commands
+        .spawn((
+            Name::new(format!("transition_image")),
+            SpriteBundle {
+                texture: camera_targets.transition_target.clone(),
+                transform: Transform {
+                    translation: Vec3::Z * TransitionLayer::to_i32() as f32,
+                    scale: (Vec2::ONE
+                        * (WINDOW_GROWTH as f32 / TransitionLayer::growth_factor() as f32))
+                        .extend(1.0),
+                    ..default()
+                },
+                ..default()
+            },
+            // SpatialBundle::from(),
+            squash_layer.clone(),
+        ))
+        .set_parent(root.eid());
 
     /// Sets up a layer that applies both shifting and lighting
     fn setup_complex_layer(

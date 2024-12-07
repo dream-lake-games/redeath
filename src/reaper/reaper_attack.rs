@@ -11,6 +11,7 @@ struct ReaperAttackConsts {
     scythe_acc: f32,
     scythe_max_speed_out: f32,
     scythe_max_speed_back: f32,
+    simple_attack_time: f32,
 }
 impl Default for ReaperAttackConsts {
     fn default() -> Self {
@@ -20,10 +21,11 @@ impl Default for ReaperAttackConsts {
             body_charge_acc: 180.0,
             body_max_speed: 100.0,
             body_close_destroy: 16.0,
-            scythe_overshoot_turnaround: 16.0,
+            scythe_overshoot_turnaround: 8.0,
             scythe_acc: 240.0,
             scythe_max_speed_out: 160.0,
-            scythe_max_speed_back: 100.0,
+            scythe_max_speed_back: 160.0,
+            simple_attack_time: 0.75,
         }
     }
 }
@@ -107,7 +109,9 @@ fn manage_appear_disappear(
                 }
             }
             None => {
-                anim.set_state(ReaperAnim::None);
+                if anim.get_state() != ReaperAnim::None {
+                    anim.set_state(ReaperAnim::HoverDisappear);
+                }
             }
         }
     }
@@ -190,19 +194,33 @@ fn on_respawn(
 }
 
 fn simple_throw(
+    mut reapers: Query<
+        (Entity, &mut AnimMan<ReaperAnim>, &mut ReaperAttack),
+        With<SpawnedLidActive>,
+    >,
+    consts: Res<ReaperAttackConsts>,
     bullet_time: Res<BulletTime>,
-    mut reapers: Query<(&mut AnimMan<ReaperAnim>, &mut ReaperAttack), With<SpawnedLidActive>>,
+    mut camera_shake: ResMut<CameraShake>,
+    mut commands: Commands,
+    mut global_shift: ResMut<GlobalPaletteShift>,
 ) {
-    for (mut anim, mut attack) in &mut reapers {
+    for (eid, mut anim, mut attack) in &mut reapers {
         match (anim.get_state(), attack.next_throw.as_mut()) {
             (ReaperAnim::Hover, None) => {
-                attack.next_throw = Some(1.0);
+                attack.next_throw = Some(consts.simple_attack_time);
             }
             (ReaperAnim::Hover, Some(next)) => {
                 *next = *next - bullet_time.delta_seconds();
                 if *next < 0.0 {
                     anim.set_state(ReaperAnim::Charge);
                     attack.next_throw = None;
+                    let time_to_do_shit = 0.7;
+                    global_shift.add(time_to_do_shit, -1);
+                    global_shift.add(0.05, -2);
+                    camera_shake.shake(time_to_do_shit, -1..=1, -1..=1);
+                    commands
+                        .entity(eid)
+                        .insert(AnimMan::new(ReaperChargeIndicatorAnim::Charge));
                 }
             }
             (_, _) => {
@@ -212,12 +230,27 @@ fn simple_throw(
     }
 }
 
+fn reign_in_charge_indicator(
+    mut reapers: Query<(
+        Option<&AnimMan<ReaperAnim>>,
+        &mut AnimMan<ReaperChargeIndicatorAnim>,
+    )>,
+) {
+    for (reap_anim, mut ind_anim) in &mut reapers {
+        if reap_anim.map(|a| a.get_state()) != Some(ReaperAnim::Charge) {
+            ind_anim.set_state(ReaperChargeIndicatorAnim::BeGone);
+        }
+    }
+}
+
 fn watch_reaper_anim_to_spawn_scythe(
     trigger: Trigger<AnimStateChange<ReaperAnim>>,
     mut commands: Commands,
     pos_q: Query<&Pos>,
+    slid_q: Query<&SpawnedLid>,
     consts: Res<ReaperAttackConsts>,
     root: Res<WorldMetaRoot>,
+    mut global_shift: ResMut<GlobalPaletteShift>,
 ) {
     let AnimStateChange { next, .. } = trigger.event();
     if !matches!(next, ReaperAnim::Throw) {
@@ -226,13 +259,19 @@ fn watch_reaper_anim_to_spawn_scythe(
     let Ok(pos) = pos_q.get(trigger.entity()) else {
         return;
     };
+    let Ok(slid) = slid_q.get(trigger.entity()) else {
+        return;
+    };
     commands
         .spawn(ScytheBundle::new(
             pos.clone(),
             -consts.scythe_max_speed_out,
             trigger.entity(),
+            slid.iid.clone(),
         ))
         .set_parent(root.eid());
+    global_shift.add(0.175, 1);
+    global_shift.add(0.25, 1);
 }
 
 #[derive(Component)]
@@ -247,6 +286,7 @@ struct Scythe {
 struct ScytheBundle {
     name: Name,
     marker: Scythe,
+    spawned_lid: SpawnedLid,
     pos: Pos,
     dyno: Dyno,
     spatial: SpatialBundle,
@@ -255,7 +295,7 @@ struct ScytheBundle {
     trigger_tx: TriggerTx,
 }
 impl ScytheBundle {
-    fn new(pos: Pos, x_vel: f32, fake_parent: Entity) -> Self {
+    fn new(pos: Pos, x_vel: f32, fake_parent: Entity, spawned_lid: String) -> Self {
         Self {
             name: Name::new("scythe"),
             marker: Scythe {
@@ -263,6 +303,7 @@ impl ScytheBundle {
                 fake_parent,
                 has_turned_around: false,
             },
+            spawned_lid: SpawnedLid::new(spawned_lid),
             pos,
             dyno: Dyno::new(x_vel, 0.0),
             spatial: pos.to_spatial(ZIX_PLAYER - 0.4),
@@ -284,7 +325,7 @@ fn maybe_despawn_scythes(
     for (eid, pos, mut scythe) in &mut scythes {
         scythe.ttl -= time.delta_seconds();
         let parent_pos = pos_q.get(scythe.fake_parent);
-        if scythe.ttl < 0.0 || parent_pos.is_err() || parent_pos.unwrap().x < pos.x {
+        if scythe.ttl < 0.0 || parent_pos.is_err() || parent_pos.unwrap().x < pos.x - 8.0 {
             if let Some(comms) = commands.get_entity(eid) {
                 comms.despawn_recursive();
             }
@@ -307,20 +348,6 @@ fn maybe_turnaround_scythes(
     }
 }
 
-fn maybe_become_ball(
-    mut scythes: Query<(Entity, &Dyno, &Scythe, &mut AnimMan<ScytheAnim>)>,
-    mut commands: Commands,
-) {
-    for (eid, dyno, scythe, mut anim) in &mut scythes {
-        if scythe.has_turned_around && dyno.vel.x > -1.0 && anim.get_state() == ScytheAnim::Out {
-            anim.set_state(ScytheAnim::BecomeBall);
-            if let Some(mut comms) = commands.get_entity(eid) {
-                comms.remove::<TriggerTxCtrl>();
-            }
-        }
-    }
-}
-
 fn scythe_movement(
     mut scythes: Query<(&mut Dyno, &Scythe), With<Scythe>>,
     bullet_time: Res<BulletTime>,
@@ -334,19 +361,6 @@ fn scythe_movement(
                 .x
                 .clamp(-consts.scythe_max_speed_out, consts.scythe_max_speed_back);
         }
-    }
-}
-
-fn watch_scythe_anim_to_insert_bounce(
-    trigger: Trigger<AnimStateChange<ScytheAnim>>,
-    mut commands: Commands,
-) {
-    let AnimStateChange { next, .. } = trigger.event();
-    if matches!(next, ScytheAnim::Ball) {
-        commands.entity(trigger.entity()).insert(TriggerTx::single(
-            TriggerTxKind::Bounce,
-            HBox::new(16, 11).with_offset(0.0, 5.5),
-        ));
     }
 }
 
@@ -381,6 +395,22 @@ fn spawn_scythe_particles(
         .set_parent(root.eid());
 }
 
+fn despawn_scythes_out_of_level(
+    level_scroll: Res<State<LevelScrollStateKind>>,
+    scythes_q: Query<Entity, (With<Scythe>, With<SpawnedLidInactive>)>,
+    mut commands: Commands,
+) {
+    if matches!(level_scroll.get(), LevelScrollStateKind::Some) {
+        // Wait till we finish scrolling
+        return;
+    }
+    for eid in &scythes_q {
+        if let Some(comms) = commands.get_entity(eid) {
+            comms.despawn_recursive();
+        }
+    }
+}
+
 pub(super) fn register_reaper_attack(app: &mut App) {
     app.insert_resource(ReaperAttackConsts::default());
     debug_resource!(app, ReaperAttackConsts);
@@ -391,7 +421,6 @@ pub(super) fn register_reaper_attack(app: &mut App) {
     ));
 
     app.observe(watch_reaper_anim_to_spawn_scythe);
-    app.observe(watch_scythe_anim_to_insert_bounce);
     app.observe(spawn_scythe_particles);
 
     app.add_systems(OnEnter(PlayerMetaState::Spawning), on_respawn);
@@ -402,10 +431,11 @@ pub(super) fn register_reaper_attack(app: &mut App) {
             manage_appear_disappear,
             manage_onscreen_movement,
             simple_throw,
+            reign_in_charge_indicator,
             maybe_despawn_scythes,
             maybe_turnaround_scythes,
-            maybe_become_ball,
             scythe_movement,
+            despawn_scythes_out_of_level,
         )
             .chain()
             .run_if(in_state(MetaStateKind::World))

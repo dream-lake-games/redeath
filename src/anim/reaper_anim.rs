@@ -69,22 +69,6 @@ derive_anim!(
         #[length(8)]
         #[render_layers(StaticLayer)]
         Out,
-        #[file("reaper/scythe/become_ball.png")]
-        #[size(28, 28)]
-        #[length(4)]
-        #[next(Ball)]
-        #[render_layers(StaticLayer)]
-        BecomeBall,
-        #[file("reaper/scythe/ball.png")]
-        #[size(28, 28)]
-        #[length(6)]
-        #[render_layers(StaticLayer)]
-        Ball,
-        #[file("reaper/scythe/ball_pop.png")]
-        #[size(28, 28)]
-        #[length(5)]
-        #[render_layers(StaticLayer)]
-        BallPop,
     }
 );
 type ScytheAnimPlugin = AnimDefnPlugin<ScytheAnim, AnimTimeRes>;
@@ -144,8 +128,27 @@ derive_anim!(
 );
 type ScythePartAnimPlugin = AnimDefnPlugin<ScythePartAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum ReaperChargeIndicatorAnim {
+        #[default]
+        #[file("reaper/charge_indicator.png")]
+        #[size(240, 48)]
+        #[length(13)]
+        #[render_layers(PaletteLayer)]
+        #[offset(-96.0, 0.0)]
+        #[next(Remove)]
+        Charge,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        #[next(Remove)]
+        BeGone,
+    }
+);
+type ChargeIndicatorAnimPlugin = AnimDefnPlugin<ReaperChargeIndicatorAnim, AnimTimeRes>;
+
 pub(super) fn register_reaper_anim(app: &mut App) {
     app.add_plugins(ReaperAnimPlugin::default());
     app.add_plugins(ScytheAnimPlugin::default());
     app.add_plugins(ScythePartAnimPlugin::default());
+    app.add_plugins(ChargeIndicatorAnimPlugin::default());
 }

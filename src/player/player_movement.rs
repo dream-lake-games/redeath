@@ -38,7 +38,7 @@ impl Default for PlayerMovementConsts {
             over_max_slowdown_acc: 960.0,
             post_jump_time: 0.136,
             dash_speed: 160.0,
-            dash_time: 0.25,
+            dash_time: 0.15,
             coyote_time: 0.1,
             jump_max_speed: 210.0,
             jump_max_time: 0.1,
@@ -141,7 +141,6 @@ fn update_can_jump(
         ),
         With<Player>,
     >,
-    time: Res<Time>,
     bullet_time: Res<BulletTime>,
     mut commands: Commands,
     consts: Res<PlayerMovementConsts>,
@@ -155,7 +154,7 @@ fn update_can_jump(
         });
     } else {
         if let Some(regular_mut) = can_regular.as_mut() {
-            regular_mut.coyote_time -= time.delta_seconds();
+            regular_mut.coyote_time -= bullet_time.delta_seconds();
             if regular_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanRegularJump>();
             }
@@ -168,7 +167,7 @@ fn update_can_jump(
         });
     } else {
         if let Some(wall_left_mut) = can_wall_left.as_mut() {
-            wall_left_mut.coyote_time -= time.delta_seconds();
+            wall_left_mut.coyote_time -= bullet_time.delta_seconds();
             if wall_left_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanWallJumpFromLeft>();
             }
@@ -181,7 +180,7 @@ fn update_can_jump(
         });
     } else {
         if let Some(wall_right_mut) = can_wall_right.as_mut() {
-            wall_right_mut.coyote_time -= time.delta_seconds();
+            wall_right_mut.coyote_time -= bullet_time.delta_seconds();
             if wall_right_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanWallJumpFromRight>();
             }
@@ -201,14 +200,14 @@ fn update_can_jump(
 
 fn update_current_dash(
     mut player: Query<(Entity, &mut Dashing), With<Player>>,
-    time: Res<Time>,
+    bullet_time: Res<BulletTime>,
     mut commands: Commands,
 ) {
     let Ok((eid, mut dashing)) = player.get_single_mut() else {
         // Means player is not dashing
         return;
     };
-    dashing.time_left -= time.delta_seconds();
+    dashing.time_left -= bullet_time.delta_seconds();
     if dashing.time_left < 0.0 {
         commands.entity(eid).insert(Gravity::default());
         commands.entity(eid).remove::<Dashing>();
