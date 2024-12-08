@@ -13,6 +13,7 @@ pub enum TriggerTxKind {
     Coin,
     Observe,
     Bounce,
+    Bank,
 }
 #[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq, std::hash::Hash)]
 pub enum TriggerRxKind {

@@ -140,11 +140,68 @@ derive_anim!(
         #[size(24, 24)]
         #[length(5)]
         #[render_layers(StaticLayer)]
-        #[next(Remove)]
+        #[next(None)]
         Pop,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        None,
+        #[file("items/coin_smol.png")]
+        #[size(24, 24)]
+        #[length(1)]
+        #[render_layers(StaticLayer)]
+        Smol,
     }
 );
 type CoinAnimPlugin = AnimDefnPlugin<CoinAnim, AnimTimeRes>;
+
+derive_anim!(
+    pub enum CoinSmolAnim {
+        #[default]
+        #[file("items/coin_smol.png")]
+        #[size(24, 24)]
+        #[render_layers(StaticLayer)]
+        Follow,
+        #[file("items/coin_smol_pop.png")]
+        #[size(24, 24)]
+        #[length(6)]
+        #[next(Despawn)]
+        #[render_layers(StaticLayer)]
+        Pop,
+    }
+);
+type CoinSmolAnimPlugin = AnimDefnPlugin<CoinSmolAnim, AnimTimeRes>;
+
+derive_anim!(
+    pub enum BankAnim {
+        #[default]
+        #[file("items/coin_bank_idle.png")]
+        #[size(24, 24)]
+        #[render_layers(StaticLayer)]
+        Idle,
+        #[file("items/coin_bank_grow.png")]
+        #[size(24, 24)]
+        #[length(12)]
+        #[next(Idle)]
+        #[render_layers(StaticLayer)]
+        Grow,
+        #[file("items/coin_bank_shrink.png")]
+        #[size(24, 24)]
+        #[length(9)]
+        #[next(None)]
+        #[render_layers(StaticLayer)]
+        Shrink,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        None,
+        #[file("items/coin_bank_celebrate.png")]
+        #[size(24, 24)]
+        #[length(6)]
+        #[next(Despawn)]
+        #[render_layers(StaticLayer)]
+        Celebrate,
+    }
+);
+type BankAnimPlugin = AnimDefnPlugin<BankAnim, AnimTimeRes>;
 
 pub(super) fn register_items_anim(app: &mut App) {
     app.add_plugins(ReplenishAnimPlugin::default());
@@ -153,4 +210,6 @@ pub(super) fn register_items_anim(app: &mut App) {
     app.add_plugins(EggGhostFadeAnimPlugin::default());
     app.add_plugins(EggBlockAnimPlugin::default());
     app.add_plugins(CoinAnimPlugin::default());
+    app.add_plugins(CoinSmolAnimPlugin::default());
+    app.add_plugins(BankAnimPlugin::default());
 }

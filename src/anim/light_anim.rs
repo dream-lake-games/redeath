@@ -104,8 +104,11 @@ derive_anim!(
         #[size(48, 48)]
         #[length(3)]
         #[render_layers(LightLayer)]
-        #[next(Remove)]
+        #[next(None)]
         Pop,
+        #[file("clear.png")]
+        #[size(1, 1)]
+        None,
     }
 );
 type CoinLightAnimPlugin = AnimDefnPlugin<CoinLightAnim, AnimTimeRes>;

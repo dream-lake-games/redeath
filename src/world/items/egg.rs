@@ -57,33 +57,6 @@ impl EggGhostBundle {
     }
 }
 
-#[derive(Component, Clone)]
-struct ChaseEntity {
-    eid: Entity,
-    acc: f32,
-    // Deceleration as a speed to make it framerate-independent
-    dec: f32,
-    leash: f32,
-    max_speed: f32,
-}
-impl ChaseEntity {
-    fn new(eid: Entity, acc: f32, dec: f32, leash: f32, max_speed: f32) -> Self {
-        Self {
-            eid,
-            acc,
-            dec,
-            leash,
-            max_speed,
-        }
-    }
-}
-
-#[derive(Component, Clone, Copy)]
-enum ChaseState {
-    InLeash,
-    OutLeash,
-    BadTarget,
-}
 #[derive(Component)]
 struct YoungestEggGhost;
 #[derive(Component)]
@@ -151,49 +124,6 @@ fn break_eggs(
     }
     if any_broken && any_unbroken {
         commands.spawn(SoundEffect::EggBreakSingle);
-    }
-}
-
-fn chase_entities(
-    mut chasers: Query<(Entity, &Pos, &mut Dyno, &ChaseEntity)>,
-    pos_q: Query<&Pos>,
-    bullet_time: Res<BulletTime>,
-    mut commands: Commands,
-) {
-    let handle_decel = |vel: &mut Vec2, amt: f32| {
-        if vel.length() < amt {
-            *vel = Vec2::ZERO;
-        } else {
-            *vel = *vel - vel.normalize_or_zero() * amt;
-        }
-    };
-    for (eid, chaser_pos, mut chaser_dyno, chase) in &mut chasers {
-        let Ok(target_pos) = pos_q.get(chase.eid) else {
-            commands.entity(eid).insert(ChaseState::BadTarget);
-            handle_decel(
-                &mut chaser_dyno.vel,
-                chase.acc * bullet_time.delta_seconds(),
-            );
-            continue;
-        };
-        // Always decellerate to avoid orbiting
-        handle_decel(
-            &mut chaser_dyno.vel,
-            chase.dec * bullet_time.delta_seconds(),
-        );
-        if chaser_pos.as_vec2().distance(target_pos.as_vec2()) < chase.leash {
-            commands.entity(eid).insert(ChaseState::InLeash);
-            handle_decel(
-                &mut chaser_dyno.vel,
-                chase.acc * bullet_time.delta_seconds(),
-            );
-        } else {
-            commands.entity(eid).insert(ChaseState::OutLeash);
-            let norm_diff = (target_pos.as_vec2() - chaser_pos.as_vec2()).normalize_or_zero();
-            chaser_dyno.vel += norm_diff * chase.acc * bullet_time.delta_seconds();
-        }
-        // Always clamp max speeds
-        chaser_dyno.vel = chaser_dyno.vel.clamp_length(0.0, chase.max_speed);
     }
 }
 
@@ -392,13 +322,13 @@ pub(super) fn register_egg(app: &mut App) {
         Update,
         (
             break_eggs,
-            chase_entities,
             start_returning_all_egg_ghosts,
             finish_returning_egg_ghosts,
             egg_ghost_juice,
         )
             .chain()
             .after(PhysicsSet)
+            .after(ChaseSet)
             .run_if(in_state(MetaStateKind::World)),
     );
 }

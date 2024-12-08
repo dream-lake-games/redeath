@@ -182,6 +182,28 @@ fn watch_level_selection(
     }
 }
 
+/// I should've made this earlier, but oh well, I guess it's forward looking.
+/// There's a lot of logic that should happen when player enters a level
+/// OR respawns in a level
+#[derive(Event)]
+pub struct EnterOrRespawnLevelEvent {
+    pub iid: String,
+}
+fn do_enter_or_respawn_level_change(trigger: Trigger<LevelChangeEvent>, mut commands: Commands) {
+    commands.trigger(EnterOrRespawnLevelEvent {
+        iid: trigger.event().iid.clone(),
+    });
+}
+fn do_enter_or_respawn_respawn(mut commands: Commands, level: Option<Res<LevelSelection>>) {
+    let Some(LevelSelection::Iid(iid)) = level.map(|inner| inner.into_inner()) else {
+        warn!("huh, do_enter_or_respawn_respawn");
+        return;
+    };
+    commands.trigger(EnterOrRespawnLevelEvent {
+        iid: iid.as_str().to_string(),
+    });
+}
+
 pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
     app.insert_resource(LevelRects::default());
 
@@ -200,5 +222,12 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
             .after(handle_physical_lids)
             .in_set(MyLdtkLevelMaint)
             .run_if(in_state(MetaStateKind::World)),
+    );
+
+    // Enter or respawn
+    app.observe(do_enter_or_respawn_level_change);
+    app.add_systems(
+        OnEnter(PlayerMetaState::Spawning),
+        do_enter_or_respawn_respawn,
     );
 }

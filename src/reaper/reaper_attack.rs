@@ -221,6 +221,7 @@ fn simple_throw(
                     commands
                         .entity(eid)
                         .insert(AnimMan::new(ReaperChargeIndicatorAnim::Charge));
+                    commands.spawn(SoundEffect::ReaperChargeStart);
                 }
             }
             (_, _) => {
@@ -272,6 +273,7 @@ fn watch_reaper_anim_to_spawn_scythe(
         .set_parent(root.eid());
     global_shift.add(0.175, 1);
     global_shift.add(0.25, 1);
+    commands.spawn(SoundEffect::ReaperThrow);
 }
 
 #[derive(Component)]

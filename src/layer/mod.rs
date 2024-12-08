@@ -298,19 +298,8 @@ fn setup_layer_materials(
         root.eid(),
         MenuLayer::growth_factor(),
     );
-    // setup_simple_layer(
-    //     "transition_image",
-    //     camera_targets.transition_target.clone(),
-    //     camera_targets.palette_target.clone(),
-    //     TransitionLayer::to_i32(),
-    //     palette.clone(),
-    //     &mut commands,
-    //     meshes.as_mut(),
-    //     shifted_palette_mats.as_mut(),
-    //     squash_layer.clone(),
-    //     root.eid(),
-    //     TransitionLayer::growth_factor(),
-    // );
+    // NOTE: This spawns the transition layer just using a sprite
+    // This is so that the palette shift affects don't effect things like screen wipe
     commands
         .spawn((
             Name::new(format!("transition_image")),
