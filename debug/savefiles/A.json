@@ -1,0 +1,12 @@
+{
+  "current_world": "Canyon",
+  "world_savefiles": {
+    "Canyon": {
+      "collected_coins": [
+        "88561970-9b00-11ef-883f-9136841c6f50"
+      ],
+      "ever_finished": false,
+      "current_run": "6d6dabf0-9b00-11ef-883f-53a9da59e400"
+    }
+  }
+}

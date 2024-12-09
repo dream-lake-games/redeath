@@ -4,6 +4,7 @@ use crate::prelude::*;
 
 mod draw_hitboxes;
 mod reload;
+mod view_savefiles;
 
 fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut _commands: Commands) {
     // Gizmo config
@@ -48,5 +49,6 @@ impl Plugin for DebugPlugin {
         app.add_systems(Update, toggle_crt);
         draw_hitboxes::register_draw_hitboxes(app);
         reload::register_reload(app);
+        view_savefiles::register_viewsavefiles(app);
     }
 }

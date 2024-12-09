@@ -136,20 +136,27 @@ derive_anim!(
         #[fps(8.0)]
         #[render_layers(StaticLayer)]
         Spin,
+        #[file("items/coin_spin_empty.png")]
+        #[size(24, 24)]
+        #[length(9)]
+        #[fps(8.0)]
+        #[render_layers(StaticLayer)]
+        SpinEmpty,
         #[file("items/coin_pop.png")]
         #[size(24, 24)]
         #[length(5)]
         #[render_layers(StaticLayer)]
         #[next(None)]
         Pop,
+        #[file("items/coin_pop_empty.png")]
+        #[size(24, 24)]
+        #[length(5)]
+        #[render_layers(StaticLayer)]
+        #[next(None)]
+        PopEmpty,
         #[file("clear.png")]
         #[size(1, 1)]
         None,
-        #[file("items/coin_smol.png")]
-        #[size(24, 24)]
-        #[length(1)]
-        #[render_layers(StaticLayer)]
-        Smol,
     }
 );
 type CoinAnimPlugin = AnimDefnPlugin<CoinAnim, AnimTimeRes>;
@@ -161,6 +168,10 @@ derive_anim!(
         #[size(24, 24)]
         #[render_layers(StaticLayer)]
         Follow,
+        #[file("items/coin_smol_empty.png")]
+        #[size(24, 24)]
+        #[render_layers(StaticLayer)]
+        FollowEmpty,
         #[file("items/coin_smol_pop.png")]
         #[size(24, 24)]
         #[length(6)]

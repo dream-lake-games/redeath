@@ -45,6 +45,7 @@ pub mod prelude {
     pub use bevy_ecs_ldtk::prelude::*;
     pub use bevy_ecs_tilemap::prelude::*;
     pub use bevy_inspector_egui::quick::WorldInspectorPlugin;
+    pub use bevy_pkv::PkvStore;
     pub use rand::prelude::SliceRandom;
     pub use rand::{thread_rng, Rng};
     pub use std::{ops::Range, time::Duration};

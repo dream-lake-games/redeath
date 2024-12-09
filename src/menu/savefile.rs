@@ -47,6 +47,7 @@ fn watch_input(
     time: Res<Time>,
     mut input: ResMut<SavefileInput>,
     mut buttons: Query<(&SavefileKind, &mut AnimMan<SavefileButtonAnim>)>,
+    mut current_savefile_kind: ResMut<CurrentSavefileKind>,
 ) {
     // Go back if we need
     if butts.pressed(ButtKind::Escape) || butts.pressed(ButtKind::B) {
@@ -88,8 +89,8 @@ fn watch_input(
         commands.trigger(StartTransition::to(
             MenuState::OverworldLoading.to_meta_state(),
         ));
-        commands.remove_resource::<Savefile>();
-        commands.insert_resource(Savefile::change_me(input.selected));
+        current_savefile_kind.0 = input.selected;
+        commands.trigger(SavefileGetRecalculate);
     }
 }
 

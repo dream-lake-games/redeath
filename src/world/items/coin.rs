@@ -55,14 +55,18 @@ struct CoinSmolBundle {
     chase: ChaseEntity,
 }
 impl CoinSmolBundle {
-    fn new(pos: Pos, chase: Entity, iid: String) -> Self {
+    fn new(pos: Pos, chase: Entity, iid: String, empty: bool) -> Self {
         Self {
             name: Name::new("coin_smol"),
             marker: CoinSmol { iid },
             pos,
             dyno: default(),
             spatial: pos.to_spatial(ZIX_ITEMS + 1.2),
-            anim: default(),
+            anim: AnimMan::new(if empty {
+                CoinSmolAnim::FollowEmpty
+            } else {
+                CoinSmolAnim::Follow
+            }),
             chase: ChaseEntity::new(chase, 420.0, 320.0, 16.0, 400.0),
         }
     }
@@ -86,7 +90,7 @@ fn maybe_collect_coins(
         return;
     };
     for (eid, pos, ttx_ctrl, coin, mut anim, mut light) in &mut coins {
-        if !matches!(anim.get_state(), CoinAnim::Spin) {
+        if !matches!(anim.get_state(), CoinAnim::Spin | CoinAnim::SpinEmpty) {
             continue;
         }
         if trigger_colls
@@ -94,7 +98,12 @@ fn maybe_collect_coins(
             .iter()
             .any(|coll| coll.rx_kind == TriggerRxKind::Player)
         {
-            anim.set_state(CoinAnim::Pop);
+            let empty = anim.get_state() == CoinAnim::SpinEmpty;
+            anim.set_state(if empty {
+                CoinAnim::PopEmpty
+            } else {
+                CoinAnim::Pop
+            });
             light.set_state(CoinLightAnim::Pop);
             commands.spawn(SoundEffect::CoinCollect);
             commands.entity(eid).remove::<TriggerTxCtrl>();
@@ -103,6 +112,7 @@ fn maybe_collect_coins(
                     pos.clone(),
                     player_eid,
                     coin.iid.clone(),
+                    empty,
                 ))
                 .set_parent(root.eid());
         }
@@ -114,6 +124,7 @@ fn reset_coins_per_level(
     mut coins: Query<
         (
             Entity,
+            &Coin,
             &mut AnimMan<CoinAnim>,
             &mut AnimMan<CoinLightAnim>,
             Option<&TriggerTxCtrl>,
@@ -121,21 +132,23 @@ fn reset_coins_per_level(
         With<SpawnedLidActive>,
     >,
     mut smols: Query<&mut AnimMan<CoinSmolAnim>>,
-    mut banks: Query<&mut AnimMan<BankAnim>>,
     mut commands: Commands,
+    current_collected: Res<SavefileCurrentCollectedCoins>,
 ) {
-    for (eid, mut anim, mut light, ttx_ctrl) in &mut coins {
+    for (eid, coin, mut anim, mut light, ttx_ctrl) in &mut coins {
+        let empty = current_collected.0.contains(&coin.iid);
         if ttx_ctrl.is_none() {
             commands.entity(eid).insert(CoinBundle::trigger_tx());
         }
-        anim.set_state(CoinAnim::Spin);
+        anim.set_state(if empty {
+            CoinAnim::SpinEmpty
+        } else {
+            CoinAnim::Spin
+        });
         light.set_state(CoinLightAnim::Pulse);
     }
     for mut smol_anim in &mut smols {
         smol_anim.set_state(CoinSmolAnim::Pop);
-    }
-    for mut bank in &mut banks {
-        bank.set_state(BankAnim::None);
     }
 }
 
@@ -145,7 +158,10 @@ fn coin_smol_death(
 ) {
     for (eid, mut anim, mut dyno) in &mut smol_coins {
         commands.entity(eid).remove::<ChaseEntity>();
-        if matches!(anim.get_state(), CoinSmolAnim::Follow) {
+        if matches!(
+            anim.get_state(),
+            CoinSmolAnim::Follow | CoinSmolAnim::FollowEmpty
+        ) {
             dyno.vel *= 0.2;
             anim.set_state(CoinSmolAnim::Pop);
         }
@@ -177,7 +193,7 @@ impl MyLdtkEntity for BankBundle {
 /// Bank on the current level
 fn manage_active_banks(
     mut smols: Query<(Entity, &CoinSmol, &mut AnimMan<CoinSmolAnim>, &mut Dyno)>,
-    mut banks: Query<(&Pos, &TriggerTxCtrl, &mut AnimMan<BankAnim>)>,
+    mut banks: Query<(&Pos, &TriggerTxCtrl, &mut AnimMan<BankAnim>), With<SpawnedLidActive>>,
     trigger_colls: Res<TriggerColls>,
     mut commands: Commands,
     mut bullet_time: ResMut<BulletTime>,
@@ -214,7 +230,10 @@ fn manage_active_banks(
             continue;
         }
         for (eid, coin, mut anim_smol, mut dyno) in &mut smols {
-            if anim_smol.get_state() == CoinSmolAnim::Follow {
+            if matches!(
+                anim_smol.get_state(),
+                CoinSmolAnim::Follow | CoinSmolAnim::FollowEmpty
+            ) {
                 cashed_out = true;
                 dyno.vel *= 0.2;
                 anim_smol.set_state(CoinSmolAnim::Pop);
@@ -227,7 +246,9 @@ fn manage_active_banks(
                 ));
                 bullet_time.set_temp(BulletTimeSpeed::Slow, 0.16);
                 commands.spawn(SoundEffect::CoinCashOut);
-                println!("would cash out {:?}", coin.iid);
+                commands.trigger(SavefileCollectCoinEvent {
+                    iid: coin.iid.clone(),
+                });
             }
         }
     }

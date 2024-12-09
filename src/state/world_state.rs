@@ -20,9 +20,17 @@ pub enum PlayerMetaState {
     Dying,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Reflect)]
+#[derive(
+    Clone, Copy, Debug, Default, Eq, Hash, PartialEq, Reflect, serde::Serialize, serde::Deserialize,
+)]
 pub enum WorldKind {
+    #[default]
     Canyon,
+}
+impl WorldKind {
+    pub fn all() -> Vec<Self> {
+        vec![Self::Canyon]
+    }
 }
 #[derive(Clone, Debug, Reflect)]
 pub struct WorldKindData {
