@@ -66,12 +66,12 @@ Tonight
 - [x] Psych try to do the CRT thing quickly and easily
     - Jury still out on whether it is good to have...
 
-- [ ] THEN go for more gameplay elements
+- [x] THEN go for more gameplay elements
     - [x] Wall that eats you
         - QUICK FIX: It shouldnt have the dark bg at top/bottom, so I could just put it on single platform if I wanted (don't have to surround to get the right edges)
     - [x] Reaper fucking stuff up
 
-- [ ] Scythes should know their parent and despawn when parent doesn't exist of x is greater than parent
+- [x] Scythes should know their parent and despawn when parent doesn't exist of x is greater than parent
 
 
 
