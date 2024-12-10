@@ -206,6 +206,7 @@ fn finish_returning_egg_ghosts(
 pub(super) fn egg_ghost_juice(
     mut ghosts: Query<(&Pos, &Dyno, &mut AnimMan<EggGhostAnim>)>,
     mut commands: Commands,
+    world_detail_root: Res<WorldDetailRoot>,
 ) {
     for (pos, dyno, mut anim) in &mut ghosts {
         if anim.get_state() == EggGhostAnim::Popped {
@@ -228,12 +229,14 @@ pub(super) fn egg_ghost_juice(
                 }
             }
         }
-        commands.spawn(EphemeralAnim::new(
-            EggGhostFadeAnim::Fade,
-            false,
-            *pos,
-            ZIX_ITEMS + 1.0,
-        ));
+        commands
+            .spawn(EphemeralAnim::new(
+                EggGhostFadeAnim::Fade,
+                false,
+                *pos,
+                ZIX_ITEMS + 1.0,
+            ))
+            .set_parent(world_detail_root.eid());
     }
 }
 

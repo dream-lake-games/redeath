@@ -3387,24 +3387,7 @@
 					"seed": 196022,
 					"overrideTilesetUid": null,
 					"gridTiles": [],
-					"entityInstances": [
-						{
-							"__identifier": "SpawnPoint",
-							"__grid": [14,18],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#D6FF64",
-							"iid": "a6c9fb20-9b00-11ef-bb5d-a30a4684eef2",
-							"width": 8,
-							"height": 16,
-							"defUid": 208,
-							"px": [112,144],
-							"fieldInstances": [],
-							"__worldX": -2824,
-							"__worldY": -1816
-						}
-					]
+					"entityInstances": []
 				},
 				{
 					"__identifier": "Spikes",

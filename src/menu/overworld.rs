@@ -33,6 +33,8 @@ fn update_loading(
     level_selection: Res<LevelSelection>,
     mut cam_pos_q: Query<&mut Pos, With<DynamicCamera>>,
     mut meta_state: ResMut<NextState<MetaState>>,
+    current_savefile: Res<CurrentSavefileKind>,
+    all_savefiles: Res<AllSavefiles>,
 ) {
     if my_ldtk_load_state.into_inner() != &MyLdtkLoadState::Loaded {
         return;
@@ -42,7 +44,8 @@ fn update_loading(
         let mut cam_pos = cam_pos_q.single_mut();
         *cam_pos = Pos::new(center.x, center.y);
     }
-    meta_state.set(MenuState::Overworld.to_meta_state());
+    let kind = all_savefiles.map[&current_savefile.0].current_world.clone();
+    meta_state.set(MenuState::Overworld(OverworldState::from_world_kind(kind)).to_meta_state());
 }
 
 fn on_exit_loading(mut commands: Commands) {
@@ -50,7 +53,16 @@ fn on_exit_loading(mut commands: Commands) {
     commands.trigger(EndTransition::center());
 }
 
-fn on_enter_overworld() {}
+fn on_enter_overworld(
+    menu_state: Res<State<MenuState>>,
+    mut next_meta_state: ResMut<NextState<MetaState>>,
+) {
+    let MenuState::Overworld(mut overworld) = menu_state.get().clone() else {
+        panic!("whoops overworld state is fucked");
+    };
+    overworld.player_meta_state = PlayerMetaState::Spawning;
+    next_meta_state.set(MenuState::Overworld(overworld).to_meta_state());
+}
 
 fn update_overworld(butts: Res<ButtInput>, mut commands: Commands) {
     // Watch for going out of overworld
@@ -73,7 +85,7 @@ fn update_overworld(butts: Res<ButtInput>, mut commands: Commands) {
 
 fn on_exit_overworld(mut commands: Commands) {
     commands.trigger(CleanupMenuTemp);
-    commands.trigger(UnloadMyLdtk);
+    commands.trigger(CleanupWorld);
 }
 
 pub(super) fn register_overworld(app: &mut App) {

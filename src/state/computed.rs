@@ -9,10 +9,14 @@ impl ComputedStates for LevelState {
 }
 
 impl ComputedStates for PlayerMetaState {
-    type SourceStates = WorldState;
+    type SourceStates = (Option<WorldState>, Option<MenuState>);
 
     fn compute(sources: Self::SourceStates) -> Option<Self> {
-        Some(sources.player_meta_state)
+        match sources {
+            (Some(world), _) => Some(world.player_meta_state),
+            (_, Some(MenuState::Overworld(overworld))) => Some(overworld.player_meta_state),
+            _ => None,
+        }
     }
 }
 
@@ -39,12 +43,23 @@ pub enum PhysicsState {
     Inactive,
 }
 impl ComputedStates for PhysicsState {
-    type SourceStates = (LevelState, PauseState, LevelScrollStateKind);
+    type SourceStates = (
+        Option<LevelState>,
+        Option<MenuState>,
+        PauseState,
+        LevelScrollStateKind,
+    );
     fn compute(sources: Self::SourceStates) -> Option<Self> {
         match sources {
-            (LevelState { .. }, PauseState::Unpaused, LevelScrollStateKind::None) => {
+            (Some(LevelState { .. }), _, PauseState::Unpaused, LevelScrollStateKind::None) => {
                 Some(PhysicsState::Active)
             }
+            (
+                _,
+                Some(MenuState::Overworld(_)),
+                PauseState::Unpaused,
+                LevelScrollStateKind::None,
+            ) => Some(PhysicsState::Active),
             _ => Some(PhysicsState::Inactive),
         }
     }

@@ -40,7 +40,7 @@ impl WorldKind {
     pub fn to_data(&self) -> WorldKindData {
         match self {
             Self::Canyon => WorldKindData {
-                ldtk_path: "worlds/lake.ldtk".into(),
+                ldtk_path: "worlds/canyon.ldtk".into(),
             },
         }
     }

@@ -85,16 +85,19 @@ fn juice_after_dash(
 fn juice_during_dash(
     player: Query<(&Pos, &AnimMan<PlayerAnim>, &Dashing), With<Player>>,
     mut commands: Commands,
+    root: Res<WorldDetailRoot>,
 ) {
     let Ok((pos, anim, dashing)) = player.get_single() else {
         return;
     };
-    commands.spawn(EphemeralAnim::new(
-        DashFadeAnim::DashFade,
-        anim.get_flip_x(),
-        *pos,
-        ZIX_PLAYER - dashing.time_left,
-    ));
+    commands
+        .spawn(EphemeralAnim::new(
+            DashFadeAnim::DashFade,
+            anim.get_flip_x(),
+            *pos,
+            ZIX_PLAYER - dashing.time_left,
+        ))
+        .set_parent(root.eid());
 }
 
 fn juice_after_jump(
@@ -240,7 +243,11 @@ fn player_impact_sounds(
     }
 }
 
-fn head_smoke(player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>, mut commands: Commands) {
+fn head_smoke(
+    player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>,
+    mut commands: Commands,
+    world_detail_root: Res<WorldDetailRoot>,
+) {
     let Ok((pos, anim)) = player.get_single() else {
         return;
     };
@@ -257,12 +264,14 @@ fn head_smoke(player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>, mut com
     let smoke_pos = pos.translated(Vec2::new(x_offset as f32, y_offset as f32));
 
     // Spawn the particles always
-    commands.spawn(EphemeralAnim::new(
-        HeadSmokePartAnim::random(),
-        thread_rng().gen_bool(0.5),
-        smoke_pos,
-        ZIX_PLAYER - 0.05,
-    ));
+    commands
+        .spawn(EphemeralAnim::new(
+            HeadSmokePartAnim::random(),
+            thread_rng().gen_bool(0.5),
+            smoke_pos,
+            ZIX_PLAYER - 0.05,
+        ))
+        .set_parent(world_detail_root.eid());
 
     // Don't spawn anything else in these cases
     if matches!(
@@ -280,12 +289,14 @@ fn head_smoke(player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>, mut com
     }
 
     // Otherwise we need the lil base of the thingy
-    commands.spawn(EphemeralAnim::new(
-        HeadSmokeAnim::HeadFull,
-        anim.get_flip_x(),
-        smoke_pos,
-        ZIX_PLAYER - 0.06,
-    ));
+    commands
+        .spawn(EphemeralAnim::new(
+            HeadSmokeAnim::HeadFull,
+            anim.get_flip_x(),
+            smoke_pos,
+            ZIX_PLAYER - 0.06,
+        ))
+        .set_parent(world_detail_root.eid());
 }
 
 pub(super) fn register_player_juice(app: &mut App) {

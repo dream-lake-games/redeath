@@ -52225,22 +52225,6 @@
 							"fieldInstances": [],
 							"__worldX": 1832,
 							"__worldY": -3888
-						},
-						{
-							"__identifier": "Coin",
-							"__grid": [22,9],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": { "tilesetUid": 215, "x": 24, "y": 0, "w": 8, "h": 8 },
-							"__smartColor": "#E4A672",
-							"iid": "29ef9e40-9b00-11ef-883f-6baf7e0249ff",
-							"width": 24,
-							"height": 24,
-							"defUid": 224,
-							"px": [176,72],
-							"fieldInstances": [],
-							"__worldX": 1872,
-							"__worldY": -3944
 						}
 					]
 				},

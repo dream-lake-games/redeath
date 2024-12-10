@@ -3,10 +3,11 @@
   "world_savefiles": {
     "Canyon": {
       "collected_coins": [
-        "88561970-9b00-11ef-883f-9136841c6f50"
+        "88561970-9b00-11ef-883f-9136841c6f50",
+        "29ef9e40-9b00-11ef-883f-6baf7e0249ff"
       ],
       "ever_finished": false,
-      "current_run": "6d6dabf0-9b00-11ef-883f-53a9da59e400"
+      "current_run": "d32f7850-73f0-11ef-ab29-c106faf0247d"
     }
   }
 }

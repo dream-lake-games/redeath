@@ -198,11 +198,19 @@ fn manage_active_banks(
     mut commands: Commands,
     mut bullet_time: ResMut<BulletTime>,
     mut camera_shake: ResMut<CameraShake>,
+    world_detail_root: Res<WorldDetailRoot>,
 ) {
     let mut cashed_out = false;
     for (pos, ttx_ctrl, mut anim) in &mut banks {
         // First do any necessary transitioning
-        if anim.get_state() == BankAnim::None && !smols.is_empty() {
+        if anim.get_state() == BankAnim::None
+            && smols.iter().any(|smol| {
+                matches!(
+                    smol.2.get_state(),
+                    CoinSmolAnim::Follow | CoinSmolAnim::FollowEmpty
+                )
+            })
+        {
             anim.set_state(BankAnim::Grow);
             camera_shake.shake(0.5, -1..=1, -1..=1);
             commands.spawn((SoundEffect::BankTransition, OneSound::Ignore));
@@ -238,12 +246,14 @@ fn manage_active_banks(
                 dyno.vel *= 0.2;
                 anim_smol.set_state(CoinSmolAnim::Pop);
                 commands.entity(eid).remove::<ChaseEntity>();
-                commands.spawn(EphemeralAnim::new(
-                    BankAnim::Celebrate,
-                    false,
-                    *pos,
-                    ZIX_ITEMS - 0.00123,
-                ));
+                commands
+                    .spawn(EphemeralAnim::new(
+                        BankAnim::Celebrate,
+                        false,
+                        *pos,
+                        ZIX_ITEMS - 0.00123,
+                    ))
+                    .set_parent(world_detail_root.eid());
                 bullet_time.set_temp(BulletTimeSpeed::Slow, 0.16);
                 commands.spawn(SoundEffect::CoinCashOut);
                 commands.trigger(SavefileCollectCoinEvent {

@@ -49,7 +49,7 @@ fn set_spawn_point_on_level_change(
 ) {
     if !matches!(
         meta_state_kind.get(),
-        MetaStateKind::WorldLoading | MetaStateKind::World
+        MetaStateKind::WorldLoading | MetaStateKind::World | MetaStateKind::Menu
     ) {
         return;
     }
@@ -70,7 +70,8 @@ fn set_spawn_point_on_level_change(
 fn spawn_player(
     mut commands: Commands,
     active_spawn_pos: Query<(&Pos, &SpawnedLid), (With<SpawnPointActive>, Without<DynamicCamera>)>,
-    world_state: Res<State<WorldState>>,
+    world_state: Option<Res<State<WorldState>>>,
+    menu_state: Option<Res<State<MenuState>>>,
     cutscene_state: Res<State<CutsceneState>>,
     mut next_meta_state: ResMut<NextState<MetaState>>,
     root: Res<WorldMetaRoot>,
@@ -96,12 +97,18 @@ fn spawn_player(
         ))
         .set_parent(root.eid())
         .id();
-    let mut world_state = world_state.get().clone();
-    world_state.player_meta_state = match cutscene_state.get() {
-        CutsceneState::None => PlayerMetaState::Playing,
-        _ => PlayerMetaState::Puppet,
-    };
-    next_meta_state.set(world_state.to_meta_state());
+    if let Some(mut world_state) = world_state.map(|inner| inner.get().clone()) {
+        world_state.player_meta_state = match cutscene_state.get() {
+            CutsceneState::None => PlayerMetaState::Playing,
+            _ => PlayerMetaState::Puppet,
+        };
+        next_meta_state.set(world_state.to_meta_state());
+    } else if let Some(MenuState::Overworld(mut overworld)) =
+        menu_state.map(|inner| inner.get().clone())
+    {
+        overworld.player_meta_state = PlayerMetaState::Playing;
+        next_meta_state.set(MenuState::Overworld(overworld).to_meta_state());
+    }
     let mut cam_pos = camera_pos.single_mut();
     *cam_pos = spawn_pos.clone();
     *camera_mode = DynamicCameraMode::Follow(player_eid);

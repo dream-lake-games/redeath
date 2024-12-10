@@ -73,5 +73,21 @@ Tonight
 
 - [x] Scythes should know their parent and despawn when parent doesn't exist of x is greater than parent
 
+# Moresavefiles
 
+I need to figture out what the overworld is going to be
 
+## Yay it works (if I can easily copy intgrid to new project, and maybe update later (through json I think))
+
+- Resume / restart portal thingys
+- Figure out how to make this work with states... (maybe it's as easy as just making sure saving current run isn't fucked? Idk)
+
+## Noooo it doesn't
+
+Then make it work. This is the way to make the overworld
+
+# More menus
+
+Oh boy. Idk what to do here. Maybe try to make some kind of button system? Maybe try to find a library? It will not be pretty
+
+I think I should just come up with my own minmal one. I really only need simple buttons at positions, with defined next so that you can control them with keyboard

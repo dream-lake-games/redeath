@@ -213,7 +213,7 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
         (handle_spawned_lids, handle_physical_lids)
             .after(update_my_level_rects)
             .in_set(MyLdtkLevelMaint)
-            .run_if(in_state(MetaStateKind::World)),
+            .run_if(in_state(MetaStateKind::World).or_else(in_state(MetaStateKind::Menu))),
     );
     app.add_systems(
         Update,
@@ -221,7 +221,7 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
             .after(handle_spawned_lids)
             .after(handle_physical_lids)
             .in_set(MyLdtkLevelMaint)
-            .run_if(in_state(MetaStateKind::World)),
+            .run_if(in_state(MetaStateKind::World).or_else(in_state(MetaStateKind::Menu))),
     );
 
     // Enter or respawn

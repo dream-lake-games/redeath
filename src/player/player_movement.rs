@@ -36,7 +36,7 @@ impl Default for PlayerMovementConsts {
             max_ver_speed: 190.0,
             max_wall_slide_ver_speed: 40.0,
             over_max_slowdown_acc: 960.0,
-            post_jump_time: 0.136,
+            post_jump_time: 0.16,
             dash_speed: 160.0,
             dash_time: 0.15,
             coyote_time: 0.1,
@@ -163,7 +163,7 @@ fn update_can_jump(
     // Update left wall jump
     if forceful.left() {
         commands.entity(eid).insert(CanWallJumpFromLeft {
-            coyote_time: consts.coyote_time,
+            coyote_time: consts.coyote_time / 2.0,
         });
     } else {
         if let Some(wall_left_mut) = can_wall_left.as_mut() {
@@ -176,7 +176,7 @@ fn update_can_jump(
     // Update right wall jump
     if forceful.right() {
         commands.entity(eid).insert(CanWallJumpFromRight {
-            coyote_time: consts.coyote_time,
+            coyote_time: consts.coyote_time / 2.0,
         });
     } else {
         if let Some(wall_right_mut) = can_wall_right.as_mut() {
