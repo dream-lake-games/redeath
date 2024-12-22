@@ -168,6 +168,8 @@ mod playerlude {
     }
 }
 
+pub use playerlude::DashEvent;
+
 /// The set that contains all player related systems
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PlayerSet;

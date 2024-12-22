@@ -26,7 +26,7 @@ impl FinalPostProcessingMat {
         Self {
             image,
             time: 0.0,
-            enabled: 1.0,
+            enabled: 0.0,
         }
     }
 }

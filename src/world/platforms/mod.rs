@@ -6,6 +6,7 @@ mod fragile_ice;
 mod pass_up;
 mod plank_fall;
 mod spikes;
+mod switch_block;
 
 pub(super) struct PlatformsPlugin;
 impl Plugin for PlatformsPlugin {
@@ -16,5 +17,6 @@ impl Plugin for PlatformsPlugin {
         pass_up::register_pass_up(app);
         plank_fall::register_plank_fall(app);
         spikes::register_spikes(app);
+        switch_block::register_switch_block(app);
     }
 }

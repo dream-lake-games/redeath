@@ -59,7 +59,54 @@ derive_anim!(
 );
 type FragileIce8AnimPlugin = AnimDefnPlugin<FragileIce8Anim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum SwitchBlockAnim {
+        #[default]
+        #[file("environment/switch_block/active_outer.png")]
+        #[size(8, 8)]
+        #[render_layers(StaticLayer)]
+        On,
+        #[file("environment/switch_block/inactive_outer.png")]
+        #[size(8, 8)]
+        #[render_layers(PaletteLayer)]
+        Off,
+    }
+);
+type SwitchBlockAnimPlugin = AnimDefnPlugin<SwitchBlockAnim, AnimTimeRes>;
+
+derive_anim!(
+    pub enum SwitchBlockCoreAnim {
+        #[default]
+        #[file("environment/switch_block/shared_core.png")]
+        #[size(8, 8)]
+        #[render_layers(PaletteLayer)]
+        On,
+    }
+);
+type SwitchBlockCoreAnimPlugin = AnimDefnPlugin<SwitchBlockCoreAnim, AnimTimeRes>;
+
+derive_anim!(
+    pub enum SwitchBlockEffectAnim {
+        #[default]
+        #[file("environment/switch_block/effect_turn_on.png")]
+        #[size(12, 12)]
+        #[length(4)]
+        #[render_layers(PaletteLayer)]
+        #[next(Despawn)]
+        TurnOn,
+        #[file("environment/switch_block/effect_turn_off.png")]
+        #[size(12, 12)]
+        #[length(3)]
+        #[next(Despawn)]
+        TurnOff,
+    }
+);
+type SwitchBlockEffectAnimPlugin = AnimDefnPlugin<SwitchBlockEffectAnim, AnimTimeRes>;
+
 pub(super) fn register_common_platform_anim(app: &mut App) {
     app.add_plugins(PlankFallAnimPlugin::default());
     app.add_plugins(FragileIce8AnimPlugin::default());
+    app.add_plugins(SwitchBlockAnimPlugin::default());
+    app.add_plugins(SwitchBlockCoreAnimPlugin::default());
+    app.add_plugins(SwitchBlockEffectAnimPlugin::default());
 }

@@ -90,6 +90,9 @@ defn_effects!([
     ReaperThrow,
     "sound/reaper/throw.ogg",
     0.02,
+    SwitchBlockClick,
+    "sound/world/switch_block_click.ogg",
+    0.06,
 ]);
 
 // Persistent, looped sounds should have public structs from here for management
