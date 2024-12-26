@@ -13,7 +13,7 @@ impl CruncherBundle {
         TriggerTx::single(TriggerTxKind::Observe, HBox::new(16, 24))
     }
     fn hurt_ttx() -> TriggerTx {
-        TriggerTx::single(TriggerTxKind::Spikes, HBox::new(14, 24))
+        TriggerTx::single(TriggerTxKind::Kill, HBox::new(14, 24))
     }
 }
 

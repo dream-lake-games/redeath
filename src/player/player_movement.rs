@@ -279,6 +279,7 @@ fn maybe_start_dash(
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
+        commands.entity(eid).remove::<ResponsiveJump>();
         let event = DashEvent { dir: card_dir };
         commands.trigger(event);
     }
@@ -431,7 +432,7 @@ fn bounce_jump(
 }
 
 fn update_responsive_jump(
-    mut player_q: Query<(Entity, &mut Dyno, &mut ResponsiveJump), With<Player>>,
+    mut player_q: Query<(Entity, &mut Dyno, &mut ResponsiveJump), (With<Player>, Without<Dashing>)>,
     time: Res<Time>,
     mut commands: Commands,
     butt: Res<ButtInput>,

@@ -9,6 +9,7 @@ struct SpikesBundle {
     pos: Pos,
     trigger_tx: TriggerTx,
     spikes: Spikes,
+    consolidate: MyLdtkConsolidateKind,
 }
 impl MyLdtkIntCell for SpikesBundle {
     type Root = PlatformRoot;
@@ -20,6 +21,7 @@ impl MyLdtkIntCell for SpikesBundle {
             pos,
             trigger_tx: TriggerTx::single(TriggerTxKind::Spikes, HBox::new(6, 6)),
             spikes: Spikes,
+            consolidate: MyLdtkConsolidateKind::Spike6x6,
         }
     }
 }

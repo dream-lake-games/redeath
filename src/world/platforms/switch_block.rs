@@ -75,7 +75,7 @@ fn update_physics_to_match_anim(
                 (None, None) => {
                     commands
                         .entity(eid)
-                        .insert(TriggerTx::single(TriggerTxKind::Spikes, HBox::new(7, 7)));
+                        .insert(TriggerTx::single(TriggerTxKind::Kill, HBox::new(7, 7)));
                 }
                 (Some(ttx_ctrl), None) => {
                     if trigger_colls

@@ -313,7 +313,7 @@ impl ScytheBundle {
                 .with_observe_state_changes()
                 .with_observe_ix_changes(),
             light: default(),
-            trigger_tx: TriggerTx::single(TriggerTxKind::Spikes, HBox::new(18, 18)),
+            trigger_tx: TriggerTx::single(TriggerTxKind::Kill, HBox::new(18, 18)),
         }
     }
 }
