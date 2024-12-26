@@ -83,10 +83,21 @@ impl BulletTime {
         }
     }
     pub fn set_temp(&mut self, speed: BulletTimeSpeed, time: f32) {
-        self.mode = BulletTimeMode::Temp {
-            speed,
-            time_left: time,
-            return_to: self.mode.to_speed(),
+        match self.mode {
+            BulletTimeMode::Stable { .. } => {
+                self.mode = BulletTimeMode::Temp {
+                    speed,
+                    time_left: time,
+                    return_to: self.mode.to_speed(),
+                }
+            }
+            BulletTimeMode::Temp { return_to, .. } => {
+                self.mode = BulletTimeMode::Temp {
+                    speed,
+                    time_left: time,
+                    return_to,
+                }
+            }
         }
     }
 }

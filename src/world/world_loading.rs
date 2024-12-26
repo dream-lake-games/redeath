@@ -19,7 +19,7 @@ fn on_enter_loading(
         WorldKind::Canyon => {
             // Common things
             commands.trigger(SetupCanyonBg);
-            song_manager.fade_to(Song::FightAmidstTheDestructionIntro);
+            // song_manager.fade_to(Song::SinisterAbode);
             match level_iid.as_str() {
                 "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
                     cutscene_state.set(CutsceneState::CanyonIntro);
