@@ -263,6 +263,7 @@ fn move_interesting_dynos(
             With<Pos>,
             Without<StaticTxCtrl>,
             Or<(With<StaticRxCtrl>, With<TriggerRxCtrl>)>,
+            Without<Offscreen>,
         ),
     >,
     mut static_colls: ResMut<StaticColls>,

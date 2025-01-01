@@ -5,7 +5,11 @@ fn autosave_on_level_change(
     current_savefile_kind: Res<CurrentSavefileKind>,
     mut all_savefiles: ResMut<AllSavefiles>,
     mut commands: Commands,
+    meta_state_kind: Res<State<MetaStateKind>>,
 ) {
+    if meta_state_kind.get() != &MetaStateKind::World {
+        return;
+    }
     let lid = trigger.event().iid.clone();
     let savefile = all_savefiles.map.get_mut(&current_savefile_kind.0).unwrap();
     let world = savefile

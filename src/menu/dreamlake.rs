@@ -5,9 +5,14 @@ use super::menu_common::*;
 fn on_enter(mut commands: Commands) {
     commands.spawn(MenuImage::new("menu/dreamlake.png"));
     commands.trigger(EndTransition::center());
+    commands.spawn(AutoTransition(3.0, MenuState::Title.to_meta_state()));
 }
 
-fn watch_input(butts: Res<ButtInput>, mut commands: Commands) {
+fn watch_input(butts: Res<ButtInput>, mut commands: Commands, autos: Query<&AutoTransition>) {
+    if autos.is_empty() {
+        // We're already going
+        return;
+    }
     if butts.pressed(ButtKind::Enter) || butts.pressed(ButtKind::A) {
         commands.trigger(StartTransition::to(MenuState::Title.to_meta_state()));
     }

@@ -146,6 +146,8 @@ impl_root_init!(
     SoundRoot,
     ConvoRoot,
     CutsceneRoot,
+    PauseRoot(ZIX_PAUSE),
+    DebugRoot,
 );
 
 impl_subroot_init!(

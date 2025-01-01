@@ -75,7 +75,7 @@ impl Component for Lightning {
 fn update_rain(
     mut manager: ResMut<StormManager>,
     mut commands: Commands,
-    root: Res<WorldDetailRoot>,
+    root: Res<BgFgRoot>,
     existing_q: Query<Entity, With<AnimMan<RainTallAnim>>>,
 ) {
     match (manager.last_show_rain, manager.show_rain) {

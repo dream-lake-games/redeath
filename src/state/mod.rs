@@ -31,10 +31,20 @@ pub enum PauseState {
     Unpaused,
 }
 
-#[derive(Clone, Debug, Default, Eq, Hash, PartialEq, Reflect, States)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
 pub struct TransitionState {
     pub exiting: Option<MetaState>,
     pub entering: Option<MetaState>,
+    pub unpause_at_end: bool,
+}
+impl Default for TransitionState {
+    fn default() -> Self {
+        Self {
+            entering: None,
+            exiting: None,
+            unpause_at_end: true,
+        }
+    }
 }
 impl TransitionState {
     pub fn is_active(&self) -> bool {
@@ -69,8 +79,8 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         debug_resource!(app, State<MetaState>);
 
-        // app.insert_state(MetaState::Menu(MenuState::Bevy));
-        app.insert_state(MetaState::Menu(MenuState::Savefile));
+        app.insert_state(MetaState::Menu(MenuState::Bevy));
+        // app.insert_state(MetaState::Menu(MenuState::Savefile));
 
         app.insert_state(TransitionState::default());
         app.insert_state(PauseState::Unpaused);

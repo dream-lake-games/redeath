@@ -41,7 +41,7 @@ struct EggGhostBundle {
     state: EggGhostState,
 }
 impl EggGhostBundle {
-    fn new(pos: Pos, parent: Entity, chase: Entity, slid: String) -> Self {
+    fn new(pos: Pos, chase: Entity, slid: String) -> Self {
         Self {
             name: Name::new("egg_ghost"),
             pos,
@@ -49,7 +49,7 @@ impl EggGhostBundle {
             spatial: pos.to_spatial(ZIX_ITEMS + 1.1),
             anim: default(),
             chase: ChaseEntity::new(chase, 300.0, 250.0, 16.0, 256.0),
-            parent: EggGhostParent { eid: parent },
+            parent: EggGhostParent,
             youngest: YoungestEggGhost,
             slid: SpawnedLid::new(slid),
             state: EggGhostState::Collected,
@@ -60,15 +60,13 @@ impl EggGhostBundle {
 #[derive(Component)]
 struct YoungestEggGhost;
 #[derive(Component)]
-struct EggGhostParent {
-    eid: Entity,
-}
+struct EggGhostParent;
 #[derive(Component, Clone, Copy)]
 pub enum EggGhostState {
     // The egg is collected and is chasing either the player or another egg
+    // NOTE: This is a stupid enum from back when I had egg going back to where it started for no reason
+    //       To lazy to fully deprecate
     Collected,
-    // They player died or left the room, go back to spawn
-    Returning,
 }
 
 fn break_eggs(
@@ -102,7 +100,7 @@ fn break_eggs(
 
     let mut any_unbroken = false;
     let mut any_broken = false;
-    for (eid, pos, mut anim, mut light, trx_ctrl, slid) in &mut eggs {
+    for (_, pos, mut anim, mut light, trx_ctrl, slid) in &mut eggs {
         if !matches!(anim.get_state(), EggAnim::Spin) {
             continue;
         }
@@ -116,7 +114,7 @@ fn break_eggs(
             light.set_state(ReplenishLightAnim::None);
             clear_youngest(&mut commands);
             commands
-                .spawn(EggGhostBundle::new(*pos, eid, go_chase, slid.iid.clone()))
+                .spawn(EggGhostBundle::new(*pos, go_chase, slid.iid.clone()))
                 .set_parent(root.eid());
         } else {
             any_unbroken = true;
@@ -124,82 +122,6 @@ fn break_eggs(
     }
     if any_broken && any_unbroken {
         commands.spawn(SoundEffect::EggBreakSingle);
-    }
-}
-
-fn start_returning_all_egg_ghosts(
-    mut ghosts: Query<(
-        &mut ChaseEntity,
-        &mut ChaseState,
-        &SpawnedLid,
-        &EggGhostParent,
-        &mut EggGhostState,
-    )>,
-    plids: Query<&PhysicalLid>,
-    youngest: Query<Entity, With<YoungestEggGhost>>,
-    mut commands: Commands,
-) {
-    let need_to_return = ghosts
-        .iter()
-        .any(|(chase, chase_state, slid, _parent, egg_state)| {
-            if matches!(egg_state, EggGhostState::Returning) {
-                // Ignore things that are already returning
-                return false;
-            }
-            if matches!(chase_state, ChaseState::BadTarget) {
-                // The thing we're chasing is gone (player died)
-                return true;
-            }
-            if let Ok(plid) = plids.get(chase.eid) {
-                if let Some(pid) = plid.last_known_iid.as_ref() {
-                    if !pid.eq(&slid.iid) {
-                        return true;
-                    }
-                } else {
-                    return true;
-                }
-            } else {
-                // Probably means following another ghost
-                return false;
-            }
-            false
-        });
-    if need_to_return {
-        for eid in &youngest {
-            commands.entity(eid).remove::<YoungestEggGhost>();
-        }
-        for (mut chase, mut chase_state, _, parent, mut egg_state) in &mut ghosts {
-            if matches!(*egg_state, EggGhostState::Returning) {
-                continue;
-            }
-            chase.eid = parent.eid;
-            chase.acc *= 2.0;
-            chase.dec *= 2.0;
-            chase.leash = 5.0;
-            *chase_state = ChaseState::OutLeash;
-            *egg_state = EggGhostState::Returning;
-        }
-    }
-}
-
-fn finish_returning_egg_ghosts(
-    ghosts: Query<(Entity, &EggGhostState, &ChaseState, &EggGhostParent)>,
-    mut commands: Commands,
-    mut egg_anims: Query<&mut AnimMan<EggAnim>>,
-) {
-    for (eid, egg_state, chase_state, parent) in &ghosts {
-        if matches!(
-            (egg_state, chase_state),
-            (
-                EggGhostState::Returning,
-                ChaseState::InLeash | ChaseState::BadTarget
-            )
-        ) {
-            commands.entity(eid).despawn_recursive();
-            if let Ok(mut anim) = egg_anims.get_mut(parent.eid) {
-                anim.set_state(EggAnim::Spin);
-            }
-        }
     }
 }
 
@@ -299,7 +221,7 @@ fn maybe_reset_eggs(
 }
 
 fn reset_eggs_after_dying(
-    level_selection: Res<LevelSelection>,
+    level_selection: Option<Res<LevelSelection>>,
     mut eggs: Query<(&mut AnimMan<EggAnim>, &SpawnedLid)>,
     mut ghosts: Query<(Entity, &SpawnedLid), With<AnimMan<EggGhostAnim>>>,
     mut commands: Commands,
@@ -310,6 +232,10 @@ fn reset_eggs_after_dying(
         Option<&StaticTxCtrl>,
     )>,
 ) {
+    let Some(level_selection) = level_selection else {
+        // Idk man this comes up when I try to backspace hot reload while the player is dead
+        return;
+    };
     let iid = level_selection.to_iid();
     reset_eggs_helper(&iid, &mut eggs, &mut ghosts, &mut commands);
     reset_egg_blocks(&iid, &mut blocks, &mut commands);
@@ -323,15 +249,11 @@ pub(super) fn register_egg(app: &mut App) {
     app.add_plugins(MyLdtkEntityPlugin::<EggBundle>::new("Entities", "Egg"));
     app.add_systems(
         Update,
-        (
-            break_eggs,
-            start_returning_all_egg_ghosts,
-            finish_returning_egg_ghosts,
-            egg_ghost_juice,
-        )
+        (break_eggs, egg_ghost_juice)
             .chain()
             .after(PhysicsSet)
             .after(ChaseSet)
-            .run_if(in_state(MetaStateKind::World)),
+            .run_if(in_state(MetaStateKind::World))
+            .run_if(in_state(PhysicsState::Active)),
     );
 }

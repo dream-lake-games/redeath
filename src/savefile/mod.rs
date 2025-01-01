@@ -10,7 +10,7 @@ pub use savefile_data::*;
 pub use savefile_get::*;
 pub use savefile_set::*;
 
-#[derive(Component, Clone, Copy, Debug, Reflect, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq, Hash)]
 pub enum SavefileKind {
     A,
     B,
@@ -53,12 +53,12 @@ impl AsRef<str> for SavefileKind {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
 pub struct AllSavefiles {
     pub map: HashMap<SavefileKind, Savefile>,
 }
 impl AllSavefiles {
-    fn load(store: &mut PkvStore) -> Self {
+    pub fn load(store: &mut PkvStore) -> Self {
         let mut map = HashMap::new();
         for kind in SavefileKind::all() {
             let savefile = match store.get::<Savefile>(kind) {
@@ -77,11 +77,8 @@ impl AllSavefiles {
     }
 }
 
-#[derive(Resource)]
+#[derive(Resource, Reflect)]
 pub struct CurrentSavefileKind(pub SavefileKind);
-
-#[derive(Resource)]
-pub struct CurrentSavefile(pub Savefile);
 
 pub(super) struct SavefilePlugin;
 impl Plugin for SavefilePlugin {

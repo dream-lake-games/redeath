@@ -2,9 +2,10 @@ use final_post_processing::FinalPostProcessingMat;
 
 use crate::prelude::*;
 
+mod debug_savefiles;
 mod draw_hitboxes;
+mod in_game_fps;
 mod reload;
-mod view_savefiles;
 
 fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut _commands: Commands) {
     // Gizmo config
@@ -44,11 +45,15 @@ fn debug_update() {}
 pub(super) struct DebugPlugin;
 impl Plugin for DebugPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, debug_startup.after(RootInit));
-        app.add_systems(Update, debug_update);
-        app.add_systems(Update, toggle_crt);
-        draw_hitboxes::register_draw_hitboxes(app);
-        reload::register_reload(app);
-        view_savefiles::register_viewsavefiles(app);
+        #[cfg(debug_assertions)]
+        {
+            app.add_systems(Startup, debug_startup.after(RootInit));
+            app.add_systems(Update, debug_update);
+            app.add_systems(Update, toggle_crt);
+            draw_hitboxes::register_draw_hitboxes(app);
+            reload::register_reload(app);
+            debug_savefiles::register_viewsavefiles(app);
+        }
+        in_game_fps::register_in_game_fps(app);
     }
 }

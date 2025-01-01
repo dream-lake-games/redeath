@@ -3,6 +3,7 @@ use crate::prelude::*;
 mod player_animation;
 mod player_bundle;
 mod player_death;
+mod player_high_indicator;
 mod player_invariants;
 mod player_juice;
 mod player_level;
@@ -195,8 +196,9 @@ impl Plugin for PlayerPlugin {
 
         player_animation::register_player_animation(app);
         player_death::register_player_death(app);
-        player_juice::register_player_juice(app);
+        player_high_indicator::register_player_high_indicator(app);
         player_invariants::register_player_invariants(app);
+        player_juice::register_player_juice(app);
         player_level::register_player_level(app);
         player_movement::register_player_movement(app);
         player_spawn::register_player_spawn(app);

@@ -29,14 +29,16 @@ fn move_camera(
 }
 
 pub fn camera_clamp_logic(pos: &Pos, rect: &Rect) -> Pos {
+    // The shake buffer makes it less likely to "see outside" the level during screenshake
+    let shake_buffer = 1.0;
     Pos::new(
         f32::min(
-            f32::max(pos.x, rect.min.x + SCREEN_WIDTH_f32 / 2.0),
-            rect.max.x - SCREEN_WIDTH_f32 / 2.0,
+            f32::max(pos.x, rect.min.x + SCREEN_WIDTH_f32 / 2.0 + shake_buffer),
+            rect.max.x - SCREEN_WIDTH_f32 / 2.0 - shake_buffer,
         ),
         f32::min(
-            f32::max(pos.y, rect.min.y + SCREEN_HEIGHT_f32 / 2.0),
-            rect.max.y - SCREEN_HEIGHT_f32 / 2.0,
+            f32::max(pos.y, rect.min.y + SCREEN_HEIGHT_f32 / 2.0 + shake_buffer),
+            rect.max.y - SCREEN_HEIGHT_f32 / 2.0 - shake_buffer,
         ),
     )
 }

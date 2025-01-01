@@ -43,8 +43,32 @@ pub(super) fn cleanup_menu_temp(
     _: Trigger<CleanupMenuTemp>,
     mut commands: Commands,
     temp: Query<Entity, With<MenuTemp>>,
+    autos: Query<Entity, With<AutoTransition>>,
 ) {
-    for eid in &temp {
+    for eid in temp.iter().chain(autos.iter()) {
         commands.entity(eid).despawn_recursive();
+    }
+}
+
+#[derive(Component)]
+pub struct AutoTransition(pub f32, pub MetaState);
+
+pub fn watch_auto_transitions(
+    mut commands: Commands,
+    mut auto_transitions: Query<(Entity, &mut AutoTransition)>,
+    time: Res<Time>,
+) {
+    let mut autoed = false;
+    for (_, mut auto) in &mut auto_transitions {
+        auto.0 -= time.delta_seconds();
+        if auto.0 < 0.0 {
+            commands.trigger(StartTransition::to(auto.1.clone()));
+            autoed = true;
+        }
+    }
+    if autoed {
+        for (eid, _) in &auto_transitions {
+            commands.entity(eid).despawn_recursive();
+        }
     }
 }

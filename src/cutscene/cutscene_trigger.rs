@@ -45,6 +45,9 @@ fn update_convo_triggers(
                 "CanyonConfrontReaper" => {
                     cutscene_state.set(CutsceneState::CanyonConfrontReaper);
                 }
+                "CanyonReaperConclusion" => {
+                    cutscene_state.set(CutsceneState::CanyonReaperConclusion);
+                }
                 c => panic!("bad cutscene to start: {c}"),
             }
             commands.entity(eid).despawn_recursive();

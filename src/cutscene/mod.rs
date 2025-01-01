@@ -2,6 +2,7 @@ use crate::prelude::*;
 
 mod canyon_confront_reaper;
 mod canyon_intro;
+mod canyon_reaper_conclusion;
 mod cutscene_macros;
 mod cutscene_trigger;
 
@@ -90,5 +91,6 @@ impl Plugin for CutscenePlugin {
 
         canyon_intro::register_canyon_intro(app);
         canyon_confront_reaper::register_canyon_confront_reaper(app);
+        canyon_reaper_conclusion::register_canyon_reaper_conclusion(app);
     }
 }

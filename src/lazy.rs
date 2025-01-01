@@ -2,10 +2,13 @@
 #[macro_export]
 macro_rules! debug_resource {
     ($app:expr, $resource:ty) => {{
-        $app.add_plugins(
-            bevy_inspector_egui::quick::ResourceInspectorPlugin::<$resource>::new()
-                .run_if(input_toggle_active(false, KeyCode::Tab)),
-        );
+        #[cfg(debug_assertions)]
+        {
+            $app.add_plugins(
+                bevy_inspector_egui::quick::ResourceInspectorPlugin::<$resource>::new()
+                    .run_if(input_toggle_active(false, KeyCode::Tab)),
+            );
+        }
     }};
 }
 pub use debug_resource;

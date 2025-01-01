@@ -41,6 +41,7 @@ fn handle_unload_my_ldtk(
     existing_root: Query<Entity, With<Handle<LdtkProject>>>,
     mut level_rects: ResMut<LevelRects>,
     mut my_ldtk_load_state: ResMut<MyLdtkLoadState>,
+    mut wavy_palette: ResMut<WavyPaletteManager>,
 ) {
     for eid in &existing_root {
         commands.entity(eid).despawn_recursive();
@@ -49,6 +50,7 @@ fn handle_unload_my_ldtk(
     *my_ldtk_load_state = MyLdtkLoadState::Unloaded;
     commands.remove_resource::<LevelSelection>();
     commands.remove_resource::<LastLevelSelection>();
+    wavy_palette.unset();
 }
 
 fn is_loading(res: Res<MyLdtkLoadState>) -> bool {

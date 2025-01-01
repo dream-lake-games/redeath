@@ -32,10 +32,13 @@ pub const ZIX_MENU: i32 = 100;
 pub const ZIX_CRUNCHER: f32 = 60.0;
 pub const ZIX_PLAYER: f32 = 50.0;
 pub const ZIX_TRANSITION: i32 = 200;
+pub const ZIX_PAUSE: i32 = 180;
 pub const ZIX_PLANK_FALL: f32 = 40.0;
 pub const ZIX_FRAGILE_ICE: f32 = 5.1;
 pub const ZIX_SWITCH_BLOCK: f32 = 5.4;
 pub const ZIX_ITEMS: f32 = 40.0;
+pub const ZIX_OVERWORLDIES: f32 = 32.0;
+pub const ZIX_SPEEDRUN_TIMER: f32 = 400.0;
 
 pub const ZIX_RAIN: f32 = 100.0;
 

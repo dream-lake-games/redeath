@@ -7,6 +7,7 @@ mod pass_up;
 mod plank_fall;
 mod spikes;
 mod switch_block;
+mod wide_plank_fall;
 
 pub(super) struct PlatformsPlugin;
 impl Plugin for PlatformsPlugin {
@@ -18,5 +19,6 @@ impl Plugin for PlatformsPlugin {
         plank_fall::register_plank_fall(app);
         spikes::register_spikes(app);
         switch_block::register_switch_block(app);
+        wide_plank_fall::register_wide_plank_fall(app);
     }
 }

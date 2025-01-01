@@ -6,4 +6,5 @@ pub enum CutsceneState {
     None,
     CanyonIntro,
     CanyonConfrontReaper,
+    CanyonReaperConclusion,
 }

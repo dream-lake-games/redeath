@@ -88,7 +88,6 @@ fn maybe_start_appearing(
     mut commands: Commands,
     appears: Query<(Entity, &TriggerTxCtrl, &ReaperSpookyPreAppear)>,
     trigger_colls: Res<TriggerColls>,
-    mut song_manager: ResMut<SongManager>,
     mut global_shift: ResMut<GlobalPaletteShift>,
 ) {
     for (eid, ttx_ctrl, preappear) in &appears {
@@ -105,9 +104,6 @@ fn maybe_start_appearing(
                 }
                 comms.insert(ReaperSpookyAppearInner::default());
                 comms.remove::<ReaperSpookyPreAppear>();
-            }
-            if song_manager.get_current() == Song::NoSong {
-                song_manager.fade_to(Song::FightAmidstTheDestructionIntro);
             }
             commands.spawn((SoundEffect::PlayerThunder, SoundMult(1.75)));
             commands.spawn(Lightning);

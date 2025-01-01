@@ -1,5 +1,4 @@
 //! This file is for UPDATING savefiles
-//! NOTE: Not
 
 use crate::prelude::*;
 
@@ -33,6 +32,7 @@ fn handle_savefile_save_current(
     current_savefile_kind: Res<CurrentSavefileKind>,
     all_savefiles: Res<AllSavefiles>,
     mut store: ResMut<PkvStore>,
+    mut commands: Commands,
 ) {
     if let Err(e) = store.set(
         current_savefile_kind.0,
@@ -40,9 +40,66 @@ fn handle_savefile_save_current(
     ) {
         warn!("Uh oh, couldn't save: {e:?}");
     }
+    commands.trigger(SavefileGetRecalculate);
+}
+
+#[derive(Event)]
+pub struct SavefileResetEvent {
+    pub kind: SavefileKind,
+}
+fn handle_savefile_reset_event(
+    trigger: Trigger<SavefileResetEvent>,
+    mut all_savefiles: ResMut<AllSavefiles>,
+    mut store: ResMut<PkvStore>,
+) {
+    all_savefiles
+        .map
+        .insert(trigger.event().kind, Savefile::default());
+    if let Err(e) = store.set(
+        trigger.event().kind,
+        all_savefiles.map.get(&trigger.event().kind).unwrap(),
+    ) {
+        warn!("Uh oh, couldn't save: {e:?}");
+    }
+}
+
+/// Completes the current world of the active savefile
+#[derive(Event)]
+pub struct SavefileCompleteWorldEvent;
+fn handle_savefile_complete_world_event(
+    _trigger: Trigger<SavefileCompleteWorldEvent>,
+    current_savefile_kind: Res<CurrentSavefileKind>,
+    mut all_savefiles: ResMut<AllSavefiles>,
+    mut commands: Commands,
+) {
+    let savefile = all_savefiles.map.get_mut(&current_savefile_kind.0).unwrap();
+    let world_data = savefile
+        .world_savefiles
+        .get_mut(&savefile.current_world)
+        .unwrap();
+    world_data.ever_finished = true;
+    world_data.current_run = None;
+    commands.trigger(SavefileSaveCurrentEvent);
+}
+
+/// Register a death
+#[derive(Event)]
+pub struct SavefileRecordDeathEvent;
+fn handle_savefile_record_death_event(
+    _trigger: Trigger<SavefileRecordDeathEvent>,
+    current_savefile_kind: Res<CurrentSavefileKind>,
+    mut all_savefiles: ResMut<AllSavefiles>,
+    mut commands: Commands,
+) {
+    let savefile = all_savefiles.map.get_mut(&current_savefile_kind.0).unwrap();
+    savefile.num_deaths += 1;
+    commands.trigger(SavefileGetRecalculate);
 }
 
 pub(super) fn register_savefile_set(app: &mut App) {
     app.observe(handle_savefile_collect_coin);
     app.observe(handle_savefile_save_current);
+    app.observe(handle_savefile_reset_event);
+    app.observe(handle_savefile_complete_world_event);
+    app.observe(handle_savefile_record_death_event);
 }

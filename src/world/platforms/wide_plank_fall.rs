@@ -1,0 +1,290 @@
+//! TODO: I just copy-pasted plank_fall and renamed some stuff
+//! I should probably extract out the common logic here...
+
+use crate::prelude::*;
+
+#[derive(Resource, Clone, Debug, Reflect)]
+struct WidePlankFallConsts {
+    respawn_time: f32,
+    plank_gravity: f32,
+    max_ver_speed: f32,
+}
+impl Default for WidePlankFallConsts {
+    fn default() -> Self {
+        Self {
+            respawn_time: 2.25,
+            plank_gravity: 0.33,
+            max_ver_speed: 80.0,
+        }
+    }
+}
+
+struct ParentStable;
+#[derive(Component)]
+struct ParentWaiting {
+    time_left: f32,
+}
+
+impl Component for ParentStable {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+    fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
+        hooks.on_add(|mut world, eid, _| {
+            let pos = world.get::<Pos>(eid).unwrap().clone();
+            let parent = world.resource::<PlatformRoot>().eid();
+            let child = world
+                .commands()
+                .spawn(WidePlankFallBundle::new(pos, eid))
+                .set_parent(parent)
+                .id();
+            world.commands().entity(eid).insert(RememberChild { child });
+        });
+    }
+}
+
+struct RememberChild {
+    child: Entity,
+}
+impl Component for RememberChild {
+    const STORAGE_TYPE: StorageType = StorageType::Table;
+    fn register_component_hooks(hooks: &mut bevy::ecs::component::ComponentHooks) {
+        hooks.on_remove(|mut world, eid, _| {
+            let remember_child = world.get::<RememberChild>(eid).expect("myself").child;
+            if let Some(comms) = world.commands().get_entity(remember_child) {
+                comms.despawn_recursive();
+            }
+        });
+    }
+}
+
+#[derive(Component)]
+struct RememberParent {
+    parent: Entity,
+}
+
+#[derive(Bundle)]
+struct WidePlankFallBundle {
+    name: Name,
+    trigger_rx: TriggerRx,
+    pos: Pos,
+    spatial: SpatialBundle,
+    anim: AnimMan<WidePlankFallAnim>,
+    remember_parent: RememberParent,
+}
+impl WidePlankFallBundle {
+    fn new(pos: Pos, parent: Entity) -> Self {
+        let hbox = HBox::new(16, 8);
+        Self {
+            name: Name::new("wide_plank_fall"),
+            trigger_rx: TriggerRx::single(TriggerRxKind::WantStatic, hbox),
+            pos,
+            spatial: pos.to_spatial(ZIX_PLANK_FALL),
+            anim: default(),
+            remember_parent: RememberParent { parent },
+        }
+    }
+    fn static_tx() -> StaticTx {
+        let hbox = HBox::new(16, 8);
+        StaticTx::single(StaticTxKind::PassUp, hbox)
+    }
+}
+
+#[derive(Component)]
+struct WidePlankFallCanary;
+#[derive(Bundle)]
+struct WidePlankFallCanaryBundle {
+    name: Name,
+    canary: WidePlankFallCanary,
+    pos: Pos,
+    static_rx: StaticRx,
+}
+impl WidePlankFallCanaryBundle {
+    fn new(pos: Pos) -> Self {
+        Self {
+            name: Name::new("wide_plank_fall_canary"),
+            canary: WidePlankFallCanary,
+            pos,
+            static_rx: StaticRx::single(StaticRxKind::Observe, HBox::new(16, 8)),
+        }
+    }
+}
+
+#[derive(Bundle)]
+struct WidePlankFallParentBundle {
+    name: Name,
+    stable: ParentStable,
+    pos: Pos,
+}
+impl MyLdtkIntCell for WidePlankFallParentBundle {
+    type Root = PlatformRoot;
+    type RenderLayers = DummyLayer;
+    type LeftoverRenderLayers = DummyLayer;
+    fn from_ldtk(pos: Pos, _value: i32) -> Self {
+        Self {
+            name: Name::new("wide_plank_fall_parent"),
+            stable: ParentStable,
+            pos: Pos::new(pos.x + 4.0, pos.y),
+        }
+    }
+}
+
+fn bless_static_hitboxes(
+    planks: Query<(Entity, &AnimMan<WidePlankFallAnim>, &TriggerRxCtrl), Without<StaticTxCtrl>>,
+    trigger_colls: Res<TriggerColls>,
+    mut commands: Commands,
+) {
+    for (eid, anim, trx_ctrl) in &planks {
+        if !matches!(anim.get_state(), WidePlankFallAnim::Stable) {
+            continue;
+        }
+        if trigger_colls
+            .get_refs(&trx_ctrl.coll_keys)
+            .iter()
+            .any(|coll| coll.tx_kind == TriggerTxKind::Player)
+        {
+            continue;
+        }
+        commands
+            .entity(eid)
+            .insert(WidePlankFallBundle::static_tx());
+        commands.entity(eid).remove::<TriggerRxCtrl>();
+    }
+}
+
+fn update_shaking(
+    mut planks: Query<(
+        Entity,
+        &mut AnimMan<WidePlankFallAnim>,
+        &RememberParent,
+        &StaticTxCtrl,
+        &Pos,
+    )>,
+    static_colls: Res<StaticColls>,
+    mut commands: Commands,
+    player_q: Query<(&Dyno, &Pos), With<Player>>,
+    consts: Res<WidePlankFallConsts>,
+) {
+    for (eid, mut anim, remember, stx_ctrl, pos) in &mut planks {
+        let player_on_top = static_colls
+            .get_refs(&stx_ctrl.coll_keys)
+            .iter()
+            .any(|coll| {
+                if let Ok((player_dyno, player_pos)) = player_q.get(coll.rx_ctrl) {
+                    if player_dyno.vel.y < -0.1 && player_pos.y > pos.y + 10.5 {
+                        return true;
+                    }
+                }
+                false
+            });
+        if player_on_top && anim.get_state() == WidePlankFallAnim::Stable {
+            anim.set_state(WidePlankFallAnim::Shaking);
+            anim.set_flip_x(thread_rng().gen_bool(0.5));
+        }
+        if anim.get_state() == WidePlankFallAnim::Falling {
+            let parent = remember.parent;
+            commands.entity(parent).remove::<ParentStable>();
+            commands.entity(parent).insert(ParentWaiting {
+                time_left: consts.respawn_time,
+            });
+            commands.entity(eid).remove::<RememberParent>();
+            commands
+                .entity(eid)
+                .insert((Dyno::default(), Gravity::new(consts.plank_gravity)));
+            commands
+                .spawn(WidePlankFallCanaryBundle::new(*pos))
+                .set_parent(eid);
+        }
+    }
+}
+
+fn update_waiting_parents(
+    mut waiting_parents: Query<(Entity, &mut ParentWaiting)>,
+    mut commands: Commands,
+    bullet_time: Res<BulletTime>,
+) {
+    for (eid, mut waiting) in &mut waiting_parents {
+        waiting.time_left -= bullet_time.delta_seconds();
+        if waiting.time_left <= 0.0 {
+            commands.entity(eid).remove::<ParentWaiting>();
+            commands.entity(eid).insert(ParentStable);
+        }
+    }
+}
+
+fn cap_falling_speed(
+    mut planks: Query<&mut Dyno, With<AnimMan<WidePlankFallAnim>>>,
+    consts: Res<WidePlankFallConsts>,
+) {
+    for mut dyno in &mut planks {
+        if dyno.vel.y < -consts.max_ver_speed {
+            dyno.vel.y = -consts.max_ver_speed;
+        }
+    }
+}
+
+fn update_canaries(
+    mut commands: Commands,
+    static_colls: Res<StaticColls>,
+    mut canaries: Query<(&mut Pos, &Parent, &StaticRxCtrl), With<WidePlankFallCanary>>,
+    mut planks: Query<
+        (Entity, &Pos, &mut AnimMan<WidePlankFallAnim>),
+        Without<WidePlankFallCanary>,
+    >,
+) {
+    for (mut canary_pos, parent, srx_ctrl) in &mut canaries {
+        let dad = parent.get();
+        let (dad_eid, dad_pos, mut dad_anim) = planks.get_mut(dad).unwrap();
+        if static_colls
+            .get_refs(&srx_ctrl.coll_keys)
+            .iter()
+            .any(|coll| coll.tx_ctrl != dad)
+        {
+            commands.entity(dad_eid).remove::<Dyno>();
+            commands.entity(dad_eid).remove::<Gravity>();
+            commands.entity(dad_eid).remove::<StaticTxCtrl>();
+            dad_anim.set_state(WidePlankFallAnim::Fade);
+        } else {
+            *canary_pos = *dad_pos;
+        }
+    }
+}
+
+fn reset_on_spawn(
+    currently_falling: Query<Entity, (With<AnimMan<WidePlankFallAnim>>, With<Gravity>)>,
+    waiting_parents: Query<Entity, With<ParentWaiting>>,
+    mut commands: Commands,
+) {
+    for eid in currently_falling.iter() {
+        if let Some(comms) = commands.get_entity(eid) {
+            comms.despawn_recursive();
+        }
+    }
+    for eid in &waiting_parents {
+        if let Some(mut comms) = commands.get_entity(eid) {
+            comms.remove::<ParentWaiting>();
+            comms.insert(ParentStable);
+        }
+    }
+}
+
+pub(super) fn register_wide_plank_fall(app: &mut App) {
+    app.add_plugins(MyLdtkIntCellPlugin::<WidePlankFallParentBundle>::single(
+        "CommonPlatforms",
+        6,
+    ));
+    app.insert_resource(WidePlankFallConsts::default());
+
+    app.add_systems(
+        Update,
+        (
+            bless_static_hitboxes,
+            update_shaking,
+            update_waiting_parents,
+            cap_falling_speed,
+            update_canaries,
+        )
+            .run_if(in_state(MetaStateKind::World))
+            .after(PhysicsSet),
+    );
+
+    app.add_systems(OnEnter(PlayerMetaState::Spawning), reset_on_spawn);
+}

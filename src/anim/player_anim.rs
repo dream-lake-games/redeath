@@ -228,6 +228,17 @@ derive_anim!(
 impl_rand_variant!(HeadSmokePartAnim);
 type HeadSmokePartAnimPlugin = AnimDefnPlugin<HeadSmokePartAnim, AnimTimeRes>;
 
+derive_anim!(
+    pub enum PlayerHighIndicatorAnim {
+        #[default]
+        #[file("player/movement/high_indicator.png")]
+        #[size(22, 22)]
+        #[render_layers(StaticLayer)]
+        Active,
+    }
+);
+type PlayerHighIndicatorAnimPlugin = AnimDefnPlugin<PlayerHighIndicatorAnim, AnimTimeRes>;
+
 pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(PlayerAnimPlugin::default());
     app.add_plugins(JumpSmokeAnimPlugin::default());
@@ -238,4 +249,5 @@ pub(super) fn register_player_anim(app: &mut App) {
     app.add_plugins(FriendAnimPlugin::default());
     app.add_plugins(HeadSmokeAnimPlugin::default());
     app.add_plugins(HeadSmokePartAnimPlugin::default());
+    app.add_plugins(PlayerHighIndicatorAnimPlugin::default());
 }

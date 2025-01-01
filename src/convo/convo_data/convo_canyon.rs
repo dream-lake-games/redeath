@@ -183,4 +183,46 @@ decl_convo! {
             },
         ],
     ),
+
+    (
+        ReaperConclusion,
+        [
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (2)",
+                text: "Impressive, I must admit.",
+            },
+            {
+                speaker: ConvoSpeaker::Lenny,
+                portrait: "default",
+                sound: "TalkingSynth_3",
+                text: "So you'll finally get out of my way?",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (1)",
+                text: "For now. The path you seek begins here.",
+            },
+            {
+                speaker: ConvoSpeaker::Lenny,
+                portrait: "default",
+                sound: "TalkingSynth_9",
+                text: "At the edge of this cliff?",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (3)",
+                text: "I'm sure you'll soon be wishing you took the easy way out.",
+            },
+            {
+                speaker: ConvoSpeaker::Reaper,
+                portrait: "default",
+                sound: "output (4)",
+                text: "The path to hell is paved with good intentions.",
+            },
+        ],
+    ),
 }

@@ -5,6 +5,7 @@ use super::menu_common::*;
 fn on_enter(mut commands: Commands) {
     commands.spawn(MenuImage::new("menu/title.png"));
     commands.trigger(EndTransition::center());
+    commands.trigger(SetupCanyonBg);
 }
 
 fn watch_input(butts: Res<ButtInput>, mut commands: Commands) {

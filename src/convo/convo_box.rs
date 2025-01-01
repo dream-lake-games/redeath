@@ -206,7 +206,16 @@ fn update_managers(
             .filter(|multi| multi.3.is_some())
             .collect::<Vec<_>>();
 
-        let has_forward_input = butt.just_pressed(ButtKind::A) | butt.just_pressed(ButtKind::Enter);
+        let has_skip_input = butt.just_pressed(ButtKind::Enter);
+        if has_skip_input {
+            for multi in &boxes_q {
+                commands.entity(multi.0).despawn_recursive();
+            }
+            manager.boxes.clear();
+            return;
+        }
+
+        let has_forward_input = butt.just_pressed(ButtKind::A);
         if !has_forward_input {
             return;
         }

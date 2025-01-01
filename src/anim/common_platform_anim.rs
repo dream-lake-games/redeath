@@ -34,6 +34,39 @@ derive_anim!(
 type PlankFallAnimPlugin = AnimDefnPlugin<PlankFallAnim, AnimTimeRes>;
 
 derive_anim!(
+    pub enum WidePlankFallAnim {
+        #[default]
+        #[file("environment/plank_fall/wide_respawn.png")]
+        #[size(24, 12)]
+        #[length(5)]
+        #[next(Stable)]
+        #[render_layers(StaticLayer)]
+        Respawn,
+        #[file("environment/plank_fall/wide_stable.png")]
+        #[size(24, 12)]
+        #[render_layers(StaticLayer)]
+        Stable,
+        #[file("environment/plank_fall/wide_shaking.png")]
+        #[size(24, 12)]
+        #[length(5)]
+        #[next(Falling)]
+        #[render_layers(StaticLayer)]
+        Shaking,
+        #[file("environment/plank_fall/wide_falling.png")]
+        #[size(24, 12)]
+        #[render_layers(StaticLayer)]
+        Falling,
+        #[file("environment/plank_fall/wide_fade.png")]
+        #[size(24, 12)]
+        #[length(5)]
+        #[next(Despawn)]
+        #[render_layers(StaticLayer)]
+        Fade,
+    }
+);
+type WidePlankFallAnimPlugin = AnimDefnPlugin<WidePlankFallAnim, AnimTimeRes>;
+
+derive_anim!(
     pub enum FragileIce8Anim {
         #[default]
         #[file("clear.png")]
@@ -105,6 +138,7 @@ type SwitchBlockEffectAnimPlugin = AnimDefnPlugin<SwitchBlockEffectAnim, AnimTim
 
 pub(super) fn register_common_platform_anim(app: &mut App) {
     app.add_plugins(PlankFallAnimPlugin::default());
+    app.add_plugins(WidePlankFallAnimPlugin::default());
     app.add_plugins(FragileIce8AnimPlugin::default());
     app.add_plugins(SwitchBlockAnimPlugin::default());
     app.add_plugins(SwitchBlockCoreAnimPlugin::default());

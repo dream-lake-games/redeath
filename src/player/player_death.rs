@@ -83,11 +83,15 @@ fn enter_dying(
         StartTransition::to(world_state.to_meta_state()).with_world_pos(player_pos.as_vec2()),
     );
     commands.spawn(SoundEffect::PlayerDeath1);
+
+    commands.trigger(SavefileRecordDeathEvent);
 }
 
 fn exit_dying(mut commands: Commands, player: Query<Entity, With<Player>>) {
-    let eid = player.single();
-    commands.entity(eid).despawn_recursive();
+    if let Ok(eid) = player.get_single() {
+        // Don't use .single here so I can backspace while dead
+        commands.entity(eid).despawn_recursive();
+    }
 }
 
 pub(super) fn register_player_death(app: &mut App) {

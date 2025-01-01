@@ -5,6 +5,7 @@ pub mod colls;
 pub mod dyno;
 pub mod hbox;
 mod logic;
+pub mod onscreen;
 pub mod physics_maint;
 pub mod pos;
 pub mod statics;
@@ -14,6 +15,7 @@ pub use bullet_time::*;
 pub use colls::*;
 pub use dyno::*;
 pub use hbox::*;
+pub use onscreen::*;
 pub use pos::*;
 pub use statics::*;
 pub use triggers::*;
@@ -73,6 +75,7 @@ impl Plugin for PhysicsPlugin {
         colls::register_colls(app);
         dyno::register_dynos(app);
         logic::register_logic(app);
+        onscreen::register_onscreen(app);
         pos::register_pos(app);
     }
 }

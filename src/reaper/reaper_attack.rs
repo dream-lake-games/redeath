@@ -78,6 +78,7 @@ fn manage_appear_disappear(
     >,
     player_q: Query<&Pos, With<Player>>,
     consts: Res<ReaperAttackConsts>,
+    mut wavy_palette_manager: ResMut<WavyPaletteManager>,
 ) {
     let Ok(player_pos) = player_q.get_single() else {
         return;
@@ -93,6 +94,12 @@ fn manage_appear_disappear(
                             pos.y = player_pos.y;
                             dyno.vel.y = 0.0;
                             anim.set_state(ReaperAnim::AppearHover);
+                            wavy_palette_manager.set(
+                                WavyPalette::new(BERRY_NEBULA)
+                                    .with_r(-0.06, 0.02, 2.0)
+                                    .with_g(-0.18, 0.02, 3.0)
+                                    .with_b(-0.18, 0.02, 5.0),
+                            );
                         }
                     }
                     ReaperAnim::IdleDisappear | ReaperAnim::HoverDisappear => {

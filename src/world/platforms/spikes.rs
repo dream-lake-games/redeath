@@ -130,6 +130,7 @@ pub(super) fn register_spikes(app: &mut App) {
             rotate_spike_group_offsets,
             update_tilemap_ixs,
         )
-            .run_if(in_state(MetaStateKind::World)),
+            .run_if(in_state(MetaStateKind::World))
+            .run_if(in_state(PauseState::Unpaused)),
     );
 }

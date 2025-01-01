@@ -3,7 +3,7 @@ use crate::prelude::*;
 fn on_enter_loading(
     loading_state: Res<State<WorldLoadingState>>,
     mut commands: Commands,
-    mut song_manager: ResMut<SongManager>,
+    mut _song_manager: ResMut<SongManager>,
     mut cutscene_state: ResMut<NextState<CutsceneState>>,
 ) {
     commands.trigger(UnloadMyLdtk);
@@ -19,7 +19,7 @@ fn on_enter_loading(
         WorldKind::Canyon => {
             // Common things
             commands.trigger(SetupCanyonBg);
-            // song_manager.fade_to(Song::SinisterAbode);
+            // song_manager.fade_to(Song::FightAmidstTheDestructionLoop);
             match level_iid.as_str() {
                 "d32f7850-73f0-11ef-ab29-c106faf0247d" => {
                     cutscene_state.set(CutsceneState::CanyonIntro);
@@ -62,6 +62,10 @@ fn on_exit_loading(mut commands: Commands) {
     commands.trigger(EndTransition::center());
 }
 
+fn on_exit_world(mut commands: Commands) {
+    commands.trigger(CleanupWorld);
+}
+
 pub(super) fn register_world_loading(app: &mut App) {
     app.add_systems(OnEnter(MetaStateKind::WorldLoading), on_enter_loading);
     app.add_systems(
@@ -69,4 +73,5 @@ pub(super) fn register_world_loading(app: &mut App) {
         update_loading.run_if(in_state(MetaStateKind::WorldLoading)),
     );
     app.add_systems(OnExit(MetaStateKind::WorldLoading), on_exit_loading);
+    app.add_systems(OnExit(MetaStateKind::World), on_exit_world);
 }

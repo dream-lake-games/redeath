@@ -27,7 +27,7 @@ impl ConvoOneoffSize {
 }
 
 #[derive(Clone)]
-struct ConvoOneoffText {
+pub struct ConvoOneoffText {
     anchor_eid: Entity,
     offset: Vec2,
     content: String,
@@ -53,13 +53,18 @@ impl Component for ConvoOneoffText {
             let font_hand = world
                 .resource::<AssetServer>()
                 .load("fonts/KodeMono/KodeMono-Bold.ttf");
-            world.commands().entity(eid).insert((
-                Name::new("convo_oneoff_parent"),
-                SpatialBundle {
-                    visibility: Visibility::Hidden,
-                    ..default()
-                },
-            ));
+            let oneoff_parent = world.resource::<WorldDetailRoot>().eid();
+            world
+                .commands()
+                .entity(eid)
+                .insert((
+                    Name::new("convo_oneoff_parent"),
+                    SpatialBundle {
+                        visibility: Visibility::Hidden,
+                        ..default()
+                    },
+                ))
+                .set_parent(oneoff_parent);
             world
                 .commands()
                 .spawn((

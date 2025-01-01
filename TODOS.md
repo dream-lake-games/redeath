@@ -91,3 +91,55 @@ Then make it work. This is the way to make the overworld
 Oh boy. Idk what to do here. Maybe try to make some kind of button system? Maybe try to find a library? It will not be pretty
 
 I think I should just come up with my own minmal one. I really only need simple buttons at positions, with defined next so that you can control them with keyboard
+
+# GET THIS SHIT ON GRANOLA
+
+- [x] Make wall jumping easier
+- [x] Add pause menu
+- [x] Make overworld options (continue, restart)
+- [x] Show more detail in the save file
+    - [x] Name of the file
+    - [x] Chapters complete (fraction)
+    - [x] Coins collected (fraction)
+- [x] Add easy ability to delete savefile 
+- [x] Make speedrun timer
+- [x] Make it load correct music + palette stuff when continuing (ugh annoying)
+- [x] Skeleton for the end of the chapter
+- [x] Try to bug bash that one thing stahl found
+- [x] Make plank fall always fall on touch
+- [x] Make sure ephemeral anims only spawn when not paused
+- [x] Show fps
+- [x] Auto-move past bevy + dreamlake
+- [x] Polish levels polish levels polish levels
+- [x] Make hard levels coins, add some more base levels, esp to boss fight
+- [x] Prettier title + savefile screen
+- [x] Make indicator for when too high
+- [x] Make indicator for where bank is
+    - [x] Also maybe a bank outline? Or tiny bank? To show where it is
+- [x] Make a 2x1 plank fall
+- [x] Update camera logic to not get within 2 pix of edge to avoid weirdness
+- [x] Polish levels polish levels polish levels
+- [x] Enter to skip cutscenes
+- [x] Write the convo for the end of the chapter
+- [x] Survey of debug stuff
+    - [x] Get rid of outdated stuff
+    - [x] Put stuff people shouldn't control behind release mode
+    - [x] INCLUDING TAB DEBUG
+    - [x] Document other stuff
+- [x] Count number of deaths
+- [ ] Business acumen
+
+
+## Notes from debug stuff left in:
+
+- F to show the framerate
+- L to toggle light interaction (should help framerate)
+- Hold backspace on a savefile to delete it and start a fresh one
+- Left shift to toggle the speedrun timer
+- NOT THE SAME BUT: Enter to skip a conversation
+
+Granola gg [walkthrough](https://www.youtube.com/watch?v=1PYiDlnopQU)
+
+# Longshots...
+
+- [ ] Make a camera mode like celeste

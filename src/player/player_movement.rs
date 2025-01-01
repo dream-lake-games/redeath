@@ -134,6 +134,7 @@ fn update_can_jump(
         (
             Entity,
             &ForcefulTouchingDir,
+            &TouchingDir,
             Option<&mut CanRegularJump>,
             Option<&mut CanWallJumpFromLeft>,
             Option<&mut CanWallJumpFromRight>,
@@ -145,8 +146,15 @@ fn update_can_jump(
     mut commands: Commands,
     consts: Res<PlayerMovementConsts>,
 ) {
-    let (eid, forceful, mut can_regular, mut can_wall_left, mut can_wall_right, mut post_jump) =
-        player.single_mut();
+    let (
+        eid,
+        forceful,
+        regular_touching,
+        mut can_regular,
+        mut can_wall_left,
+        mut can_wall_right,
+        mut post_jump,
+    ) = player.single_mut();
     // Update regular jump
     if forceful.down() {
         commands.entity(eid).insert(CanRegularJump {
@@ -161,7 +169,7 @@ fn update_can_jump(
         }
     }
     // Update left wall jump
-    if forceful.left() {
+    if regular_touching.left() {
         commands.entity(eid).insert(CanWallJumpFromLeft {
             coyote_time: consts.coyote_time / 2.0,
         });
@@ -174,7 +182,7 @@ fn update_can_jump(
         }
     }
     // Update right wall jump
-    if forceful.right() {
+    if regular_touching.right() {
         commands.entity(eid).insert(CanWallJumpFromRight {
             coyote_time: consts.coyote_time / 2.0,
         });

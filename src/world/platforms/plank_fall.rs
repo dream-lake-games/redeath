@@ -155,35 +155,38 @@ fn update_shaking(
     )>,
     static_colls: Res<StaticColls>,
     mut commands: Commands,
-    player_q: Query<&Player>,
+    player_q: Query<(&Dyno, &Pos), With<Player>>,
     consts: Res<PlankFallConsts>,
 ) {
     for (eid, mut anim, remember, stx_ctrl, pos) in &mut planks {
         let player_on_top = static_colls
             .get_refs(&stx_ctrl.coll_keys)
             .iter()
-            .any(|coll| player_q.contains(coll.rx_ctrl) && coll.push.y > 0.0);
-        if player_on_top {
-            if anim.get_state() == PlankFallAnim::Stable {
-                anim.set_state(PlankFallAnim::Shaking);
-                anim.set_flip_x(thread_rng().gen_bool(0.5));
-            } else if anim.get_state() == PlankFallAnim::Falling {
-                let parent = remember.parent;
-                commands.entity(parent).remove::<ParentStable>();
-                commands.entity(parent).insert(ParentWaiting {
-                    time_left: consts.respawn_time,
-                });
-                commands.entity(eid).remove::<RememberParent>();
-                commands
-                    .entity(eid)
-                    .insert((Dyno::default(), Gravity::new(consts.plank_gravity)));
-                commands
-                    .spawn(PlankFallCanaryBundle::new(*pos))
-                    .set_parent(eid);
-            }
-        } else {
-            anim.set_state(PlankFallAnim::Stable);
-            anim.set_flip_x(false);
+            .any(|coll| {
+                if let Ok((player_dyno, player_pos)) = player_q.get(coll.rx_ctrl) {
+                    if player_dyno.vel.y < -0.1 && player_pos.y > pos.y + 10.5 {
+                        return true;
+                    }
+                }
+                false
+            });
+        if player_on_top && anim.get_state() == PlankFallAnim::Stable {
+            anim.set_state(PlankFallAnim::Shaking);
+            anim.set_flip_x(thread_rng().gen_bool(0.5));
+        }
+        if anim.get_state() == PlankFallAnim::Falling {
+            let parent = remember.parent;
+            commands.entity(parent).remove::<ParentStable>();
+            commands.entity(parent).insert(ParentWaiting {
+                time_left: consts.respawn_time,
+            });
+            commands.entity(eid).remove::<RememberParent>();
+            commands
+                .entity(eid)
+                .insert((Dyno::default(), Gravity::new(consts.plank_gravity)));
+            commands
+                .spawn(PlankFallCanaryBundle::new(*pos))
+                .set_parent(eid);
         }
     }
 }

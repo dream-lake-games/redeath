@@ -84,7 +84,8 @@ fn block_lights(
     old: Query<Entity, With<TemporaryLightMesh>>,
     pos_q: Query<&Pos>,
     sources: Query<(Entity, &LightClaimed)>,
-    blockers: Query<&StaticTxComp>,
+    blocker_ctrls: Query<&StaticTxCtrl, With<Onscreen>>,
+    blocker_comps: Query<&StaticTxComp>,
 ) {
     // Delete the old meshes
     for eid in &old {
@@ -97,37 +98,42 @@ fn block_lights(
     let black_mat = black_mat.0.clone().unwrap();
     for (source_eid, light) in &sources {
         let source_pos = pos_q.get(source_eid).unwrap().as_vec2();
-        for stx_comp in &blockers {
-            let blocker_pos = pos_q.get(stx_comp.ctrl).unwrap();
-            let blocker_hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
-            if blocker_hbox.manhattan_distance_to_point(source_pos) > light.radius {
-                continue;
-            }
-            if blocker_hbox.manhattan_distance_to_point(source_pos) <= 0.001 {
-                // If a source is inside a box we want to ignore that box, useful for passup
-                continue;
-            }
-            if matches!(stx_comp.kind, StaticTxKind::SolidFragile) {
-                // For now we can see through solid fragile things...
-                continue;
-            }
-            let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
-            let blocked_quads = hbox_to_blocked_quads(source_pos, &hbox);
-            for quad in blocked_quads {
-                for triangle in quad.to_triangles() {
-                    commands
-                        .spawn((
-                            Name::new("temporary_mesh"),
-                            MaterialMesh2dBundle {
-                                mesh: meshes.add(triangle).into(),
-                                material: black_mat.clone(),
-                                transform: Transform::from_translation(Vec3::Z * 100.0),
-                                ..default()
-                            },
-                            light.to_render_layers(),
-                            TemporaryLightMesh,
-                        ))
-                        .set_parent(light_root.eid());
+        for stx_ctrl in &blocker_ctrls {
+            for comp_eid in &stx_ctrl.comps {
+                let Ok(stx_comp) = blocker_comps.get(*comp_eid) else {
+                    continue;
+                };
+                let blocker_pos = pos_q.get(stx_comp.ctrl).unwrap();
+                let blocker_hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
+                if blocker_hbox.manhattan_distance_to_point(source_pos) > light.radius {
+                    continue;
+                }
+                if blocker_hbox.manhattan_distance_to_point(source_pos) <= 0.001 {
+                    // If a source is inside a box we want to ignore that box, useful for passup
+                    continue;
+                }
+                if matches!(stx_comp.kind, StaticTxKind::SolidFragile) {
+                    // For now we can see through solid fragile things...
+                    continue;
+                }
+                let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
+                let blocked_quads = hbox_to_blocked_quads(source_pos, &hbox);
+                for quad in blocked_quads {
+                    for triangle in quad.to_triangles() {
+                        commands
+                            .spawn((
+                                Name::new("temporary_mesh"),
+                                MaterialMesh2dBundle {
+                                    mesh: meshes.add(triangle).into(),
+                                    material: black_mat.clone(),
+                                    transform: Transform::from_translation(Vec3::Z * 100.0),
+                                    ..default()
+                                },
+                                light.to_render_layers(),
+                                TemporaryLightMesh,
+                            ))
+                            .set_parent(light_root.eid());
+                    }
                 }
             }
         }
@@ -136,5 +142,10 @@ fn block_lights(
 
 pub(super) fn register_light_interaction(app: &mut App) {
     app.insert_resource(BlackMatRes::default());
-    app.add_systems(Update, block_lights.after(PhysicsSet));
+    app.add_systems(
+        Update,
+        block_lights
+            .after(PhysicsSet)
+            .run_if(input_toggle_active(true, KeyCode::KeyL)),
+    );
 }

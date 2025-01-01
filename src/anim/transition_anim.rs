@@ -1,13 +1,13 @@
 use crate::prelude::*;
 
 derive_anim!(
+    #[time_class(ANIM_TIME_REAL_ALWAYS)]
     pub enum TransitionAnim {
         #[default]
         #[file("clear.png")]
         #[size(1, 1)]
         #[render_layers(TransitionLayer)]
         Clear,
-        // #[default]
         #[file("transitions/black.png")]
         #[size(360, 270)]
         #[render_layers(TransitionLayer)]

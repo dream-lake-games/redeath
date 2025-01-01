@@ -285,19 +285,6 @@ fn setup_layer_materials(
         root.eid(),
         TextLayer::growth_factor(),
     );
-    setup_simple_layer(
-        "menu_image",
-        camera_targets.menu_target.clone(),
-        camera_targets.palette_target.clone(),
-        MenuLayer::to_i32(),
-        palette.clone(),
-        &mut commands,
-        meshes.as_mut(),
-        shifted_palette_mats.as_mut(),
-        squash_layer.clone(),
-        root.eid(),
-        MenuLayer::growth_factor(),
-    );
     // NOTE: This spawns the transition layer just using a sprite
     // This is so that the palette shift affects don't effect things like screen wipe
     commands
@@ -314,7 +301,24 @@ fn setup_layer_materials(
                 },
                 ..default()
             },
-            // SpatialBundle::from(),
+            squash_layer.clone(),
+        ))
+        .set_parent(root.eid());
+    // NOTE: Lol we also do this for menu layer
+    //       Next game I make I really need to clean this shit up
+    commands
+        .spawn((
+            Name::new(format!("menu_image")),
+            SpriteBundle {
+                texture: camera_targets.menu_target.clone(),
+                transform: Transform {
+                    translation: Vec3::Z * MenuLayer::to_i32() as f32,
+                    scale: (Vec2::ONE * (WINDOW_GROWTH as f32 / MenuLayer::growth_factor() as f32))
+                        .extend(1.0),
+                    ..default()
+                },
+                ..default()
+            },
             squash_layer.clone(),
         ))
         .set_parent(root.eid());

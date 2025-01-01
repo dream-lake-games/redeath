@@ -11,8 +11,10 @@ pub mod lazy;
 pub mod light;
 pub mod math;
 pub mod menu;
+pub mod misc;
 pub mod my_ldtk;
 pub mod palette;
+pub mod pause;
 pub mod physics;
 pub mod player;
 pub mod reaper;
@@ -55,6 +57,8 @@ use bevy::{
     window::{WindowMode, WindowResolution},
 };
 use menu::MenuPlugin;
+use misc::MiscPlugin;
+use pause::PausePlugin;
 use prelude::*;
 
 fn main() {
@@ -80,9 +84,15 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest()),
     )
-    .add_plugins(WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)))
     .add_plugins(FrameTimeDiagnosticsPlugin::default())
     .add_plugins(LogDiagnosticsPlugin::default());
+
+    #[cfg(debug_assertions)]
+    {
+        app.add_plugins(
+            WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::Tab)),
+        );
+    }
 
     // Our plugins
     app.add_plugins(CameraPlugin)
@@ -94,9 +104,11 @@ fn main() {
         .add_plugins(LayerPlugin)
         .add_plugins(LightPlugin)
         .add_plugins(MenuPlugin)
+        .add_plugins(MiscPlugin)
         .add_plugins(MyAnimPlugin)
         .add_plugins(MyLdtkPlugin)
         .add_plugins(PalettePlugin)
+        .add_plugins(PausePlugin)
         .add_plugins(PhysicsPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(ReaperPlugin)

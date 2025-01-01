@@ -201,6 +201,10 @@ derive_anim!(
         #[next(None)]
         #[render_layers(StaticLayer)]
         Shrink,
+        #[file("items/coin_bank_premonition.png")]
+        #[size(24, 24)]
+        #[render_layers(PaletteLayer)]
+        Premonition,
         #[file("clear.png")]
         #[size(1, 1)]
         None,

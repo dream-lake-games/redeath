@@ -318,6 +318,8 @@ pub(super) fn register_player_juice(app: &mut App) {
         )
             .in_set(PlayerSet)
             .after(PhysicsSet)
-            .run_if(in_state(PlayerMetaState::Playing)),
+            .run_if(in_state(PlayerMetaState::Playing))
+            .run_if(in_state(PhysicsState::Active))
+            .run_if(in_state(PauseState::Unpaused)),
     );
 }

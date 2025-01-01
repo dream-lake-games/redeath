@@ -28,5 +28,8 @@ fn update_bg_clouds(mut clouds: Query<(&mut ParallaxX, &CloudXVel)>, bullet_time
 }
 
 pub(super) fn register_bg_clouds(app: &mut App) {
-    app.add_systems(Update, update_bg_clouds);
+    app.add_systems(
+        Update,
+        update_bg_clouds.run_if(in_state(PauseState::Unpaused)),
+    );
 }

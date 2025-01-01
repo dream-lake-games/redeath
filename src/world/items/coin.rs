@@ -52,10 +52,9 @@ struct CoinSmolBundle {
     dyno: Dyno,
     spatial: SpatialBundle,
     anim: AnimMan<CoinSmolAnim>,
-    chase: ChaseEntity,
 }
 impl CoinSmolBundle {
-    fn new(pos: Pos, chase: Entity, iid: String, empty: bool) -> Self {
+    fn new(pos: Pos, iid: String, empty: bool) -> Self {
         Self {
             name: Name::new("coin_smol"),
             marker: CoinSmol { iid },
@@ -67,7 +66,6 @@ impl CoinSmolBundle {
             } else {
                 CoinSmolAnim::Follow
             }),
-            chase: ChaseEntity::new(chase, 420.0, 320.0, 16.0, 400.0),
         }
     }
 }
@@ -83,12 +81,8 @@ fn maybe_collect_coins(
     )>,
     trigger_colls: Res<TriggerColls>,
     mut commands: Commands,
-    player_q: Query<Entity, With<Player>>,
     root: Res<WorldMetaRoot>,
 ) {
-    let Ok(player_eid) = player_q.get_single() else {
-        return;
-    };
     for (eid, pos, ttx_ctrl, coin, mut anim, mut light) in &mut coins {
         if !matches!(anim.get_state(), CoinAnim::Spin | CoinAnim::SpinEmpty) {
             continue;
@@ -108,14 +102,39 @@ fn maybe_collect_coins(
             commands.spawn(SoundEffect::CoinCollect);
             commands.entity(eid).remove::<TriggerTxCtrl>();
             commands
-                .spawn(CoinSmolBundle::new(
-                    pos.clone(),
-                    player_eid,
-                    coin.iid.clone(),
-                    empty,
-                ))
+                .spawn(CoinSmolBundle::new(pos.clone(), coin.iid.clone(), empty))
                 .set_parent(root.eid());
         }
+    }
+}
+
+fn position_smol_coins(
+    player_q: Query<&Pos, (With<Player>, Without<CoinSmol>)>,
+    bank_q: Query<
+        &Pos,
+        (
+            With<AnimMan<BankAnim>>,
+            With<SpawnedLidActive>,
+            Without<CoinSmol>,
+        ),
+    >,
+    mut smol_q: Query<&mut Pos, With<CoinSmol>>,
+) {
+    let (Ok(player_pos), Ok(bank_pos)) = (player_q.get_single(), bank_q.get_single()) else {
+        return;
+    };
+    let rad = 12.0;
+    let target = bank_pos.as_vec2() + Vec2::new(0.0, 4.0);
+    let setting = if player_pos.as_vec2().distance(target) < rad {
+        target
+    } else {
+        let dirred =
+            player_pos.as_vec2() + (target - player_pos.as_vec2()).normalize_or_zero() * rad;
+        dirred
+    };
+    for mut pos in &mut smol_q {
+        pos.x = setting.x;
+        pos.y = setting.y;
     }
 }
 
@@ -185,7 +204,7 @@ impl MyLdtkEntity for BankBundle {
             pos,
             spatial: pos.to_spatial(ZIX_ITEMS - 0.32),
             trigger: TriggerTx::single(TriggerTxKind::Bank, HBox::new(24, 24)),
-            anim: AnimMan::new(BankAnim::None),
+            anim: AnimMan::new(BankAnim::Premonition),
         }
     }
 }
@@ -193,6 +212,7 @@ impl MyLdtkEntity for BankBundle {
 /// Bank on the current level
 fn manage_active_banks(
     mut smols: Query<(Entity, &CoinSmol, &mut AnimMan<CoinSmolAnim>, &mut Dyno)>,
+    bigs: Query<&AnimMan<CoinAnim>, (With<Coin>, With<SpawnedLidActive>)>,
     mut banks: Query<(&Pos, &TriggerTxCtrl, &mut AnimMan<BankAnim>), With<SpawnedLidActive>>,
     trigger_colls: Res<TriggerColls>,
     mut commands: Commands,
@@ -203,7 +223,7 @@ fn manage_active_banks(
     let mut cashed_out = false;
     for (pos, ttx_ctrl, mut anim) in &mut banks {
         // First do any necessary transitioning
-        if anim.get_state() == BankAnim::None
+        if matches!(anim.get_state(), BankAnim::None | BankAnim::Premonition)
             && smols.iter().any(|smol| {
                 matches!(
                     smol.2.get_state(),
@@ -219,6 +239,11 @@ fn manage_active_banks(
             anim.set_state(BankAnim::Shrink);
             camera_shake.shake(0.36, -1..=1, -1..=1);
             commands.spawn((SoundEffect::BankTransition, OneSound::Ignore));
+        }
+        if anim.get_state() == BankAnim::None
+            && bigs.iter().any(|big| big.get_state() != CoinAnim::None)
+        {
+            anim.set_state(BankAnim::Premonition);
         }
         // Then maybe cash out
         if cashed_out {
@@ -267,7 +292,10 @@ fn manage_active_banks(
 /// All other banks
 fn manage_inactive_banks(mut banks: Query<&mut AnimMan<BankAnim>, With<SpawnedLidInactive>>) {
     for mut bank in &mut banks {
-        if !matches!(bank.get_state(), BankAnim::None | BankAnim::Shrink) {
+        if !matches!(
+            bank.get_state(),
+            BankAnim::None | BankAnim::Premonition | BankAnim::Shrink
+        ) {
             bank.set_state(BankAnim::Shrink);
         }
     }
@@ -283,13 +311,15 @@ pub(super) fn register_coin(app: &mut App) {
         Update,
         (
             maybe_collect_coins,
+            position_smol_coins,
             manage_active_banks,
             manage_inactive_banks,
         )
             .chain()
             .after(PlayerSet)
             .after(PhysicsSet)
-            .run_if(in_state(MetaStateKind::World)),
+            .run_if(in_state(MetaStateKind::World))
+            .run_if(in_state(PauseState::Unpaused)),
     );
 
     app.add_systems(OnEnter(PlayerMetaState::Dying), coin_smol_death);
