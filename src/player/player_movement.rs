@@ -402,7 +402,7 @@ fn move_horizontally(
         }
     } else {
         let acc = consts.hor_acc * bullet_time.delta_seconds() * friction;
-        if dir.x.abs() < 0.01 {
+        if dir.x.abs() < 0.5 {
             // Go towards 0.0
             if acc >= dyno.vel.x.abs() {
                 // We would overshoot 0, hard 0.0

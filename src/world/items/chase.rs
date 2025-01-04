@@ -44,7 +44,7 @@ fn chase_entities(
     for (eid, chaser_pos, mut chaser_dyno, chase) in &mut chasers {
         let Ok(target_pos) = pos_q.get(chase.eid) else {
             if let Some(mut comms) = commands.get_entity(eid) {
-                comms.insert(ChaseState::BadTarget);
+                comms.try_insert(ChaseState::BadTarget);
                 handle_decel(
                     &mut chaser_dyno.vel,
                     chase.acc * bullet_time.delta_seconds(),
@@ -59,7 +59,7 @@ fn chase_entities(
         );
         if chaser_pos.as_vec2().distance(target_pos.as_vec2()) < chase.leash {
             if let Some(mut comms) = commands.get_entity(eid) {
-                comms.insert(ChaseState::InLeash);
+                comms.try_insert(ChaseState::InLeash);
                 handle_decel(
                     &mut chaser_dyno.vel,
                     chase.acc * bullet_time.delta_seconds(),
@@ -67,7 +67,7 @@ fn chase_entities(
             }
         } else {
             if let Some(mut comms) = commands.get_entity(eid) {
-                comms.insert(ChaseState::OutLeash);
+                comms.try_insert(ChaseState::OutLeash);
                 let norm_diff = (target_pos.as_vec2() - chaser_pos.as_vec2()).normalize_or_zero();
                 chaser_dyno.vel += norm_diff * chase.acc * bullet_time.delta_seconds();
             }
