@@ -53,7 +53,7 @@ pub mod prelude {
     pub use std::{ops::Range, time::Duration};
 }
 use bevy::{
-    // diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin},
+    diagnostic::FrameTimeDiagnosticsPlugin,
     window::{WindowMode, WindowResolution},
 };
 use menu::MenuPlugin;
@@ -84,8 +84,7 @@ fn main() {
             })
             .set(ImagePlugin::default_nearest()),
     );
-    // app
-    // .add_plugins(FrameTimeDiagnosticsPlugin::default())
+    app.add_plugins(FrameTimeDiagnosticsPlugin::default());
     // .add_plugins(LogDiagnosticsPlugin::default());
 
     #[cfg(debug_assertions)]
