@@ -31,8 +31,8 @@ impl Pos {
     pub fn as_ivec2(&self) -> IVec2 {
         IVec2::new(self.x.round() as i32, self.y.round() as i32)
     }
-    pub fn to_spatial(&self, zix: f32) -> SpatialBundle {
-        SpatialBundle::from_transform(Transform::from_translation(self.as_vec2().extend(zix)))
+    pub fn to_transform(&self, zix: f32) -> Transform {
+        Transform::from_translation(self.as_vec2().extend(zix))
     }
     pub fn translated(&self, offset: Vec2) -> Self {
         Self::new(self.x + offset.x, self.y + offset.y)

@@ -38,7 +38,7 @@ fn move_uninteresting_dynos(
     >,
 ) {
     for (dyno, mut pos) in &mut ents {
-        *pos += dyno.vel * bullet_time.delta_seconds();
+        *pos += dyno.vel * bullet_time.delta_secs();
     }
 }
 
@@ -48,7 +48,7 @@ fn move_static_txs(
     mut ents: Query<(&Dyno, &mut Pos), (Without<StaticRxCtrl>, With<StaticTxCtrl>)>,
 ) {
     for (dyno, mut pos) in &mut ents {
-        *pos += dyno.vel * bullet_time.delta_seconds();
+        *pos += dyno.vel * bullet_time.delta_secs();
     }
 }
 
@@ -325,7 +325,7 @@ fn move_interesting_dynos(
         call_resolve_collisions!();
         // Inch horizontally
         let mut amt_moved_hor: f32 = 0.0;
-        let max_inch_hor = scratch_vel.x.abs() * bullet_time.delta_seconds();
+        let max_inch_hor = scratch_vel.x.abs() * bullet_time.delta_secs();
         while amt_moved_hor < max_inch_hor.min(scratch_vel.x.abs()) {
             let dont_overshoot = (max_inch_hor.min(scratch_vel.x.abs()) - amt_moved_hor).max(0.0);
             let moving_this_step = DELTA_PER_INCH.min(dont_overshoot);
@@ -335,7 +335,7 @@ fn move_interesting_dynos(
         }
         // Then inch vertically
         let mut amt_moved_ver: f32 = 0.0;
-        let max_inch_ver = scratch_vel.y.abs() * bullet_time.delta_seconds();
+        let max_inch_ver = scratch_vel.y.abs() * bullet_time.delta_secs();
         while amt_moved_ver < max_inch_ver.min(scratch_vel.y.abs()) {
             let dont_overshoot = (max_inch_ver.min(scratch_vel.y.abs()) - amt_moved_ver).max(0.0);
             let moving_this_step = DELTA_PER_INCH.min(dont_overshoot);
@@ -360,7 +360,7 @@ fn apply_gravity(
     bullet_time: Res<BulletTime>,
 ) {
     for (mut dyno, grav) in &mut ents {
-        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_seconds();
+        dyno.vel.y -= grav.mult * consts.gravity_strength * bullet_time.delta_secs();
     }
 }
 

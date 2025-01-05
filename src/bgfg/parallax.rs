@@ -105,15 +105,13 @@ impl Component for BlackScreenImage {
                 .entity(eid)
                 .insert((
                     Name::new(format!("black")),
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(SCREEN_VEC),
-                            color: BERRY_NEBULA.zero,
-                            ..default()
-                        },
-                        transform: Transform::from_translation(Vec2::ZERO.extend(-100.0)),
+                    Sprite {
+                        custom_size: Some(SCREEN_VEC),
+                        color: BERRY_NEBULA.zero,
                         ..default()
                     },
+                    Transform::from_translation(Vec2::ZERO.extend(-100.0)),
+                    Visibility::Inherited,
                     BgLayer::to_render_layers(),
                 ))
                 .set_parent(root);
@@ -185,20 +183,18 @@ impl Component for ParallaxScreenImage {
                 .entity(eid)
                 .insert((
                     Name::new(format!("bg_fg_{path}")),
-                    SpriteBundle {
-                        sprite: Sprite {
-                            custom_size: Some(sprite_size),
-                            ..default()
+                    Sprite {
+                        image: texture,
+                        custom_size: Some(sprite_size),
+                        image_mode: SpriteImageMode::Tiled {
+                            tile_x: true,
+                            tile_y: true,
+                            stretch_value: 1.0,
                         },
-                        texture,
-                        transform: Transform::from_translation(Vec2::ZERO.extend(zix)),
                         ..default()
                     },
-                    ImageScaleMode::Tiled {
-                        tile_x: true,
-                        tile_y: true,
-                        stretch_value: 1.0,
-                    },
+                    Transform::from_translation(Vec2::ZERO.extend(zix)),
+                    Visibility::Inherited,
                     rl,
                 ))
                 .set_parent(root);

@@ -8,7 +8,7 @@ pub struct MyLdtkLevelMaint;
 fn update_my_level_rects(
     levels: Query<(&LevelIid, &GlobalTransform)>,
     mut level_rects: ResMut<LevelRects>,
-    ldtk_projects: Query<&Handle<LdtkProject>>,
+    ldtk_projects: Query<&LdtkProjectHandle>,
     ldtk_project_assets: Res<Assets<LdtkProject>>,
     selection: Option<Res<LevelSelection>>,
 ) {
@@ -213,7 +213,7 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
         (handle_spawned_lids, handle_physical_lids)
             .after(update_my_level_rects)
             .in_set(MyLdtkLevelMaint)
-            .run_if(in_state(MetaStateKind::World).or_else(in_state(MetaStateKind::Menu))),
+            .run_if(in_state(MetaStateKind::World).or(in_state(MetaStateKind::Menu))),
     );
     app.add_systems(
         Update,
@@ -221,11 +221,11 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
             .after(handle_spawned_lids)
             .after(handle_physical_lids)
             .in_set(MyLdtkLevelMaint)
-            .run_if(in_state(MetaStateKind::World).or_else(in_state(MetaStateKind::Menu))),
+            .run_if(in_state(MetaStateKind::World).or(in_state(MetaStateKind::Menu))),
     );
 
     // Enter or respawn
-    app.observe(do_enter_or_respawn_level_change);
+    app.add_observer(do_enter_or_respawn_level_change);
     app.add_systems(
         OnEnter(PlayerMetaState::Spawning),
         do_enter_or_respawn_respawn,

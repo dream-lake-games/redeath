@@ -7,7 +7,8 @@ struct OgState(SwitchBlockAnim);
 struct SwitchBlockBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     dynamic_anim: AnimMan<SwitchBlockAnim>,
     core_anim: AnimMan<SwitchBlockCoreAnim>,
     og_state: OgState,
@@ -25,7 +26,8 @@ impl MyLdtkIntCell for SwitchBlockBundle {
         Self {
             name: Name::new("switch_block"),
             pos,
-            spatial: pos.to_spatial(ZIX_SWITCH_BLOCK),
+            transform: pos.to_transform(ZIX_SWITCH_BLOCK),
+            visibility: Visibility::Inherited,
             dynamic_anim: AnimMan::new(anim),
             core_anim: default(),
             og_state: OgState(anim),
@@ -117,8 +119,8 @@ pub(super) fn register_switch_block(app: &mut App) {
         vec![4, 5],
     ));
 
-    app.observe(on_dash);
-    app.observe(reset_to_og_state);
+    app.add_observer(on_dash);
+    app.add_observer(reset_to_og_state);
 
     app.add_systems(
         Update,

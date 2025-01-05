@@ -4,10 +4,9 @@ use bevy::render::{
     render_resource::{
         Extent3d, TextureDescriptor, TextureDimension, TextureFormat, TextureUsages,
     },
-    texture::BevyDefault,
     view::RenderLayers,
 };
-use bevy::sprite::{Material2dPlugin, Mesh2dHandle};
+use bevy::sprite::Material2dPlugin;
 use bevy::window::WindowResized;
 use final_post_processing::FinalPostProcessingMat;
 
@@ -214,20 +213,22 @@ fn setup_layer_materials(
             SCREEN_WIDTH_f32 * growth_factor as f32,
             SCREEN_HEIGHT_f32 * growth_factor as f32,
         ));
-        let shifted_mesh: Mesh2dHandle = meshes.add(shifted_mesh).into();
-        let shifted_mat = shifted_palette_mats.add(ShiftedPaletteMat::new(image, shift, palette));
+        let shifted_mesh: Mesh2d = meshes.add(shifted_mesh).into();
+        let shifted_mat: MeshMaterial2d<ShiftedPaletteMat> = shifted_palette_mats
+            .add(ShiftedPaletteMat::new(image, shift, palette))
+            .into();
         // Then draw
-
         commands
             .spawn((
                 Name::new(format!("{name}_intermediate_image")),
                 shifted_mesh,
                 shifted_mat,
-                SpatialBundle::from(Transform {
+                Transform {
                     translation: Vec3::Z * zix as f32,
                     scale: (Vec2::ONE * (WINDOW_GROWTH as f32 / growth_factor as f32)).extend(1.0),
                     ..default()
-                }),
+                },
+                Visibility::Visible,
                 squash_layer.clone(),
             ))
             .set_parent(root);
@@ -290,17 +291,15 @@ fn setup_layer_materials(
     commands
         .spawn((
             Name::new(format!("transition_image")),
-            SpriteBundle {
-                texture: camera_targets.transition_target.clone(),
-                transform: Transform {
-                    translation: Vec3::Z * TransitionLayer::to_i32() as f32,
-                    scale: (Vec2::ONE
-                        * (WINDOW_GROWTH as f32 / TransitionLayer::growth_factor() as f32))
-                        .extend(1.0),
-                    ..default()
-                },
+            Sprite::from_image(camera_targets.transition_target.clone()),
+            Transform {
+                translation: Vec3::Z * TransitionLayer::to_i32() as f32,
+                scale: (Vec2::ONE
+                    * (WINDOW_GROWTH as f32 / TransitionLayer::growth_factor() as f32))
+                    .extend(1.0),
                 ..default()
             },
+            Visibility::Visible,
             squash_layer.clone(),
         ))
         .set_parent(root.eid());
@@ -309,16 +308,14 @@ fn setup_layer_materials(
     commands
         .spawn((
             Name::new(format!("menu_image")),
-            SpriteBundle {
-                texture: camera_targets.menu_target.clone(),
-                transform: Transform {
-                    translation: Vec3::Z * MenuLayer::to_i32() as f32,
-                    scale: (Vec2::ONE * (WINDOW_GROWTH as f32 / MenuLayer::growth_factor() as f32))
-                        .extend(1.0),
-                    ..default()
-                },
+            Sprite::from_image(camera_targets.menu_target.clone()),
+            Transform {
+                translation: Vec3::Z * MenuLayer::to_i32() as f32,
+                scale: (Vec2::ONE * (WINDOW_GROWTH as f32 / MenuLayer::growth_factor() as f32))
+                    .extend(1.0),
                 ..default()
             },
+            Visibility::Visible,
             squash_layer.clone(),
         ))
         .set_parent(root.eid());
@@ -343,57 +340,63 @@ fn setup_layer_materials(
     ) {
         // First apply the palette shift
         let shifted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
-        let shifted_mesh: Mesh2dHandle = meshes.add(shifted_mesh).into();
-        let shifted_mat = shifted_palette_mats.add(ShiftedPaletteMat::new(image, shift, palette));
+        let shifted_mesh: Mesh2d = meshes.add(shifted_mesh).into();
+        let shifted_mat: MeshMaterial2d<ShiftedPaletteMat> = shifted_palette_mats
+            .add(ShiftedPaletteMat::new(image, shift, palette))
+            .into();
         // Then draw this
         commands
             .spawn((
                 Name::new(format!("{name}_intermediate_image")),
                 shifted_mesh,
                 shifted_mat,
-                SpatialBundle::from(Transform::from_translation(Vec3::Z * zix as f32)),
+                Transform::from_translation(Vec3::Z * zix as f32),
+                Visibility::Visible,
                 intermediate_layer.clone(),
             ))
             .set_parent(root);
         commands
             .spawn((
                 Name::new(format!("{name}_intermediate_camera")),
-                Camera2dBundle {
-                    camera: Camera {
-                        order: zix as isize + 1,
-                        target: RenderTarget::Image(intermediate_image.clone()),
-                        clear_color: ClearColorConfig::Custom(COLOR_NONE),
-                        ..default()
-                    },
-                    projection: OrthographicProjection {
-                        near: ZIX_MIN,
-                        far: ZIX_MAX,
-                        scale: 1.0,
-                        ..default()
-                    },
+                Camera2d,
+                Camera {
+                    order: zix as isize + 1,
+                    target: RenderTarget::Image(intermediate_image.clone()),
+                    clear_color: ClearColorConfig::Custom(COLOR_NONE),
                     ..default()
                 },
+                OrthographicProjection {
+                    near: ZIX_MIN,
+                    far: ZIX_MAX,
+                    scale: 1.0,
+                    ..OrthographicProjection::default_2d()
+                },
+                Transform::default(),
+                Visibility::Visible,
                 intermediate_layer.clone(),
             ))
             .set_parent(root);
         // Then apply light
         let lighted_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
-        let lighted_mesh: Mesh2dHandle = meshes.add(lighted_mesh).into();
-        let lighted_mat = light_mats.add(LightMat::new(
-            intermediate_image.clone(),
-            light.clone(),
-            base_light,
-        ));
+        let lighted_mesh: Mesh2d = meshes.add(lighted_mesh).into();
+        let lighted_mat: MeshMaterial2d<LightMat> = light_mats
+            .add(LightMat::new(
+                intermediate_image.clone(),
+                light.clone(),
+                base_light,
+            ))
+            .into();
         commands
             .spawn((
                 Name::new(format!("{name}_image")),
                 lighted_mesh,
                 lighted_mat,
-                SpatialBundle::from_transform(Transform {
+                Transform {
                     translation: Vec3::Z * zix as f32,
                     scale: (Vec2::ONE * WINDOW_GROWTH as f32).extend(1.0),
                     ..default()
-                }),
+                },
+                Visibility::Visible,
                 squash_layer,
             ))
             .set_parent(root);
@@ -455,13 +458,11 @@ fn setup_layer_materials(
     commands
         .spawn((
             Name::new("squash_camera"),
-            Camera2dBundle {
-                camera: Camera {
-                    order: TransitionLayer::to_i32() as isize + 1,
-                    clear_color: ClearColorConfig::Custom(COLOR_NONE),
-                    target: RenderTarget::Image(camera_targets.final_target.clone()),
-                    ..default()
-                },
+            Camera2d,
+            Camera {
+                order: TransitionLayer::to_i32() as isize + 1,
+                clear_color: ClearColorConfig::Custom(COLOR_NONE),
+                target: RenderTarget::Image(camera_targets.final_target.clone()),
                 ..default()
             },
             InheritedVisibility::VISIBLE,
@@ -471,16 +472,19 @@ fn setup_layer_materials(
 
     // This sprite just scales up and down to fill the screen
     let final_mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
-    let final_mesh: Mesh2dHandle = meshes.add(final_mesh).into();
-    let final_mat = final_mats.add(FinalPostProcessingMat::new(
-        camera_targets.final_target.clone(),
-    ));
+    let final_mesh: Mesh2d = meshes.add(final_mesh).into();
+    let final_mat: MeshMaterial2d<FinalPostProcessingMat> = final_mats
+        .add(FinalPostProcessingMat::new(
+            camera_targets.final_target.clone(),
+        ))
+        .into();
     commands
         .spawn((
             Name::new("final_sprite"),
             final_mesh,
             final_mat,
-            SpatialBundle::default(),
+            Transform::default(),
+            Visibility::Visible,
             ResizeFinalImage,
             final_layer.clone(),
         ))
@@ -490,12 +494,10 @@ fn setup_layer_materials(
     commands
         .spawn((
             Name::new("final_camera"),
-            Camera2dBundle {
-                camera: Camera {
-                    order: TransitionLayer::to_i32() as isize + 2,
-                    clear_color: ClearColorConfig::Custom(COLOR_NONE),
-                    ..default()
-                },
+            Camera2d,
+            Camera {
+                order: TransitionLayer::to_i32() as isize + 2,
+                clear_color: ClearColorConfig::Custom(COLOR_NONE),
                 ..default()
             },
             InheritedVisibility::VISIBLE,
@@ -513,20 +515,18 @@ fn setup_layer_cameras(
         ($comp:ty, $name:literal, $image:expr, $follow_dynamic:expr) => {{
             let mut comms = commands.spawn((
                 Name::new($name),
-                Camera2dBundle {
-                    camera: Camera {
-                        order: <$comp>::to_i32() as isize,
-                        target: RenderTarget::Image($image),
-                        clear_color: ClearColorConfig::Custom(COLOR_NONE),
-                        ..default()
-                    },
-                    projection: OrthographicProjection {
-                        near: ZIX_MIN,
-                        far: ZIX_MAX,
-                        scale: 1.0,
-                        ..default()
-                    },
+                Camera2d,
+                Camera {
+                    order: <$comp>::to_i32() as isize,
+                    target: RenderTarget::Image($image),
+                    clear_color: ClearColorConfig::Custom(COLOR_NONE),
                     ..default()
+                },
+                OrthographicProjection {
+                    near: ZIX_MIN,
+                    far: ZIX_MAX,
+                    scale: 1.0,
+                    ..OrthographicProjection::default_2d()
                 },
                 <$comp>::default(),
                 <$comp>::to_render_layers(),

@@ -4,8 +4,8 @@ use crate::prelude::*;
 struct CruncherBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
-    // trigger: TriggerTx,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<CruncherAnim>,
 }
 impl CruncherBundle {
@@ -23,8 +23,8 @@ impl MyLdtkEntity for CruncherBundle {
         Self {
             name: Name::new("cruncher"),
             pos,
-            spatial: pos.to_spatial(ZIX_CRUNCHER),
-            // trigger: Self::observe_ttx(),
+            transform: pos.to_transform(ZIX_CRUNCHER),
+            visibility: Visibility::Inherited,
             anim: AnimMan::default().with_observe_ix_changes(),
         }
     }
@@ -84,7 +84,7 @@ pub(super) fn register_cruncher(app: &mut App) {
         "Entities", "Cruncher",
     ));
 
-    app.observe(handle_anim_changes);
+    app.add_observer(handle_anim_changes);
 
     app.add_systems(
         Update,

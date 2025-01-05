@@ -8,7 +8,8 @@ use crate::prelude::*;
 pub struct ConvoBox {
     name: Name,
     root: ConvoBoxRoot,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     pub speaker: ConvoSpeaker,
     pub portrait: ConvoPortrait,
     pub sound: ConvoSound,
@@ -19,15 +20,12 @@ impl ConvoBox {
         Self {
             name: Name::new("box_root"),
             root: ConvoBoxRoot,
-            spatial: SpatialBundle {
-                visibility: Visibility::Hidden,
-                transform: Transform::from_translation(Vec3::new(
-                    0.0,
-                    -56.0 * TextLayer::growth_factor() as f32,
-                    0.0,
-                )),
-                ..default()
-            },
+            transform: Transform::from_translation(Vec3::new(
+                0.0,
+                -56.0 * TextLayer::growth_factor() as f32,
+                0.0,
+            )),
+            visibility: Visibility::Hidden,
             speaker,
             portrait: ConvoPortrait {
                 key: portrait.to_string(),
@@ -68,15 +66,13 @@ impl Component for ConvoBoxRoot {
                 .commands()
                 .spawn((
                     Name::new("bg"),
-                    SpriteBundle {
-                        texture: hand,
-                        transform: Transform {
-                            translation: Vec3::new(0.0, 0.0, ZIX_CONVO_BG),
-                            scale: (Vec2::ONE * TextLayer::growth_factor() as f32).extend(1.0),
-                            ..default()
-                        },
+                    Sprite::from_image(hand),
+                    Transform {
+                        translation: Vec3::new(0.0, 0.0, ZIX_CONVO_BG),
+                        scale: (Vec2::ONE * TextLayer::growth_factor() as f32).extend(1.0),
                         ..default()
                     },
+                    Visibility::Inherited,
                     TextLayer::to_render_layers(),
                 ))
                 .set_parent(box_root_eid);
@@ -180,7 +176,7 @@ fn update_managers(
         match special_silence {
             Some(mut multi) => match multi.4.as_mut() {
                 ConvoSpeaker::Silence(inner) => {
-                    inner.sub_assign(time.delta_seconds());
+                    inner.sub_assign(time.delta_secs());
                     if *inner <= 0.0 {
                         if let Some(next_box) = manager.boxes.pop() {
                             commands.spawn(next_box);

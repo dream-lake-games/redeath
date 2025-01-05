@@ -6,7 +6,8 @@ use super::egg::{egg_ghost_juice, EggGhostState};
 struct EggBlockBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     static_tx: StaticTx,
     anim: AnimMan<EggBlockAnim>,
 }
@@ -16,7 +17,8 @@ impl MyLdtkEntity for EggBlockBundle {
         Self {
             name: Name::new("egg_block"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS - 1.1),
+            transform: pos.to_transform(ZIX_ITEMS - 1.1),
+            visibility: Visibility::Inherited,
             static_tx: StaticTx::single(StaticTxKind::Solid, HBox::new(16, 16)),
             anim: default(),
         }

@@ -41,7 +41,7 @@ fn duplicate_tilemap_root(
         &Parent,
         &Transform,
         &FrustumCulling,
-        &Handle<StandardTilemapMaterial>,
+        &MaterialTilemapHandle<StandardTilemapMaterial>,
         &TileStorage,
         &TilemapGridSize,
         &TilemapRenderSettings,
@@ -81,7 +81,8 @@ fn duplicate_tilemap_root(
     commands
         .spawn((
             name.clone(),
-            SpatialBundle::from_transform(transform.clone()),
+            transform.clone(),
+            Visibility::Inherited,
             fc.clone(),
             hand.clone(),
             storage.clone(),
@@ -112,7 +113,7 @@ fn post_ldtk_int_cell_blessing<B: MyLdtkIntCell>(
         &Parent,
         &Transform,
         &FrustumCulling,
-        &Handle<StandardTilemapMaterial>,
+        &MaterialTilemapHandle<StandardTilemapMaterial>,
         &TileStorage,
         &TilemapGridSize,
         &TilemapRenderSettings,

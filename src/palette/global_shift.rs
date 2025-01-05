@@ -26,10 +26,10 @@ fn update_global_shift(
     mut shifts: ResMut<GlobalPaletteShift>,
     res_palette: Res<Palette>,
     wavy_palette_manager: Res<WavyPaletteManager>,
-    hands: Query<&Handle<ShiftedPaletteMat>>,
+    hands: Query<&MeshMaterial2d<ShiftedPaletteMat>>,
     mut mats: ResMut<Assets<ShiftedPaletteMat>>,
 ) {
-    shifts.purge(time.delta_seconds());
+    shifts.purge(time.delta_secs());
     let shift_amt = shifts.reduce();
     let maybe_wavy_palette = wavy_palette_manager.calc();
     let palette = maybe_wavy_palette.as_ref().unwrap_or(&res_palette);

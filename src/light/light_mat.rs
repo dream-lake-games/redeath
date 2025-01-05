@@ -21,6 +21,9 @@ impl Material2d for LightMat {
     fn fragment_shader() -> ShaderRef {
         "shaders/light_mat.wgsl".into()
     }
+    fn alpha_mode(&self) -> bevy::sprite::AlphaMode2d {
+        bevy::sprite::AlphaMode2d::Blend
+    }
 }
 impl LightMat {
     pub fn new(image: Handle<Image>, light: Handle<Image>, base: Color) -> Self {
@@ -42,6 +45,9 @@ pub struct LightCutoutMat {
 impl Material2d for LightCutoutMat {
     fn fragment_shader() -> ShaderRef {
         "shaders/light_cutout_mat.wgsl".into()
+    }
+    fn alpha_mode(&self) -> bevy::sprite::AlphaMode2d {
+        bevy::sprite::AlphaMode2d::Blend
     }
 }
 impl LightCutoutMat {

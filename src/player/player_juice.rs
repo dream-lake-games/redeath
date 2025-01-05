@@ -124,7 +124,11 @@ fn juice_after_jump(
     };
     let smoke_pos = player_pos.translated(offset);
     let man = AnimMan::new(anim).with_flip_x(flipx);
-    commands.spawn((man, smoke_pos.to_spatial(ZIX_PLAYER + 1.0)));
+    commands.spawn((
+        man,
+        smoke_pos.to_transform(ZIX_PLAYER + 1.0),
+        Visibility::Inherited,
+    ));
 
     // Sound
     commands
@@ -145,7 +149,8 @@ fn juice_animation_state_response(
             commands.spawn((
                 man,
                 pos.translated(Vec2::new(0.0, -3.0))
-                    .to_spatial(ZIX_PLAYER + 1.0),
+                    .to_transform(ZIX_PLAYER + 1.0),
+                Visibility::Inherited,
             ));
         }
         _ => {}
@@ -165,7 +170,8 @@ fn juice_animation_ix_response(
             let offset = Vec2::new(if anim.get_flip_x() { -1.0 } else { 1.0 } * 5.0, -3.0);
             commands.spawn((
                 AnimMan::new(RunSmokeAnim::Run1),
-                pos.translated(offset).to_spatial(ZIX_PLAYER + 1.01),
+                pos.translated(offset).to_transform(ZIX_PLAYER + 1.01),
+                Visibility::Inherited,
             ));
             commands
                 .spawn(SoundEffect::PlayerRunStep)
@@ -196,7 +202,8 @@ fn juice_wall_slide(
             player_pos
                 .translated(offset)
                 // Make smokes closer to bottom on top, and (hopefully) give unique so no flicker
-                .to_spatial(ZIX_PLAYER - ((player_pos.y + 10000.0) / 100000.0)),
+                .to_transform(ZIX_PLAYER - ((player_pos.y + 10000.0) / 100000.0)),
+            Visibility::Inherited,
         ));
         commands
             .spawn((SoundEffect::PlayerWallSlide, OneSound::Ignore))
@@ -303,10 +310,10 @@ pub(super) fn register_player_juice(app: &mut App) {
     app.insert_resource(PlayerJuiceConsts::default());
     // debug_resource!(app, PlayerJuiceConsts);
 
-    app.observe(juice_after_dash);
-    app.observe(juice_after_jump);
-    app.observe(juice_animation_state_response);
-    app.observe(juice_animation_ix_response);
+    app.add_observer(juice_after_dash);
+    app.add_observer(juice_after_jump);
+    app.add_observer(juice_animation_state_response);
+    app.add_observer(juice_animation_ix_response);
 
     app.add_systems(
         Update,

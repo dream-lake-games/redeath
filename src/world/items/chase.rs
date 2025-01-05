@@ -45,31 +45,22 @@ fn chase_entities(
         let Ok(target_pos) = pos_q.get(chase.eid) else {
             if let Some(mut comms) = commands.get_entity(eid) {
                 comms.try_insert(ChaseState::BadTarget);
-                handle_decel(
-                    &mut chaser_dyno.vel,
-                    chase.acc * bullet_time.delta_seconds(),
-                );
+                handle_decel(&mut chaser_dyno.vel, chase.acc * bullet_time.delta_secs());
             }
             continue;
         };
         // Always decellerate to avoid orbiting
-        handle_decel(
-            &mut chaser_dyno.vel,
-            chase.dec * bullet_time.delta_seconds(),
-        );
+        handle_decel(&mut chaser_dyno.vel, chase.dec * bullet_time.delta_secs());
         if chaser_pos.as_vec2().distance(target_pos.as_vec2()) < chase.leash {
             if let Some(mut comms) = commands.get_entity(eid) {
                 comms.try_insert(ChaseState::InLeash);
-                handle_decel(
-                    &mut chaser_dyno.vel,
-                    chase.acc * bullet_time.delta_seconds(),
-                );
+                handle_decel(&mut chaser_dyno.vel, chase.acc * bullet_time.delta_secs());
             }
         } else {
             if let Some(mut comms) = commands.get_entity(eid) {
                 comms.try_insert(ChaseState::OutLeash);
                 let norm_diff = (target_pos.as_vec2() - chaser_pos.as_vec2()).normalize_or_zero();
-                chaser_dyno.vel += norm_diff * chase.acc * bullet_time.delta_seconds();
+                chaser_dyno.vel += norm_diff * chase.acc * bullet_time.delta_secs();
             }
         }
         // Always clamp max speeds

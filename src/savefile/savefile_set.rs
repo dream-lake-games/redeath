@@ -97,9 +97,9 @@ fn handle_savefile_record_death_event(
 }
 
 pub(super) fn register_savefile_set(app: &mut App) {
-    app.observe(handle_savefile_collect_coin);
-    app.observe(handle_savefile_save_current);
-    app.observe(handle_savefile_reset_event);
-    app.observe(handle_savefile_complete_world_event);
-    app.observe(handle_savefile_record_death_event);
+    app.add_observer(handle_savefile_collect_coin);
+    app.add_observer(handle_savefile_save_current);
+    app.add_observer(handle_savefile_reset_event);
+    app.add_observer(handle_savefile_complete_world_event);
+    app.add_observer(handle_savefile_record_death_event);
 }

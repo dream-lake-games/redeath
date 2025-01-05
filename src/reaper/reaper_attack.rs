@@ -41,7 +41,8 @@ struct ReaperAttackBundle {
     marker: ReaperAttack,
     pos: Pos,
     dyno: Dyno,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<ReaperAnim>,
     light: Light<LightStatic64Anim>,
 }
@@ -53,7 +54,8 @@ impl MyLdtkEntity for ReaperAttackBundle {
             marker: ReaperAttack::default(),
             pos,
             dyno: default(),
-            spatial: pos.to_spatial(ZIX_PLAYER - 0.5),
+            transform: pos.to_transform(ZIX_PLAYER - 0.5),
+            visibility: Visibility::Inherited,
             anim: AnimMan::new(ReaperAnim::None).with_observe_state_changes(),
             light: default(),
         }
@@ -172,10 +174,10 @@ fn manage_onscreen_movement(
         };
 
         if (player_pos.y - pos.y).abs() < 3.0 {
-            dyno.vel.y -= dyno.vel.y.signum() * acc * bullet_time.delta_seconds();
+            dyno.vel.y -= dyno.vel.y.signum() * acc * bullet_time.delta_secs();
         } else {
             let dir = (player_pos.y - pos.y).signum();
-            dyno.vel.y += dir * acc * bullet_time.delta_seconds();
+            dyno.vel.y += dir * acc * bullet_time.delta_secs();
         }
         dyno.vel.y = dyno
             .vel
@@ -217,7 +219,7 @@ fn simple_throw(
                 attack.next_throw = Some(consts.simple_attack_time);
             }
             (ReaperAnim::Hover, Some(next)) => {
-                *next = *next - bullet_time.delta_seconds();
+                *next = *next - bullet_time.delta_secs();
                 if *next < 0.0 {
                     anim.set_state(ReaperAnim::Charge);
                     attack.next_throw = None;
@@ -298,7 +300,8 @@ struct ScytheBundle {
     spawned_lid: SpawnedLid,
     pos: Pos,
     dyno: Dyno,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<ScytheAnim>,
     light: Light<LightStatic64Anim>,
     trigger_tx: TriggerTx,
@@ -315,7 +318,8 @@ impl ScytheBundle {
             spawned_lid: SpawnedLid::new(spawned_lid),
             pos,
             dyno: Dyno::new(x_vel, 0.0),
-            spatial: pos.to_spatial(ZIX_PLAYER - 0.4),
+            transform: pos.to_transform(ZIX_PLAYER - 0.4),
+            visibility: Visibility::Inherited,
             anim: AnimMan::default()
                 .with_observe_state_changes()
                 .with_observe_ix_changes(),
@@ -332,7 +336,7 @@ fn maybe_despawn_scythes(
     time: Res<Time>,
 ) {
     for (eid, pos, mut scythe) in &mut scythes {
-        scythe.ttl -= time.delta_seconds();
+        scythe.ttl -= time.delta_secs();
         let parent_pos = pos_q.get(scythe.fake_parent);
         if scythe.ttl < 0.0 || parent_pos.is_err() || parent_pos.unwrap().x < pos.x - 8.0 {
             if let Some(comms) = commands.get_entity(eid) {
@@ -364,7 +368,7 @@ fn scythe_movement(
 ) {
     for (mut dyno, scythe) in &mut scythes {
         if scythe.has_turned_around {
-            dyno.vel.x += consts.scythe_acc * bullet_time.delta_seconds();
+            dyno.vel.x += consts.scythe_acc * bullet_time.delta_secs();
             dyno.vel.x = dyno
                 .vel
                 .x
@@ -429,8 +433,8 @@ pub(super) fn register_reaper_attack(app: &mut App) {
         "ReaperAttack",
     ));
 
-    app.observe(watch_reaper_anim_to_spawn_scythe);
-    app.observe(spawn_scythe_particles);
+    app.add_observer(watch_reaper_anim_to_spawn_scythe);
+    app.add_observer(spawn_scythe_particles);
 
     app.add_systems(OnEnter(PlayerMetaState::Spawning), on_respawn);
 

@@ -14,7 +14,7 @@ fn fuck_it_elegy(mut song_manager: ResMut<SongManager>) {
 pub(super) struct MenuPlugin;
 impl Plugin for MenuPlugin {
     fn build(&self, app: &mut App) {
-        app.observe(menu_common::cleanup_menu_temp);
+        app.add_observer(menu_common::cleanup_menu_temp);
 
         app.add_systems(OnEnter(MetaStateKind::Menu), fuck_it_elegy);
 

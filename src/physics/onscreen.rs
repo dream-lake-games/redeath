@@ -180,7 +180,7 @@ pub(super) fn register_onscreen(app: &mut App) {
     macro_rules! observe_specific_runs {
         ($($kind:literal$(,)?)+) => {
             $(
-                app.observe(do_update_onscreen::<$kind>);
+                app.add_observer(do_update_onscreen::<$kind>);
             )+
         };
     }

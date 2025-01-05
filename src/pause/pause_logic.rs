@@ -53,7 +53,7 @@ fn watch_input(
         if (dir.length_squared() < 0.5) || (dir.y.signum() != *signum) || (*time_left <= 0.0) {
             input.block_move = None;
         } else {
-            *time_left -= time.delta_seconds();
+            *time_left -= time.delta_secs();
         }
     }
 

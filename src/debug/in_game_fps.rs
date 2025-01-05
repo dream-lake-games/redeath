@@ -11,22 +11,14 @@ fn startup(mut commands: Commands, debug_root: Res<DebugRoot>, ass: Res<AssetSer
         .spawn((
             Name::new("in_game_fps_time"),
             InGameFpsTimer,
-            Text2dBundle {
-                text: Text::from_section(
-                    String::default(),
-                    TextStyle {
-                        font_size: 36.0,
-                        font: font_hand,
-                        ..default()
-                    },
-                )
-                .with_justify(JustifyText::Center),
-                transform: Transform::from_translation(
-                    (WINDOW_VEC / 2.0 - Vec2::new(4.0, 4.0)).extend(ZIX_SPEEDRUN_TIMER),
-                ),
-                text_anchor: bevy::sprite::Anchor::TopRight,
-                ..default()
-            },
+            Text2d::new(String::new()),
+            TextFont::from_font(font_hand).with_font_size(32.0),
+            TextLayout::new_with_justify(JustifyText::Center),
+            Anchor::TopRight,
+            Transform::from_translation(
+                (WINDOW_VEC / 2.0 - Vec2::new(4.0, 4.0)).extend(ZIX_SPEEDRUN_TIMER),
+            ),
+            Visibility::Inherited,
             TextLayer::to_render_layers(),
         ))
         .set_parent(debug_root.eid());
@@ -35,17 +27,19 @@ fn startup(mut commands: Commands, debug_root: Res<DebugRoot>, ass: Res<AssetSer
 #[derive(Resource)]
 struct InGameFpsVisible(bool);
 fn update_in_game_fps(
-    mut text_q: Query<(&mut Text, &mut Visibility), With<InGameFpsTimer>>,
+    mut text_q: Query<(&mut Text2d, &mut Visibility), With<InGameFpsTimer>>,
     diagnostics: Res<DiagnosticsStore>,
     keyboard: Res<ButtonInput<KeyCode>>,
     mut in_game_fps_visible: ResMut<InGameFpsVisible>,
 ) {
-    let (mut text, mut viz) = text_q.single_mut();
+    let Ok((mut text, mut viz)) = text_q.get_single_mut() else {
+        return;
+    };
     if let Some(value) = diagnostics
         .get(&FrameTimeDiagnosticsPlugin::FPS)
         .and_then(|fps| fps.smoothed())
     {
-        text.sections[0].value = format!("FPS: {value:>4.0}");
+        text.0 = format!("FPS: {value:>4.0}");
         *viz = if in_game_fps_visible.0 {
             Visibility::Inherited
         } else {

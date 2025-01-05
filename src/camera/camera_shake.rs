@@ -33,7 +33,7 @@ impl CameraShake {
 
 fn update_camera_shake(mut camera_shake: ResMut<CameraShake>, time: Res<Time>) {
     // Obey SHAKE_EVERY
-    camera_shake.time_since_last_update += time.delta_seconds();
+    camera_shake.time_since_last_update += time.delta_secs();
     if camera_shake.time_since_last_update < SHAKE_EVERY {
         return;
     }

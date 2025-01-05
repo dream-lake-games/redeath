@@ -30,7 +30,7 @@ fn handle_savefile_get_recalculate(
 }
 
 pub(super) fn register_savefile_get(app: &mut App) {
-    app.observe(handle_savefile_get_recalculate);
+    app.add_observer(handle_savefile_get_recalculate);
 
     debug_resource!(app, CurrentSavefile);
     debug_resource!(app, CurrentSavefileKind);

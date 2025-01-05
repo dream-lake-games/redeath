@@ -35,11 +35,11 @@ impl Component for PauseImage {
             let my_pos = myself.pos.clone();
             let ass = world.resource::<AssetServer>();
             let hand = ass.load(myself.path);
-            let sprite_bund = SpriteBundle {
-                texture: hand,
-                transform: my_pos.to_spatial(myself.zix).transform,
-                ..default()
-            };
+            let sprite_bund = (
+                Sprite::from_image(hand),
+                my_pos.to_transform(myself.zix),
+                Visibility::Inherited,
+            );
             world.commands().entity(eid).insert(sprite_bund);
             world.commands().entity(eid).insert(rl);
             world

@@ -52,21 +52,22 @@ fn spawn_sound_effects(
         };
         if surviving {
             let mult = omult.map(|s| s.0).unwrap_or(1.0) * *sound_mults.map.get(se).unwrap_or(&1.0);
-            commands
-                .entity(eid)
-                .insert(AudioBundle {
-                    source: asset_server.load(se.path()),
-                    settings: PlaybackSettings {
-                        mode: if repeat.is_none() {
-                            PlaybackMode::Despawn
-                        } else {
-                            PlaybackMode::Loop
-                        },
-                        volume: Volume::new(mult),
-                        ..default()
-                    },
-                })
-                .set_parent(sound_root.eid());
+            // pomegranate
+            // commands
+            //     .entity(eid)
+            //     .insert(AudioBundle {
+            //         source: asset_server.load(se.path()),
+            //         settings: PlaybackSettings {
+            //             mode: if repeat.is_none() {
+            //                 PlaybackMode::Despawn
+            //             } else {
+            //                 PlaybackMode::Loop
+            //             },
+            //             volume: Volume::new(mult),
+            //             ..default()
+            //         },
+            //     })
+            // .set_parent(sound_root.eid());
         } else {
             commands.entity(eid).despawn_recursive();
         }

@@ -70,30 +70,31 @@ impl ButtInput {
     }
 }
 
-fn update_input_mode(
-    mut input_mode: ResMut<InputMode>,
-    mut evr_gamepad: EventReader<GamepadEvent>,
-) {
-    for ev in evr_gamepad.read() {
-        // we only care about connection events
-        let GamepadEvent::Connection(ev_conn) = ev else {
-            continue;
-        };
-        match &ev_conn.connection {
-            GamepadConnection::Connected(info) => {
-                debug!(
-                    "New gamepad connected: {:?}, name: {}",
-                    ev_conn.gamepad, info.name,
-                );
-                *input_mode = InputMode::Gamepad(ev_conn.gamepad);
-            }
-            GamepadConnection::Disconnected => {
-                debug!("Lost connection with gamepad: {:?}", ev_conn.gamepad);
-                *input_mode = InputMode::Keyboard;
-            }
-        }
-    }
-}
+// pomegranate
+// fn update_input_mode(
+//     mut input_mode: ResMut<InputMode>,
+//     mut evr_gamepad: EventReader<GamepadEvent>,
+// ) {
+//     for ev in evr_gamepad.read() {
+//         // we only care about connection events
+//         let GamepadEvent::Connection(ev_conn) = ev else {
+//             continue;
+//         };
+//         match &ev_conn.connection {
+//             GamepadConnection::Connected(info) => {
+//                 debug!(
+//                     "New gamepad connected: {:?}, name: {}",
+//                     ev_conn.gamepad, info.name,
+//                 );
+//                 *input_mode = InputMode::Gamepad(ev_conn.gamepad);
+//             }
+//             GamepadConnection::Disconnected => {
+//                 debug!("Lost connection with gamepad: {:?}", ev_conn.gamepad);
+//                 *input_mode = InputMode::Keyboard;
+//             }
+//         }
+//     }
+// }
 
 pub(super) struct InputPlugin;
 impl Plugin for InputPlugin {
@@ -104,9 +105,9 @@ impl Plugin for InputPlugin {
         app.insert_resource(DirInput::default());
         app.insert_resource(ButtInput::default());
 
-        app.add_systems(Update, update_input_mode.in_set(InputSet));
+        // app.add_systems(Update, update_input_mode.in_set(InputSet));
 
-        gamepad::register_gamepad(app);
+        // gamepad::register_gamepad(app);
         keyboard::register_keyboard(app);
     }
 }

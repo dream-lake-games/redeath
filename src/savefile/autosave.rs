@@ -21,5 +21,5 @@ fn autosave_on_level_change(
 }
 
 pub(super) fn register_autosave(app: &mut App) {
-    app.observe(autosave_on_level_change);
+    app.add_observer(autosave_on_level_change);
 }

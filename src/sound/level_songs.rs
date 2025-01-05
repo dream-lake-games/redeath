@@ -111,7 +111,7 @@ fn set_always_song(
 }
 
 pub(super) fn register_level_change_song_swaps(app: &mut App) {
-    app.observe(set_always_song);
+    app.add_observer(set_always_song);
 
     app.add_plugins(MyLdtkEntityPlugin::<SongInitialBundle>::new(
         "Entities",

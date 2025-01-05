@@ -5,10 +5,11 @@ fn startup(mut commands: Commands, root: Res<TransitionRoot>) {
         .spawn((
             Name::new("TransitionAnim"),
             AnimMan::<TransitionAnim>::default().with_observe_state_changes(),
-            SpatialBundle::from_transform(Transform {
+            Transform {
                 scale: Vec3::new(2.0, 2.0, 1.0),
                 ..default()
-            }),
+            },
+            Visibility::Inherited,
         ))
         .set_parent(root.eid());
 }
@@ -196,9 +197,9 @@ pub(super) struct TransitionPlugin;
 impl Plugin for TransitionPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Startup, startup.after(RootInit));
-        app.observe(start_transition);
-        app.observe(replace_transition);
-        app.observe(end_transition);
-        app.observe(anim_state_change);
+        app.add_observer(start_transition);
+        app.add_observer(replace_transition);
+        app.add_observer(end_transition);
+        app.add_observer(anim_state_change);
     }
 }

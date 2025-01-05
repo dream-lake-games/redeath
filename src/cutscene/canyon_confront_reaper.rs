@@ -8,9 +8,9 @@ fn on_enter(
     mut song_manager: ResMut<SongManager>,
 ) {
     commands
-        .observe(start_confront_convo)
+        .add_observer(start_confront_convo)
         .set_parent(root.eid());
-    commands.observe(end_cutscene).set_parent(root.eid());
+    commands.add_observer(end_cutscene).set_parent(root.eid());
     commands.spawn(DoInSeconds::new(StartConfrontConvo, 0.5));
     song_manager.fade_to(Song::NoSong);
 }

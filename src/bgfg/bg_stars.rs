@@ -39,7 +39,8 @@ impl_do_star_anim_things!(Star3Anim, Star5Anim, Star7Anim);
 struct StarBundle<StarAnim: AnimStateMachine> {
     name: Name,
     anim: AnimMan<StarAnim>,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     parallax: ParallaxX,
 }
 impl<StarAnim: AnimStateMachine> StarBundle<StarAnim> {
@@ -54,7 +55,8 @@ impl<StarAnim: AnimStateMachine> StarBundle<StarAnim> {
         Self {
             name: Name::new("star"),
             anim: default(),
-            spatial: pos.to_spatial(-10.0 + rng.gen_range(0.0..1.0)),
+            transform: pos.to_transform(-10.0 + rng.gen_range(0.0..1.0)),
+            visibility: Visibility::Inherited,
             parallax: ParallaxX::new(rng.gen_range(parallax_range.clone()), wrap_size.x),
         }
     }
@@ -110,7 +112,7 @@ fn update_bg_stars(
 }
 
 pub(super) fn register_bg_stars(app: &mut App) {
-    app.observe(handle_spawn_stars_event);
+    app.add_observer(handle_spawn_stars_event);
 
     app.add_systems(FixedUpdate, update_bg_stars);
 }

@@ -34,6 +34,9 @@ impl Material2d for ShiftedPaletteMat {
     fn fragment_shader() -> ShaderRef {
         "shaders/shifted_palette_mat.wgsl".into()
     }
+    fn alpha_mode(&self) -> bevy::sprite::AlphaMode2d {
+        bevy::sprite::AlphaMode2d::Blend
+    }
 }
 impl ShiftedPaletteMat {
     pub fn new(input: Handle<Image>, shift: Handle<Image>, palette: Palette) -> Self {

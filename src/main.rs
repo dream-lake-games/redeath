@@ -42,6 +42,7 @@ pub mod prelude {
         render::view::RenderLayers,
         utils::{HashMap, HashSet},
     };
+    pub use bevy::{sprite::Anchor, text::TextBounds};
     pub use bevy_2delight_anims::prelude::*;
     pub use bevy_ecs_ldtk::ldtk::FieldInstance;
     pub use bevy_ecs_ldtk::prelude::*;
@@ -77,7 +78,7 @@ fn main() {
                     resizable: true,
                     title: "REDEATH".to_string(),
                     resolution: WindowResolution::new(WINDOW_WIDTH_f32, WINDOW_HEIGHT_f32),
-                    mode: WindowMode::BorderlessFullscreen,
+                    mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
                     ..default()
                 }),
                 ..default()

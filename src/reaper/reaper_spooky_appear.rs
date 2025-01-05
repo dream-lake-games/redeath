@@ -49,7 +49,8 @@ impl Component for ReaperSpookyAppearInner {
 pub struct ReaperSpookyAppear {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger_tx: TriggerTx,
     preappear: ReaperSpookyPreAppear,
 }
@@ -60,7 +61,8 @@ impl ReaperSpookyAppear {
         Self {
             name: Name::new("reaper_spooky_appear"),
             pos,
-            spatial: pos.to_spatial(ZIX_PLAYER - 0.5),
+            transform: pos.to_transform(ZIX_PLAYER - 0.5),
+            visibility: Visibility::Inherited,
             trigger_tx: TriggerTx::single(TriggerTxKind::Player, trigger_hbox),
             preappear: ReaperSpookyPreAppear { will_convo },
         }
@@ -125,7 +127,7 @@ fn update_reaper_spooky_appeared(
     mut global_shift: ResMut<GlobalPaletteShift>,
 ) {
     for (mut inner, mut anim) in &mut reapers {
-        inner.time_till_disappear -= bullet_time.delta_seconds();
+        inner.time_till_disappear -= bullet_time.delta_secs();
         if inner.time_till_disappear <= 0.0 && anim.get_state() != ReaperAnim::IdleDisappear {
             anim.set_state(ReaperAnim::IdleDisappear);
             camera_shake.shake(0.2, -1..=1, -1..=1);
@@ -156,7 +158,7 @@ pub(super) fn register_reaper_spooky_appear(app: &mut App) {
         "ReaperSpookyAppear",
     ));
 
-    app.observe(remove_reaper_spooky_convoing);
+    app.add_observer(remove_reaper_spooky_convoing);
 
     app.add_systems(
         Update,

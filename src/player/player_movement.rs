@@ -162,7 +162,7 @@ fn update_can_jump(
         });
     } else {
         if let Some(regular_mut) = can_regular.as_mut() {
-            regular_mut.coyote_time -= bullet_time.delta_seconds();
+            regular_mut.coyote_time -= bullet_time.delta_secs();
             if regular_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanRegularJump>();
             }
@@ -175,7 +175,7 @@ fn update_can_jump(
         });
     } else {
         if let Some(wall_left_mut) = can_wall_left.as_mut() {
-            wall_left_mut.coyote_time -= bullet_time.delta_seconds();
+            wall_left_mut.coyote_time -= bullet_time.delta_secs();
             if wall_left_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanWallJumpFromLeft>();
             }
@@ -188,7 +188,7 @@ fn update_can_jump(
         });
     } else {
         if let Some(wall_right_mut) = can_wall_right.as_mut() {
-            wall_right_mut.coyote_time -= bullet_time.delta_seconds();
+            wall_right_mut.coyote_time -= bullet_time.delta_secs();
             if wall_right_mut.coyote_time < 0.0 {
                 commands.entity(eid).remove::<CanWallJumpFromRight>();
             }
@@ -199,7 +199,7 @@ fn update_can_jump(
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
-        post_jump.time_left -= bullet_time.delta_seconds();
+        post_jump.time_left -= bullet_time.delta_secs();
         if post_jump.time_left < 0.0 {
             commands.entity(eid).remove::<PostJump>();
         }
@@ -215,7 +215,7 @@ fn update_current_dash(
         // Means player is not dashing
         return;
     };
-    dashing.time_left -= bullet_time.delta_seconds();
+    dashing.time_left -= bullet_time.delta_secs();
     if dashing.time_left < 0.0 {
         commands.entity(eid).insert(Gravity::default());
         commands.entity(eid).remove::<Dashing>();
@@ -401,7 +401,7 @@ fn move_horizontally(
             return;
         }
     } else {
-        let acc = consts.hor_acc * bullet_time.delta_seconds() * friction;
+        let acc = consts.hor_acc * bullet_time.delta_secs() * friction;
         if dir.x.abs() < 0.5 {
             // Go towards 0.0
             if acc >= dyno.vel.x.abs() {
@@ -474,7 +474,7 @@ fn update_responsive_jump(
         }
         do_remove();
     } else {
-        let want_to_apply = resp_jump.max_speed * time.delta_seconds() / resp_jump.max_time;
+        let want_to_apply = resp_jump.max_speed * time.delta_secs() / resp_jump.max_time;
         let want_to_apply = want_to_apply.min(resp_jump.max_speed - resp_jump.jump_applied);
         dyno.vel.y += want_to_apply;
         resp_jump.jump_applied += want_to_apply;
@@ -490,7 +490,7 @@ fn limit_speed(
         // Means the player can't move horizontally rn
         return;
     };
-    let acc = consts.over_max_slowdown_acc * bullet_time.delta_seconds();
+    let acc = consts.over_max_slowdown_acc * bullet_time.delta_secs();
     // Hor
     if dyno.vel.x.abs() > consts.max_hor_speed {
         dyno.vel.x -= dyno.vel.x.signum() * acc;
@@ -579,7 +579,7 @@ fn uniform_speed_on_up_level_transition(
 
 pub(super) fn register_player_movement(app: &mut App) {
     app.insert_resource(PlayerMovementConsts::default());
-    app.observe(uniform_speed_on_up_level_transition);
+    app.add_observer(uniform_speed_on_up_level_transition);
     // debug_resource!(app, PlayerMovementConsts);
 
     // Update touching. Should happen first and whenever there's a spawned player.
@@ -594,8 +594,8 @@ pub(super) fn register_player_movement(app: &mut App) {
             .after(PhysicsSet)
             .run_if(
                 in_state(PlayerMetaState::Puppet)
-                    .or_else(in_state(PlayerMetaState::Playing))
-                    .or_else(in_state(PlayerMetaState::Dying)),
+                    .or(in_state(PlayerMetaState::Playing))
+                    .or(in_state(PlayerMetaState::Dying)),
             ),
     );
     // Then do the actual movement stuff, only in playing states
@@ -636,6 +636,6 @@ pub(super) fn register_player_movement(app: &mut App) {
             .after(InputSet)
             .after(PhysicsSet)
             .after(keep_inside_edge_level)
-            .run_if(in_state(PlayerMetaState::Playing).or_else(in_state(PlayerMetaState::Puppet))),
+            .run_if(in_state(PlayerMetaState::Playing).or(in_state(PlayerMetaState::Puppet))),
     );
 }

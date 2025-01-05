@@ -15,9 +15,6 @@ impl Component for WrappedKind {
         hooks.on_add(|mut world, eid, _| {
             let myself = world.get::<Self>(eid).unwrap();
             let my_name = myself.0.to_string();
-            let font_hand = world
-                .resource::<AssetServer>()
-                .load("fonts/KodeMono/KodeMono-Bold.ttf");
             let all_savefiles = world.resource::<AllSavefiles>();
             let this_savefile = all_savefiles.map[&myself.0].clone();
 
@@ -39,40 +36,35 @@ impl Component for WrappedKind {
             let speedrun_time = format_speedrun_time(this_savefile.speedrun_timer_us);
             let num_deaths = this_savefile.num_deaths;
 
+            let font_hand = world
+                .resource::<AssetServer>()
+                .load("fonts/KodeMono/KodeMono-Bold.ttf");
             macro_rules! spawn_text {
                 ($text:expr, $font_size:expr, $x:expr, $y:expr$(,)?) => {
                     world
                         .commands()
                         .spawn((
-                            Text2dBundle {
-                                text: Text::from_section(
-                                    $text,
-                                    TextStyle {
-                                        font_size: $font_size,
-                                        font: font_hand.clone(),
-                                        ..default()
-                                    },
-                                ),
-                                transform: Transform::from_translation(Vec3::new($x, $y, 1.0)),
-                                ..default()
-                            },
+                            Text2d::new($text),
+                            TextFont::from_font(font_hand.clone()).with_font_size($font_size),
+                            Transform::from_translation(Vec3::new($x, $y, 1.0)),
+                            Visibility::Inherited,
                             MenuLayer::to_render_layers(),
                         ))
                         .set_parent(eid);
                 };
             }
 
-            spawn_text!(my_name, 18.0, -64.0, 10.0);
+            spawn_text!(my_name, 16.0, -64.0, 10.0);
             spawn_text!(speedrun_time, 12.0, -58.0, -10.0);
             spawn_text!(
                 format!("Chapters: {chapters_complete}/{total_chapters}",),
-                18.0,
+                16.0,
                 24.0,
                 10.0,
             );
             spawn_text!(
                 format!("C:{coins_collected}/{total_coins}, D:{num_deaths}",),
-                18.0,
+                16.0,
                 24.0,
                 -10.0,
             );
@@ -85,7 +77,8 @@ struct SavefileButtonBundle {
     name: Name,
     kind: WrappedKind,
     anim: AnimMan<SavefileButtonAnim>,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     temp: MenuTemp,
 }
 impl SavefileButtonBundle {
@@ -94,7 +87,8 @@ impl SavefileButtonBundle {
             name: Name::new(format!("savefile_button_{:?}", kind)),
             kind: WrappedKind(kind),
             anim: default(),
-            spatial: Pos::new(0.0, y).to_spatial(1.0),
+            transform: Pos::new(0.0, y).to_transform(1.0),
+            visibility: Visibility::Inherited,
             temp: MenuTemp,
         }
     }
@@ -136,7 +130,7 @@ fn watch_input(
         if (dir.length_squared() < 0.5) || (dir.y.signum() != *signum) || (*time_left <= 0.0) {
             input.block_move = None;
         } else {
-            *time_left -= time.delta_seconds();
+            *time_left -= time.delta_secs();
         }
     }
     // Maybe switch savefiles
@@ -192,7 +186,7 @@ fn maybe_delete_savefile(
         commands.trigger(SavefileGetRecalculate);
     } else {
         if keyboard.pressed(KeyCode::Backspace) {
-            hold_deletion_time.0 += time.delta_seconds();
+            hold_deletion_time.0 += time.delta_secs();
         } else {
             hold_deletion_time.0 = 0.0;
         }

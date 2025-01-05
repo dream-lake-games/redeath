@@ -20,6 +20,9 @@ impl Material2d for FinalPostProcessingMat {
     fn fragment_shader() -> ShaderRef {
         "shaders/final_post_processing.wgsl".into()
     }
+    fn alpha_mode(&self) -> bevy::sprite::AlphaMode2d {
+        bevy::sprite::AlphaMode2d::Blend
+    }
 }
 impl FinalPostProcessingMat {
     pub fn new(image: Handle<Image>) -> Self {
@@ -32,12 +35,12 @@ impl FinalPostProcessingMat {
 }
 
 pub(super) fn update_final_post_processing_mats(
-    hands: Query<&Handle<FinalPostProcessingMat>>,
+    hands: Query<&MeshMaterial2d<FinalPostProcessingMat>>,
     mut mat: ResMut<Assets<FinalPostProcessingMat>>,
     time: Res<Time>,
 ) {
     for hand in &hands {
         let mat = mat.get_mut(hand.id()).unwrap();
-        mat.time += time.delta_seconds();
+        mat.time += time.delta_secs();
     }
 }

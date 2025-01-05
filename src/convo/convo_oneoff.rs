@@ -1,5 +1,3 @@
-use bevy::text::Text2dBounds;
-
 use crate::prelude::*;
 
 #[derive(Component, Clone, Copy, PartialEq, Eq)]
@@ -50,60 +48,49 @@ impl Component for ConvoOneoffText {
                 .clone();
             let text = world.get::<Self>(eid).expect("myself").clone();
             let bg_hand = world.resource::<AssetServer>().load(size.bg_path());
-            let font_hand = world
-                .resource::<AssetServer>()
-                .load("fonts/KodeMono/KodeMono-Bold.ttf");
             let oneoff_parent = world.resource::<WorldDetailRoot>().eid();
             world
                 .commands()
                 .entity(eid)
                 .insert((
                     Name::new("convo_oneoff_parent"),
-                    SpatialBundle {
-                        visibility: Visibility::Hidden,
-                        ..default()
-                    },
+                    Transform::default(),
+                    Visibility::Hidden,
                 ))
                 .set_parent(oneoff_parent);
             world
                 .commands()
                 .spawn((
                     Name::new("bg"),
-                    SpriteBundle {
-                        texture: bg_hand,
-                        transform: Transform {
-                            translation: text.induced_bg_offset(&size).extend(ZIX_CONVO_BG),
-                            scale: (Vec2::ONE * TextLayer::growth_factor() as f32).extend(1.0),
-                            ..default()
-                        },
+                    Sprite::from_image(bg_hand),
+                    Transform {
+                        translation: text.induced_bg_offset(&size).extend(ZIX_CONVO_BG),
+                        scale: (Vec2::ONE * TextLayer::growth_factor() as f32).extend(1.0),
                         ..default()
                     },
+                    Visibility::Inherited,
                     TextLayer::to_render_layers(),
                 ))
                 .set_parent(eid);
+            let font_hand = world
+                .resource::<AssetServer>()
+                .load("fonts/KodeMono/KodeMono-Bold.ttf");
             world
                 .commands()
                 .spawn((
                     Name::new("text"),
-                    Text2dBundle {
-                        text: Text::from_section(
-                            text.content.clone(),
-                            TextStyle {
-                                font_size: 42.0,
-                                font: font_hand,
-                                ..default()
-                            },
-                        )
-                        .with_justify(JustifyText::Center),
-                        transform: Transform::from_translation(
-                            text.induced_text_offset(&size).extend(ZIX_CONVO_TEXT),
-                        ),
-                        text_2d_bounds: Text2dBounds {
-                            size: Vec2::new(38.0, 28.0) * TextLayer::growth_factor() as f32,
-                        },
-                        text_anchor: bevy::sprite::Anchor::CenterLeft,
-                        ..default()
-                    },
+                    Text2d::new(text.content.clone()),
+                    TextFont::from_font(font_hand).with_font_size(42.0),
+                    TextLayout::new_with_justify(JustifyText::Center),
+                    TextBounds::new(
+                        38.0 * TextLayer::growth_factor() as f32,
+                        280.0 * TextLayer::growth_factor() as f32,
+                    ),
+                    Anchor::CenterLeft,
+                    Transform::from_translation(
+                        text.induced_text_offset(&size).extend(ZIX_CONVO_TEXT),
+                    ),
+                    Visibility::Inherited,
                     TextLayer::to_render_layers(),
                 ))
                 .set_parent(eid);

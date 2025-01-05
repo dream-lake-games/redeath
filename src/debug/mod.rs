@@ -14,17 +14,8 @@ fn debug_startup(mut gizmo_config_store: ResMut<GizmoConfigStore>, mut _commands
     config.render_layers = StaticLayer::to_render_layers();
 }
 
-fn _spawn_light(pos: Pos, commands: &mut Commands) {
-    commands.spawn((
-        Name::new("debug_light"),
-        pos,
-        pos.to_spatial(0.0 + thread_rng().gen_range(0.0..1.0)),
-        Light::new(PlayerLightAnim::Static128),
-    ));
-}
-
 fn toggle_crt(
-    hands: Query<&Handle<FinalPostProcessingMat>>,
+    hands: Query<&MeshMaterial2d<FinalPostProcessingMat>>,
     mut mat: ResMut<Assets<FinalPostProcessingMat>>,
     keyboard: Res<ButtonInput<KeyCode>>,
 ) {

@@ -21,17 +21,23 @@ impl Component for MenuImage {
             let myself = world.get::<Self>(eid).unwrap();
             let ass = world.resource::<AssetServer>();
             let hand = ass.load(myself.path);
-            let sprite_bund = SpriteBundle {
-                texture: hand,
-                transform: Transform::from_translation(Vec3::Z * myself.zix),
-                ..default()
-            };
+            let sprite_bund = (
+                Sprite::from_image(hand),
+                Transform::from_translation(Vec3::Z * myself.zix),
+                Visibility::Inherited,
+            );
+            // TODO: We can't do this because this will get triggered from entering the menu state
+            //       BEFORE the startup system setting the roots goes so this will still be placeholder
+            // let parent = world.resource::<MenuRoot>().eid();
             world.commands().entity(eid).insert(sprite_bund);
             world
                 .commands()
                 .entity(eid)
                 .insert(MenuLayer::to_render_layers());
-            world.commands().entity(eid).insert(MenuTemp);
+            world
+                .commands()
+                .entity(eid)
+                .insert((Name::new("menu_temp_image_fix_this"), MenuTemp));
         });
     }
 }
@@ -60,7 +66,7 @@ pub fn watch_auto_transitions(
 ) {
     let mut autoed = false;
     for (_, mut auto) in &mut auto_transitions {
-        auto.0 -= time.delta_seconds();
+        auto.0 -= time.delta_secs();
         if auto.0 < 0.0 {
             commands.trigger(StartTransition::to(auto.1.clone()));
             autoed = true;

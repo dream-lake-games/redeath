@@ -19,7 +19,8 @@ impl StormManager {
 #[derive(Bundle)]
 struct RainTallBundle {
     name: Name,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<RainTallAnim>,
     parallax_x: ParallaxX,
     parallax_y: ParallaxY,
@@ -28,7 +29,8 @@ impl RainTallBundle {
     fn new() -> Self {
         Self {
             name: Name::new("rain_tall"),
-            spatial: Pos::default().to_spatial(ZIX_RAIN),
+            transform: Pos::default().to_transform(ZIX_RAIN),
+            visibility: Visibility::Inherited,
             anim: AnimMan::default()
                 .with_rep_x(SCREEN_WIDTH)
                 .with_rep_y(SCREEN_HEIGHT),
@@ -43,7 +45,8 @@ pub struct Lightning;
 #[derive(Bundle)]
 struct LightningBundle {
     name: Name,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     parallax_x: ParallaxX,
     anim: AnimMan<LightningAnim>,
 }
@@ -51,7 +54,8 @@ impl LightningBundle {
     fn new() -> Self {
         Self {
             name: Name::new("lightning"),
-            spatial: Pos::default().to_spatial(20.0),
+            transform: Pos::default().to_transform(20.0),
+            visibility: Visibility::Inherited,
             parallax_x: ParallaxX::new(0.13, SCREEN_WIDTH_f32),
             anim: AnimMan::new(LightningAnim::random()).with_flip_x(thread_rng().gen_bool(0.5)),
         }

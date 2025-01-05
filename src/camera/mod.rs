@@ -49,7 +49,7 @@ impl Plugin for CameraPlugin {
         reg_types!(app, DynamicCamera, DynamicCameraMode);
 
         app.insert_resource(DynamicCameraMode::Hanging);
-        app.add_systems(Startup, spawn_dynamic_camera);
+        app.add_systems(Startup, spawn_dynamic_camera.after(RootInit));
 
         camera_movement::register_camera_movement(app);
         camera_shake::register_camera_shake(app);

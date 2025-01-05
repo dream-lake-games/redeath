@@ -8,7 +8,8 @@ struct PlayerHighIndicatorBundle {
     name: Name,
     marker: PlayerHighIndicator,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<PlayerHighIndicatorAnim>,
 }
 impl Default for PlayerHighIndicatorBundle {
@@ -17,7 +18,8 @@ impl Default for PlayerHighIndicatorBundle {
             name: Name::new("player_high_indicator"),
             marker: PlayerHighIndicator,
             pos: Pos::default(),
-            spatial: Pos::default().to_spatial(ZIX_PLAYER + 0.0152),
+            transform: Pos::default().to_transform(ZIX_PLAYER + 0.0152),
+            visibility: Visibility::Inherited,
             anim: default(),
         }
     }

@@ -123,12 +123,10 @@ fn block_lights(
                         commands
                             .spawn((
                                 Name::new("temporary_mesh"),
-                                MaterialMesh2dBundle {
-                                    mesh: meshes.add(triangle).into(),
-                                    material: black_mat.clone(),
-                                    transform: Transform::from_translation(Vec3::Z * 100.0),
-                                    ..default()
-                                },
+                                Mesh2d(meshes.add(triangle)),
+                                MeshMaterial2d(black_mat.clone()),
+                                Transform::from_translation(Vec3::Z * 100.0),
+                                Visibility::Inherited,
                                 light.to_render_layers(),
                                 TemporaryLightMesh,
                             ))

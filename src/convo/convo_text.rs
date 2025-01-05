@@ -1,5 +1,3 @@
-use bevy::text::Text2dBounds;
-
 use crate::prelude::*;
 
 #[derive(Clone, Debug, Reflect)]
@@ -60,17 +58,6 @@ impl ConvoTextProgress {
     }
 }
 
-fn make_text_section(content: String, hand: Handle<Font>) -> TextSection {
-    TextSection::new(
-        content,
-        TextStyle {
-            font_size: 40.0,
-            font: hand,
-            ..default()
-        },
-    )
-}
-
 impl Component for ConvoText {
     const STORAGE_TYPE: StorageType = StorageType::Table;
 
@@ -85,27 +72,13 @@ impl Component for ConvoText {
                 .spawn((
                     Name::new("text"),
                     ConvoTextProgress::new(content),
-                    Text2dBundle {
-                        text: Text::from_section(
-                            "",
-                            TextStyle {
-                                font_size: 36.0,
-                                font: font_hand,
-                                ..default()
-                            },
-                        )
-                        .with_justify(JustifyText::Left),
-                        transform: Transform::from_translation(Vec3::new(
-                            -336.0,
-                            0.0,
-                            ZIX_CONVO_TEXT,
-                        )),
-                        text_2d_bounds: Text2dBounds {
-                            size: Vec2::new(860.0, 160.0),
-                        },
-                        text_anchor: bevy::sprite::Anchor::CenterLeft,
-                        ..default()
-                    },
+                    Text2d::new(String::new()),
+                    TextFont::from_font(font_hand).with_font_size(32.0),
+                    TextLayout::new_with_justify(JustifyText::Left),
+                    TextBounds::new(860.0, 160.0),
+                    Anchor::CenterLeft,
+                    Transform::from_translation(Vec3::new(-336.0, 0.0, ZIX_CONVO_TEXT)),
+                    Visibility::Inherited,
                     TextLayer::to_render_layers(),
                 ))
                 .set_parent(eid);
@@ -144,7 +117,7 @@ fn update_text(
         if !started_q.contains(parent.get()) {
             continue;
         }
-        progress.time_till_next_word -= time.delta_seconds();
+        progress.time_till_next_word -= time.delta_secs();
         if progress.time_till_next_word > 0.0 {
             continue;
         }
@@ -154,12 +127,9 @@ fn update_text(
     }
 }
 
-fn show_text(mut text_q: Query<(&mut Text, &ConvoTextProgress)>, ass: Res<AssetServer>) {
+fn show_text(mut text_q: Query<(&mut Text2d, &ConvoTextProgress)>) {
     for (mut text, progress) in &mut text_q {
-        text.sections = vec![make_text_section(
-            progress.shown.clone(),
-            ass.load("fonts/KodeMono/KodeMono-Medium.ttf"),
-        )];
+        text.0 = progress.shown.clone();
     }
 }
 

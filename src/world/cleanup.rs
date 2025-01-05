@@ -19,5 +19,5 @@ fn handle_cleanup_world(
 }
 
 pub(super) fn register_cleanup(app: &mut App) {
-    app.observe(handle_cleanup_world);
+    app.add_observer(handle_cleanup_world);
 }

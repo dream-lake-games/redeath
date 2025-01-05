@@ -29,13 +29,15 @@ pub use tut_anim::*;
 #[derive(Bundle)]
 pub struct EphemeralAnim<StateMachine: AnimStateMachine> {
     anim: AnimMan<StateMachine>,
-    spat: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
 }
 impl<StateMachine: AnimStateMachine> EphemeralAnim<StateMachine> {
     pub fn new(anim: StateMachine, flip_x: bool, pos: Pos, zix: f32) -> Self {
         Self {
             anim: AnimMan::new(anim).with_flip_x(flip_x),
-            spat: pos.to_spatial(zix),
+            transform: pos.to_transform(zix),
+            visibility: Visibility::Inherited,
         }
     }
 }
@@ -68,18 +70,18 @@ fn drive_anim_time_res(
 
     anim_time.class_map.insert(
         ANIM_TIME_BULLET,
-        paused_delta * level_scroll_delta * bullet_time.delta_seconds(),
+        paused_delta * level_scroll_delta * bullet_time.delta_secs(),
     );
     anim_time.class_map.insert(
         ANIM_TIME_REAL,
-        paused_delta * level_scroll_delta * time.delta_seconds(),
+        paused_delta * level_scroll_delta * time.delta_secs(),
     );
     anim_time
         .class_map
-        .insert(ANIM_TIME_BULLET_ALWAYS, bullet_time.delta_seconds());
+        .insert(ANIM_TIME_BULLET_ALWAYS, bullet_time.delta_secs());
     anim_time
         .class_map
-        .insert(ANIM_TIME_REAL_ALWAYS, time.delta_seconds());
+        .insert(ANIM_TIME_REAL_ALWAYS, time.delta_secs());
 }
 
 pub(super) struct MyAnimPlugin;

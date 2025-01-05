@@ -125,7 +125,7 @@ pub(super) fn register_player_spawn(app: &mut App) {
         "Entities",
         "SpawnPoint",
     ));
-    app.observe(set_spawn_point_on_level_change);
+    app.add_observer(set_spawn_point_on_level_change);
 
     app.add_systems(
         PreUpdate,

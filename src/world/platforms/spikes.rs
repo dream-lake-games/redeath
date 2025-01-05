@@ -98,7 +98,7 @@ fn rotate_spike_group_offsets(
     mut scratch: ResMut<SpikeRotationScratch>,
     bullet_time: Res<BulletTime>,
 ) {
-    scratch.time_since_last_rotate += bullet_time.delta_seconds();
+    scratch.time_since_last_rotate += bullet_time.delta_secs();
     if scratch.time_since_last_rotate < 0.167 {
         return;
     }

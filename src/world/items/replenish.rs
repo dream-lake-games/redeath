@@ -4,7 +4,8 @@ use crate::prelude::*;
 struct ReplenishBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger_tx: TriggerTx,
     anim: AnimMan<ReplenishAnim>,
     light: Light<ReplenishLightAnim>,
@@ -26,7 +27,8 @@ impl MyLdtkEntity for ReplenishBundle {
         Self {
             name: Name::new("replenish"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS - 0.2),
+            transform: pos.to_transform(ZIX_ITEMS - 0.2),
+            visibility: Visibility::Inherited,
             trigger_tx: Self::trigger_tx(),
             anim: AnimMan::default().with_initial_ix(thread_rng().gen_range(0..10)),
             light: default(),
@@ -72,7 +74,7 @@ fn maybe_spawn(
     mut commands: Commands,
 ) {
     for (eid, mut replenishing, mut anim, mut light) in &mut replenishes {
-        replenishing.0 -= bullet_time.delta_seconds();
+        replenishing.0 -= bullet_time.delta_secs();
         if replenishing.0 <= 0.0 {
             commands.entity(eid).remove::<Replenishing>();
             commands.entity(eid).insert(ReplenishBundle::trigger_tx());

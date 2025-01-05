@@ -7,7 +7,8 @@ struct FriendBundle {
     name: Name,
     pos: Pos,
     dyno: Dyno,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<FriendAnim>,
     light: Light<LightStatic64Anim>,
 }
@@ -17,7 +18,8 @@ impl FriendBundle {
             name: Name::new("friend"),
             pos,
             dyno: Dyno::new(36.0, 0.0),
-            spatial: pos.to_spatial(ZIX_PLAYER - 0.5),
+            transform: pos.to_transform(ZIX_PLAYER - 0.5),
+            visibility: Visibility::Inherited,
             anim: AnimMan::new(FriendAnim::Run).with_observe_ix_changes(),
             light: default(),
         }
@@ -46,9 +48,13 @@ fn friend_step_sounds(trigger: Trigger<AnimIxChange<FriendAnim>>, mut commands: 
 }
 
 fn on_enter(root: Res<CutsceneRoot>, mut commands: Commands) {
-    commands.observe(start_intro_convo).set_parent(root.eid());
-    commands.observe(end_cutscene).set_parent(root.eid());
-    commands.observe(friend_step_sounds).set_parent(root.eid());
+    commands
+        .add_observer(start_intro_convo)
+        .set_parent(root.eid());
+    commands.add_observer(end_cutscene).set_parent(root.eid());
+    commands
+        .add_observer(friend_step_sounds)
+        .set_parent(root.eid());
 }
 
 fn init_puppet(
@@ -103,7 +109,7 @@ fn on_exit(
         commands.spawn(ConvoOneoff::medium(
             eid,
             Vec2::new(4.0, 7.0),
-            "WASD to move \n\n J to Jump",
+            "WASD to move\nJ to Jump",
         ));
     }
 }

@@ -10,7 +10,8 @@ struct CoinBundle {
     name: Name,
     marker: Coin,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger_tx: TriggerTx,
     anim: AnimMan<CoinAnim>,
     light: Light<CoinLightAnim>,
@@ -29,7 +30,8 @@ impl MyLdtkEntity for CoinBundle {
             name: Name::new("coin"),
             marker: Coin { iid },
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS + 0.21),
+            transform: pos.to_transform(ZIX_ITEMS + 0.21),
+            visibility: Visibility::Inherited,
             trigger_tx: Self::trigger_tx(),
             anim: default(),
             light: default(),
@@ -50,7 +52,8 @@ struct CoinSmolBundle {
     marker: CoinSmol,
     pos: Pos,
     dyno: Dyno,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<CoinSmolAnim>,
 }
 impl CoinSmolBundle {
@@ -60,7 +63,8 @@ impl CoinSmolBundle {
             marker: CoinSmol { iid },
             pos,
             dyno: default(),
-            spatial: pos.to_spatial(ZIX_ITEMS + 1.2),
+            transform: pos.to_transform(ZIX_ITEMS + 1.2),
+            visibility: Visibility::Inherited,
             anim: AnimMan::new(if empty {
                 CoinSmolAnim::FollowEmpty
             } else {
@@ -191,7 +195,8 @@ fn coin_smol_death(
 struct BankBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger: TriggerTx,
     anim: AnimMan<BankAnim>,
 }
@@ -202,7 +207,8 @@ impl MyLdtkEntity for BankBundle {
         Self {
             name: Name::new("bank"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS - 0.32),
+            transform: pos.to_transform(ZIX_ITEMS - 0.32),
+            visibility: Visibility::Inherited,
             trigger: TriggerTx::single(TriggerTxKind::Bank, HBox::new(24, 24)),
             anim: AnimMan::new(BankAnim::Premonition),
         }
@@ -305,7 +311,7 @@ pub(super) fn register_coin(app: &mut App) {
     app.add_plugins(MyLdtkEntityPlugin::<CoinBundle>::new("Entities", "Coin"));
     app.add_plugins(MyLdtkEntityPlugin::<BankBundle>::new("Entities", "Bank"));
 
-    app.observe(reset_coins_per_level);
+    app.add_observer(reset_coins_per_level);
 
     app.add_systems(
         Update,

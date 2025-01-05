@@ -26,7 +26,9 @@ fn handle_start_my_ldtk_load(
     commands.spawn((
         Name::new("MyLdtkRoot"),
         LdtkWorldBundle {
-            ldtk_handle: ass.load(&trigger.event().world_path),
+            ldtk_handle: LdtkProjectHandle {
+                handle: ass.load(&trigger.event().world_path),
+            },
             ..default()
         },
         BlockMyLdtkLoad::ticks(10),
@@ -38,7 +40,7 @@ fn handle_start_my_ldtk_load(
 fn handle_unload_my_ldtk(
     _trigger: Trigger<UnloadMyLdtk>,
     mut commands: Commands,
-    existing_root: Query<Entity, With<Handle<LdtkProject>>>,
+    existing_root: Query<Entity, With<LdtkProjectHandle>>,
     mut level_rects: ResMut<LevelRects>,
     mut my_ldtk_load_state: ResMut<MyLdtkLoadState>,
     mut wavy_palette: ResMut<WavyPaletteManager>,
@@ -97,8 +99,8 @@ pub(super) fn register_my_ldtk_load(app: &mut App) {
 
     app.insert_resource(MyLdtkLoadState::default());
 
-    app.observe(handle_start_my_ldtk_load);
-    app.observe(handle_unload_my_ldtk);
+    app.add_observer(handle_start_my_ldtk_load);
+    app.add_observer(handle_unload_my_ldtk);
 
     app.add_systems(Update, handle_loading.run_if(is_loading));
 }

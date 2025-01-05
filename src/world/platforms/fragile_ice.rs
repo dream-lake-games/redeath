@@ -40,7 +40,8 @@ struct FragileIce8Bundle {
     name: Name,
     trigger_rx: TriggerRx,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<FragileIce8Anim>,
     remember_parent: RememberParent,
 }
@@ -51,7 +52,8 @@ impl FragileIce8Bundle {
             name: Name::new("fragile_ice8"),
             trigger_rx: TriggerRx::single(TriggerRxKind::WantStatic, hbox),
             pos,
-            spatial: pos.to_spatial(ZIX_FRAGILE_ICE),
+            transform: pos.to_transform(ZIX_FRAGILE_ICE),
+            visibility: Visibility::Inherited,
             anim: default(),
             remember_parent: RememberParent { parent },
         }
@@ -131,7 +133,7 @@ fn update_waiting_parents(
     bullet_time: Res<BulletTime>,
 ) {
     for (eid, mut waiting) in &mut waiting_parents {
-        waiting.time_left -= bullet_time.delta_seconds();
+        waiting.time_left -= bullet_time.delta_secs();
         if waiting.time_left <= 0.0 {
             commands.entity(eid).remove::<ParentWaiting>();
             commands.entity(eid).insert(ParentStable);

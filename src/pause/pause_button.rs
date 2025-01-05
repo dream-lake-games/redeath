@@ -12,7 +12,8 @@ pub struct PauseButtonBundle {
     name: Name,
     text: PauseText,
     anim: AnimMan<PauseButtonAnim>,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
 }
 impl PauseButtonBundle {
     pub fn new(text: &str, y: f32) -> Self {
@@ -20,7 +21,8 @@ impl PauseButtonBundle {
             name: Name::new(format!("pause_button_{:?}", text)),
             text: PauseText(text.to_string()),
             anim: default(),
-            spatial: Pos::new(0.0, y).to_spatial(1.0),
+            transform: Pos::new(0.0, y).to_transform(1.0),
+            visibility: Visibility::Inherited,
         }
     }
 
@@ -37,27 +39,28 @@ impl Component for PauseText {
             let parent = world.resource::<PauseRoot>().eid();
             let content = world.get::<Self>(eid).unwrap().0.clone();
             world.commands().entity(eid).set_parent(parent);
-            let font_hand = world
-                .resource::<AssetServer>()
-                .load("fonts/KodeMono/KodeMono-Bold.ttf");
-            world
-                .commands()
-                .spawn((
-                    Text2dBundle {
-                        text: Text::from_section(
-                            content,
-                            TextStyle {
-                                font_size: 24.0,
-                                font: font_hand,
-                                ..default()
-                            },
-                        ),
-                        transform: Transform::from_translation(Vec3::Z),
-                        ..default()
-                    },
-                    MenuLayer::to_render_layers(),
-                ))
-                .set_parent(eid);
+            // pomegranate
+            // let font_hand = world
+            //     .resource::<AssetServer>()
+            //     .load("fonts/KodeMono/KodeMono-Bold.ttf");
+            // world
+            //     .commands()
+            //     .spawn((
+            //         Text2dBundle {
+            //             text: Text::from_section(
+            //                 content,
+            //                 TextStyle {
+            //                     font_size: 24.0,
+            //                     font: font_hand,
+            //                     ..default()
+            //                 },
+            //             ),
+            //             transform: Transform::from_translation(Vec3::Z),
+            //             ..default()
+            //         },
+            //         MenuLayer::to_render_layers(),
+            //     ))
+            //     .set_parent(eid);
         });
     }
 }

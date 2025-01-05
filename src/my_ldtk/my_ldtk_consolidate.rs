@@ -219,6 +219,6 @@ fn consolidate_spike_6x6(
 }
 
 pub(super) fn register_my_ldtk_consolidate(app: &mut App) {
-    app.observe(consolidate_solid_8x8);
-    app.observe(consolidate_spike_6x6);
+    app.add_observer(consolidate_solid_8x8);
+    app.add_observer(consolidate_spike_6x6);
 }

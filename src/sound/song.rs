@@ -40,23 +40,24 @@ impl SongManager {
 }
 
 fn setup_songs(mut commands: Commands, asset_server: Res<AssetServer>, sound_root: Res<SoundRoot>) {
-    commands
-        .spawn((SongMarker, Name::new("song")))
-        .with_children(|parent| {
-            parent.spawn((
-                AudioBundle {
-                    source: asset_server.load("music/draft.ogg"),
-                    settings: PlaybackSettings {
-                        mode: bevy::audio::PlaybackMode::Loop,
-                        volume: Volume::new(0.0),
-                        ..default()
-                    },
-                },
-                SongMarkerChild,
-                Name::new("song_child"),
-            ));
-        })
-        .set_parent(sound_root.eid());
+    // pomegranate
+    // commands
+    //     .spawn((SongMarker, Name::new("song")))
+    //     .with_children(|parent| {
+    //         parent.spawn((
+    //             AudioBundle {
+    //                 source: asset_server.load("music/draft.ogg"),
+    //                 settings: PlaybackSettings {
+    //                     mode: bevy::audio::PlaybackMode::Loop,
+    //                     volume: Volume::new(0.0),
+    //                     ..default()
+    //                 },
+    //             },
+    //             SongMarkerChild,
+    //             Name::new("song_child"),
+    //         ));
+    //     })
+    //     .set_parent(sound_root.eid());
 }
 
 fn update_song(
@@ -68,7 +69,11 @@ fn update_song(
     time: Res<Time>,
     asset_server: Res<AssetServer>,
 ) {
-    let parent_eid = song_parent.single();
+    let Ok(parent_eid) = song_parent.get_single() else {
+        // pomegranate
+        // should warn here if none
+        return;
+    };
     let child = song_child.get_single_mut();
     let kind_factor = manager.current.mult();
     let settings_factor = sound_settings.main_volume * sound_settings.song_volume;
@@ -115,21 +120,22 @@ fn update_song(
     }
     if respawn {
         commands.entity(parent_eid).despawn_descendants();
-        commands.entity(parent_eid).with_children(|parent| {
-            parent.spawn((
-                AudioBundle {
-                    source: asset_server.load(go_to.path()),
-                    settings: PlaybackSettings {
-                        mode: PlaybackMode::Loop,
-                        volume: Volume::new(0.0),
-                        paused: false,
-                        ..default()
-                    },
-                },
-                SongMarkerChild,
-                Name::new("song_child"),
-            ));
-        });
+        // pomegranate
+        // commands.entity(parent_eid).with_children(|parent| {
+        //     parent.spawn((
+        //         AudioBundle {
+        //             source: asset_server.load(go_to.path()),
+        //             settings: PlaybackSettings {
+        //                 mode: PlaybackMode::Loop,
+        //                 volume: Volume::new(0.0),
+        //                 paused: false,
+        //                 ..default()
+        //             },
+        //         },
+        //         SongMarkerChild,
+        //         Name::new("song_child"),
+        //     ));
+        // });
         manager.current = go_to;
     }
     if stop_transition {

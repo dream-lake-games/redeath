@@ -19,7 +19,8 @@ struct SkellyDashBundle {
     marker: SkellyDash,
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<SkellyDashAnim>,
 }
 impl MyLdtkEntity for SkellyDashBundle {
@@ -29,7 +30,8 @@ impl MyLdtkEntity for SkellyDashBundle {
             marker: SkellyDash,
             name: Name::new("skelly_dash"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS + 0.03),
+            transform: pos.to_transform(ZIX_ITEMS + 0.03),
+            visibility: Visibility::Inherited,
             anim: default(),
         }
     }
@@ -39,7 +41,8 @@ impl MyLdtkEntity for SkellyDashBundle {
 struct DashDrawingBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<DashDrawingAnim>,
 }
 impl MyLdtkEntity for DashDrawingBundle {
@@ -60,7 +63,8 @@ impl MyLdtkEntity for DashDrawingBundle {
         Self {
             name: Name::new("skelly_dash"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS + 0.03),
+            transform: pos.to_transform(ZIX_ITEMS + 0.03),
+            visibility: Visibility::Inherited,
             anim,
         }
     }

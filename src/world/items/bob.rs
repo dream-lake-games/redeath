@@ -23,7 +23,7 @@ impl Bob {
 fn update_bobs(mut bob_q: Query<(&mut Pos, &mut Bob)>, bullet_time: Res<BulletTime>) {
     for (mut pos, mut bob) in &mut bob_q {
         bob.scratch_time =
-            bob.scratch_time + if bob.going_up { 1.0 } else { -1.0 } * bullet_time.delta_seconds();
+            bob.scratch_time + if bob.going_up { 1.0 } else { -1.0 } * bullet_time.delta_secs();
         let frac = (bob.scratch_time / bob.total_time).clamp(0.0, 1.0);
         if (bob.scratch_time <= 0.01 && !bob.going_up) || (bob.scratch_time >= 0.99 && bob.going_up)
         {

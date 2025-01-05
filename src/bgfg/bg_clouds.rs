@@ -23,7 +23,7 @@ impl BgClouds {
 
 fn update_bg_clouds(mut clouds: Query<(&mut ParallaxX, &CloudXVel)>, bullet_time: Res<BulletTime>) {
     for (mut px, vel) in &mut clouds {
-        px.scratch += bullet_time.delta_seconds() * vel.0;
+        px.scratch += bullet_time.delta_secs() * vel.0;
     }
 }
 

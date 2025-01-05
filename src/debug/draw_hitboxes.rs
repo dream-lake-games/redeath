@@ -45,7 +45,11 @@ fn draw_hitboxes(
                     continue;
                 };
                 let pos = ipos.cur.as_vec2() + comp.hbox.get_offset();
-                gz.rect_2d(pos, Rot2::default(), comp.hbox.get_size().as_vec2(), color);
+                gz.rect_2d(
+                    Isometry2d::from_translation(pos),
+                    comp.hbox.get_size().as_vec2(),
+                    color,
+                );
             }
         };
     }

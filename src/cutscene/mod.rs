@@ -68,7 +68,7 @@ fn drive_do_in_seconds(
     mut commands: Commands,
 ) {
     for (eid, mut inner) in &mut inners {
-        inner.time_left -= time.delta_seconds();
+        inner.time_left -= time.delta_secs();
         if inner.time_left <= 0.0 {
             commands.entity(eid).despawn_recursive();
         }

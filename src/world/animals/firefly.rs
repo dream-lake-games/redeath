@@ -38,7 +38,8 @@ struct FireflyBundle {
     name: Name,
     firefly: Firefly,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     dyno: Dyno,
     gravity: Gravity,
     static_rx: StaticRx,
@@ -55,7 +56,8 @@ impl FireflyBundle {
             name: Name::new("firefly"),
             firefly: Firefly::default(),
             pos,
-            spatial: pos.to_spatial(ZIX_PLAYER + thread_rng().gen_range(0.1..0.9)),
+            transform: pos.to_transform(ZIX_PLAYER + thread_rng().gen_range(0.1..0.9)),
+            visibility: Visibility::Inherited,
             dyno: default(),
             gravity: Gravity::new(0.2), // Will get overridden
             static_rx: StaticRx::single(StaticRxKind::Default, static_hbox),
@@ -143,7 +145,7 @@ fn update_fireflies(
                 dyno.vel.y =
                     dyno.vel.y.abs().clamp(0.0, consts.max_ver_speed) * dyno.vel.y.signum();
                 if firefly.time_till_next_flap > 0.0 {
-                    firefly.time_till_next_flap -= bullet_time.delta_seconds();
+                    firefly.time_till_next_flap -= bullet_time.delta_secs();
                 } else {
                     dyno.vel.y = rng.gen_range(consts.flap_strength_range.clone());
                     firefly.time_till_next_flap += rng.gen_range(consts.flap_time_range.clone());
@@ -194,7 +196,7 @@ pub(super) fn register_firefly(app: &mut App) {
     app.insert_resource(FireflyConsts::default());
     // debug_resource!(app, FireflyConsts);
 
-    app.observe(update_firefly_lights);
+    app.add_observer(update_firefly_lights);
 
     app.add_systems(Update, update_fireflies.after(PhysicsSet));
 }

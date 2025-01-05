@@ -69,7 +69,7 @@ impl BulletTime {
     pub fn delta(&self) -> Duration {
         self.duration
     }
-    pub fn delta_seconds(&self) -> f32 {
+    pub fn delta_secs(&self) -> f32 {
         self.duration.as_secs_f32()
     }
 
@@ -110,7 +110,7 @@ fn update_bullet_time(mut bullet_time: ResMut<BulletTime>, time: Res<Time>) {
             time_left,
             ..
         } => {
-            *time_left -= time.delta_seconds();
+            *time_left -= time.delta_secs();
             if *time_left < 0.0 {
                 Some(return_to.clone())
             } else {

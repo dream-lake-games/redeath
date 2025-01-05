@@ -38,7 +38,8 @@ struct SpeedrunTimerVisible(bool);
 struct SpeedrunTimerBundle {
     name: Name,
     marker: SpeedrunTimer,
-    text: Text2dBundle,
+    // pomegranate
+    // text: Text2dBundle,
     render_layers: RenderLayers,
 }
 impl SpeedrunTimerBundle {
@@ -46,22 +47,23 @@ impl SpeedrunTimerBundle {
         Self {
             name: Name::new("speedrun_time"),
             marker: SpeedrunTimer,
-            text: Text2dBundle {
-                text: Text::from_section(
-                    format_time(time_us),
-                    TextStyle {
-                        font_size: 36.0,
-                        font: font_hand,
-                        ..default()
-                    },
-                )
-                .with_justify(JustifyText::Center),
-                transform: Transform::from_translation(
-                    (-WINDOW_VEC / 2.0 + Vec2::new(4.0, 4.0)).extend(ZIX_SPEEDRUN_TIMER),
-                ),
-                text_anchor: bevy::sprite::Anchor::BottomLeft,
-                ..default()
-            },
+
+            // text: Text2dBundle {
+            //     text: Text::from_section(
+            //         format_time(time_us),
+            //         TextStyle {
+            //             font_size: 36.0,
+            //             font: font_hand,
+            //             ..default()
+            //         },
+            //     )
+            //     .with_justify(JustifyText::Center),
+            //     transform: Transform::from_translation(
+            //         (-WINDOW_VEC / 2.0 + Vec2::new(4.0, 4.0)).extend(ZIX_SPEEDRUN_TIMER),
+            //     ),
+            //     text_anchor: bevy::sprite::Anchor::BottomLeft,
+            //     ..default()
+            // },
             render_layers: TextLayer::to_render_layers(),
         }
     }
@@ -80,7 +82,8 @@ fn update_current_time(
         commands.spawn(SpeedrunTimerBundle::new(time_us, font_hand));
     } else {
         let mut text = text_q.single_mut();
-        text.sections[0].value = format_time(time_us);
+        // pomegranate
+        // text.sections[0].value = format_time(time_us);
     }
 }
 

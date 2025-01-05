@@ -146,7 +146,7 @@ fn normal_movement_animation(
 
 pub(super) fn register_player_animation(app: &mut App) {
     // Events
-    app.observe(start_jump_animation);
+    app.add_observer(start_jump_animation);
     // Normal stuff
     app.add_systems(
         Update,
@@ -158,6 +158,6 @@ pub(super) fn register_player_animation(app: &mut App) {
             .after(PlayerDeathSet)
             .after(InputSet)
             .after(PhysicsSet)
-            .run_if(in_state(PlayerMetaState::Playing).or_else(in_state(PlayerMetaState::Puppet))),
+            .run_if(in_state(PlayerMetaState::Playing).or(in_state(PlayerMetaState::Puppet))),
     );
 }

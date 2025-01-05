@@ -20,14 +20,16 @@ macro_rules! impl_root_types {
             pub struct[<$name Bundle>] {
                 name: Name,
                 marker: [<$name Component>],
-                spatial: SpatialBundle,
+                transform: Transform,
+                visibility: Visibility,
             }
             impl [<$name Bundle>] {
                 fn new(zix: f32) -> Self {
                     Self {
                         name: Name::new(stringify!($name)),
                         marker: [<$name Component>],
-                        spatial: SpatialBundle::from_transform(Transform::from_translation(Vec2::ZERO.extend(zix))),
+                        transform: Transform::from_translation(Vec2::ZERO.extend(zix)),
+                        visibility: Visibility::Inherited,
                     }
                 }
             }

@@ -1,4 +1,4 @@
-use bevy::{render::camera::RenderTarget, sprite::Mesh2dHandle};
+use bevy::render::camera::RenderTarget;
 
 use crate::prelude::*;
 
@@ -73,20 +73,18 @@ impl<LightAnim: LightAnimRadius> Component for Light<LightAnim> {
                 .commands()
                 .spawn((
                     Name::new("light_camera"),
-                    Camera2dBundle {
-                        camera: Camera {
-                            order: LightLayer::to_i32() as isize - 1,
-                            target: RenderTarget::Image(image_hand.clone()),
-                            clear_color: ClearColorConfig::Custom(COLOR_NONE),
-                            ..default()
-                        },
-                        projection: OrthographicProjection {
-                            near: ZIX_MIN,
-                            far: ZIX_MAX,
-                            scale: 1.0,
-                            ..default()
-                        },
+                    Camera2d,
+                    Camera {
+                        order: LightLayer::to_i32() as isize - 1,
+                        target: RenderTarget::Image(image_hand.clone()),
+                        clear_color: ClearColorConfig::Custom(COLOR_NONE),
                         ..default()
+                    },
+                    OrthographicProjection {
+                        near: ZIX_MIN,
+                        far: ZIX_MAX,
+                        scale: 1.0,
+                        ..OrthographicProjection::default_2d()
                     },
                     rl.clone(),
                     FollowDynamicCamera,
@@ -95,17 +93,19 @@ impl<LightAnim: LightAnimRadius> Component for Light<LightAnim> {
                 .id();
 
             let mesh = Mesh::from(Rectangle::new(SCREEN_WIDTH_f32, SCREEN_HEIGHT_f32));
-            let mesh: Mesh2dHandle = world.resource_mut::<Assets<Mesh>>().add(mesh).into();
-            let mat = world
+            let mesh: Mesh2d = world.resource_mut::<Assets<Mesh>>().add(mesh).into();
+            let mat: MeshMaterial2d<LightCutoutMat> = world
                 .resource_mut::<Assets<LightCutoutMat>>()
-                .add(LightCutoutMat::new(image_hand.clone()));
+                .add(LightCutoutMat::new(image_hand.clone()))
+                .into();
             let actual_mesh_eid = world
                 .commands()
                 .spawn((
                     Name::new("light_actual_mesh"),
                     mesh,
                     mat,
-                    SpatialBundle::default(),
+                    Transform::default(),
+                    Visibility::Inherited,
                     LightLayer::to_render_layers(),
                 ))
                 .set_parent(light_root_eid)

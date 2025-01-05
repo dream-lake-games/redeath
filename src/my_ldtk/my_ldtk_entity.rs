@@ -99,11 +99,9 @@ impl Component for InternalSimpleSpriteEntity {
             let hand = world.resource::<AssetServer>().load(&path);
             world.commands().entity(eid).insert((
                 Name::new(name),
-                SpriteBundle {
-                    texture: hand,
-                    transform: pos.to_spatial(zix).transform,
-                    ..default()
-                },
+                Sprite::from_image(hand),
+                pos.to_transform(zix),
+                Visibility::Inherited,
                 rl,
             ));
         });

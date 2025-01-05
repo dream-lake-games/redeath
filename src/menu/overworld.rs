@@ -147,7 +147,8 @@ fn on_exit_overworld(mut commands: Commands) {
 struct OverworldContinueBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger: TriggerTx,
     anim: AnimMan<OverworldContinueAnim>,
 }
@@ -157,7 +158,8 @@ impl MyLdtkEntity for OverworldContinueBundle {
         Self {
             name: Name::new("continue"),
             pos,
-            spatial: pos.to_spatial(ZIX_OVERWORLDIES),
+            transform: pos.to_transform(ZIX_OVERWORLDIES),
+            visibility: Visibility::Inherited,
             trigger: TriggerTx::single(
                 TriggerTxKind::Observe,
                 HBox::new(32, 32).translated(0.0, -16.0),
@@ -171,7 +173,8 @@ impl MyLdtkEntity for OverworldContinueBundle {
 struct OverworldRestartBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger: TriggerTx,
     anim: AnimMan<OverworldRestartAnim>,
 }
@@ -181,7 +184,8 @@ impl MyLdtkEntity for OverworldRestartBundle {
         Self {
             name: Name::new("restart"),
             pos,
-            spatial: pos.to_spatial(ZIX_OVERWORLDIES),
+            transform: pos.to_transform(ZIX_OVERWORLDIES),
+            visibility: Visibility::Inherited,
             trigger: TriggerTx::single(
                 TriggerTxKind::Observe,
                 HBox::new(32, 32).translated(0.0, -16.0),

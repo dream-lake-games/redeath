@@ -164,7 +164,7 @@ macro_rules! decl_convo {
 
             impl<T: ConvoKind> Plugin for ConvoDataPlugin<T> {
                 fn build(&self, app: &mut App) {
-                    app.observe([<observe_start_$name>]);
+                    app.add_observer([<observe_start_$name>]);
 
                 }
             }

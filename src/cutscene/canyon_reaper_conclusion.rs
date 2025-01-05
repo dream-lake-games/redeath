@@ -4,9 +4,9 @@ use super::cutlude::*;
 
 fn on_enter(root: Res<CutsceneRoot>, mut commands: Commands) {
     commands
-        .observe(start_reaper_conclusion_convo)
+        .add_observer(start_reaper_conclusion_convo)
         .set_parent(root.eid());
-    commands.observe(end_cutscene).set_parent(root.eid());
+    commands.add_observer(end_cutscene).set_parent(root.eid());
     commands.spawn(DoInSeconds::new(StartReaperConclusionConvo, 0.5));
 }
 

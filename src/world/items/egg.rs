@@ -6,7 +6,8 @@ use super::egg_block::{reset_egg_blocks, EggBlocksPop};
 struct EggBundle {
     name: Name,
     pos: Pos,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     trigger_tx: TriggerTx,
     anim: AnimMan<EggAnim>,
     light: Light<ReplenishLightAnim>,
@@ -18,7 +19,8 @@ impl MyLdtkEntity for EggBundle {
         Self {
             name: Name::new("egg"),
             pos,
-            spatial: pos.to_spatial(ZIX_ITEMS + 0.1),
+            transform: pos.to_transform(ZIX_ITEMS + 0.1),
+            visibility: Visibility::Inherited,
             trigger_tx: TriggerTx::single(TriggerTxKind::Egg, HBox::new(12, 16)),
             anim: AnimMan::default().with_initial_ix(thread_rng().gen_range(0..10)),
             light: default(),
@@ -32,7 +34,8 @@ struct EggGhostBundle {
     name: Name,
     pos: Pos,
     dyno: Dyno,
-    spatial: SpatialBundle,
+    transform: Transform,
+    visibility: Visibility,
     anim: AnimMan<EggGhostAnim>,
     chase: ChaseEntity,
     parent: EggGhostParent,
@@ -46,7 +49,8 @@ impl EggGhostBundle {
             name: Name::new("egg_ghost"),
             pos,
             dyno: default(),
-            spatial: pos.to_spatial(ZIX_ITEMS + 1.1),
+            transform: pos.to_transform(ZIX_ITEMS + 1.1),
+            visibility: Visibility::Inherited,
             anim: default(),
             chase: ChaseEntity::new(chase, 300.0, 250.0, 16.0, 256.0),
             parent: EggGhostParent,
@@ -242,8 +246,8 @@ fn reset_eggs_after_dying(
 }
 
 pub(super) fn register_egg(app: &mut App) {
-    app.observe(observe_block_pops);
-    app.observe(maybe_reset_eggs);
+    app.add_observer(observe_block_pops);
+    app.add_observer(maybe_reset_eggs);
     app.add_systems(OnExit(PlayerMetaState::Dying), reset_eggs_after_dying);
 
     app.add_plugins(MyLdtkEntityPlugin::<EggBundle>::new("Entities", "Egg"));

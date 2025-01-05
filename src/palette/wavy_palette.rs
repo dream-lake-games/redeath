@@ -162,7 +162,7 @@ fn update_wavy_palette(
     bullet_time: Res<BulletTime>,
 ) {
     if let Some((_wp, time)) = &mut wavy_palette_manager.inner {
-        *time += bullet_time.delta_seconds() * f32::consts::PI * 2.0;
+        *time += bullet_time.delta_secs() * f32::consts::PI * 2.0;
     }
 }
 
