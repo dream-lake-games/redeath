@@ -64,25 +64,22 @@ impl Component for ConvoSpeaker {
 
             macro_rules! convo_sound {
                 ($world:expr, $path:expr$(, $mult:literal$(,)?)?) => {
-                    // pomegranate
-                    // #[allow(unused_mut)]
-                    // let mut base_mult = 0.2;
-                    // $(
-                    //     base_mult = $mult;
-                    // )?
-                    // let ass = world.resource::<AssetServer>();
-                    // let hand = ass.load($path);
-                    // $world
-                    //     .commands()
-                    //     .spawn(AudioBundle {
-                    //         source: hand,
-                    //         settings: PlaybackSettings {
-                    //             mode: PlaybackMode::Despawn,
-                    //             volume: Volume::new(base_mult),
-                    //             ..default()
-                    //         },
-                    //     })
-                    //     .set_parent(eid);
+                    #[allow(unused_mut)]
+                    let mut base_mult = 0.2;
+                    $(
+                        base_mult = $mult;
+                    )?
+                    let ass = world.resource::<AssetServer>();
+                    let hand = ass.load($path);
+                    $world.commands().spawn((
+                        Name::new("convo_sound"),
+                        AudioPlayer::new(hand),
+                        PlaybackSettings {
+                            mode: PlaybackMode::Despawn,
+                            volume: Volume::new(base_mult),
+                            ..default()
+                        },
+                    )).set_parent(eid);
                 };
             }
 

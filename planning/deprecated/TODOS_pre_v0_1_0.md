@@ -1,3 +1,7 @@
+# NOTE
+
+Starting a new todo list
+
 # Performance
 
 Light system works but is not performant. I think there's plenty of room at the top:

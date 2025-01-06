@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-pub fn format_time(time_us: u128) -> String {
+pub fn format_speedrun_time(time_us: u128) -> String {
     let total_seconds = time_us / 1_000_000;
     let hours = total_seconds / 3600;
     let minutes = (total_seconds % 3600) / 60;
@@ -38,8 +38,12 @@ struct SpeedrunTimerVisible(bool);
 struct SpeedrunTimerBundle {
     name: Name,
     marker: SpeedrunTimer,
-    // pomegranate
-    // text: Text2dBundle,
+    text2d: Text2d,
+    font: TextFont,
+    layout: TextLayout,
+    transform: Transform,
+    visibility: Visibility,
+    anchor: Anchor,
     render_layers: RenderLayers,
 }
 impl SpeedrunTimerBundle {
@@ -47,23 +51,14 @@ impl SpeedrunTimerBundle {
         Self {
             name: Name::new("speedrun_time"),
             marker: SpeedrunTimer,
-
-            // text: Text2dBundle {
-            //     text: Text::from_section(
-            //         format_time(time_us),
-            //         TextStyle {
-            //             font_size: 36.0,
-            //             font: font_hand,
-            //             ..default()
-            //         },
-            //     )
-            //     .with_justify(JustifyText::Center),
-            //     transform: Transform::from_translation(
-            //         (-WINDOW_VEC / 2.0 + Vec2::new(4.0, 4.0)).extend(ZIX_SPEEDRUN_TIMER),
-            //     ),
-            //     text_anchor: bevy::sprite::Anchor::BottomLeft,
-            //     ..default()
-            // },
+            text2d: Text2d::new(format_speedrun_time(time_us)),
+            font: TextFont::from_font(font_hand),
+            layout: TextLayout::new_with_justify(JustifyText::Center),
+            transform: Transform::from_translation(
+                (-WINDOW_VEC / 2.0 + Vec2::new(4.0, 4.0)).extend(ZIX_SPEEDRUN_TIMER),
+            ),
+            visibility: Visibility::Inherited,
+            anchor: Anchor::BottomLeft,
             render_layers: TextLayer::to_render_layers(),
         }
     }
@@ -71,7 +66,7 @@ impl SpeedrunTimerBundle {
 
 fn update_current_time(
     mut commands: Commands,
-    mut text_q: Query<&mut Text, With<SpeedrunTimer>>,
+    mut text_q: Query<&mut Text2d, With<SpeedrunTimer>>,
     all_savefiles: Res<AllSavefiles>,
     current_savefile_kind: Res<CurrentSavefileKind>,
     ass: Res<AssetServer>,
@@ -82,8 +77,7 @@ fn update_current_time(
         commands.spawn(SpeedrunTimerBundle::new(time_us, font_hand));
     } else {
         let mut text = text_q.single_mut();
-        // pomegranate
-        // text.sections[0].value = format_time(time_us);
+        text.0 = format_speedrun_time(time_us);
     }
 }
 

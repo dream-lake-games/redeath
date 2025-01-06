@@ -27,7 +27,7 @@ fn spawn_sound_effects(
         Without<PlaybackSettings>,
     >,
     sound_root: Res<SoundRoot>,
-    asset_server: Res<AssetServer>,
+    ass: Res<AssetServer>,
     sound_mults: Res<SoundMults>,
 ) {
     let mut exist_map: HashMap<SoundEffect, Vec<Entity>> = default();
@@ -52,22 +52,22 @@ fn spawn_sound_effects(
         };
         if surviving {
             let mult = omult.map(|s| s.0).unwrap_or(1.0) * *sound_mults.map.get(se).unwrap_or(&1.0);
-            // pomegranate
-            // commands
-            //     .entity(eid)
-            //     .insert(AudioBundle {
-            //         source: asset_server.load(se.path()),
-            //         settings: PlaybackSettings {
-            //             mode: if repeat.is_none() {
-            //                 PlaybackMode::Despawn
-            //             } else {
-            //                 PlaybackMode::Loop
-            //             },
-            //             volume: Volume::new(mult),
-            //             ..default()
-            //         },
-            //     })
-            // .set_parent(sound_root.eid());
+            commands
+                .entity(eid)
+                .insert((
+                    Name::new(format!("sound_effect_{se:?}")),
+                    AudioPlayer::new(ass.load(se.path())),
+                    PlaybackSettings {
+                        mode: if repeat.is_none() {
+                            PlaybackMode::Despawn
+                        } else {
+                            PlaybackMode::Loop
+                        },
+                        volume: Volume::new(mult),
+                        ..default()
+                    },
+                ))
+                .set_parent(sound_root.eid());
         } else {
             commands.entity(eid).despawn_recursive();
         }

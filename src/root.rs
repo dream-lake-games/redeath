@@ -97,7 +97,7 @@ macro_rules! impl_root_init {
                 )*
                 insert_subroots(app);
 
-                app.add_systems(Startup, (setup_roots, setup_subroots).chain().in_set(RootInit));
+                app.add_systems(OnEnter(MetaStateKind::Setup), (setup_roots, setup_subroots).chain().in_set(RootInit));
                 app.add_systems(PreUpdate, cleanup_observes);
             }
         }

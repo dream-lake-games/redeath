@@ -39,25 +39,22 @@ impl SongManager {
     }
 }
 
-fn setup_songs(mut commands: Commands, asset_server: Res<AssetServer>, sound_root: Res<SoundRoot>) {
-    // pomegranate
-    // commands
-    //     .spawn((SongMarker, Name::new("song")))
-    //     .with_children(|parent| {
-    //         parent.spawn((
-    //             AudioBundle {
-    //                 source: asset_server.load("music/draft.ogg"),
-    //                 settings: PlaybackSettings {
-    //                     mode: bevy::audio::PlaybackMode::Loop,
-    //                     volume: Volume::new(0.0),
-    //                     ..default()
-    //                 },
-    //             },
-    //             SongMarkerChild,
-    //             Name::new("song_child"),
-    //         ));
-    //     })
-    //     .set_parent(sound_root.eid());
+fn setup_songs(mut commands: Commands, ass: Res<AssetServer>, sound_root: Res<SoundRoot>) {
+    commands
+        .spawn((SongMarker, Name::new("song")))
+        .with_children(|parent| {
+            parent.spawn((
+                AudioPlayer::new(ass.load("music/draft.ogg")),
+                PlaybackSettings {
+                    mode: bevy::audio::PlaybackMode::Loop,
+                    volume: Volume::new(0.0),
+                    ..default()
+                },
+                SongMarkerChild,
+                Name::new("song_child"),
+            ));
+        })
+        .set_parent(sound_root.eid());
 }
 
 fn update_song(
@@ -67,11 +64,10 @@ fn update_song(
     mut manager: ResMut<SongManager>,
     mut commands: Commands,
     time: Res<Time>,
-    asset_server: Res<AssetServer>,
+    ass: Res<AssetServer>,
 ) {
     let Ok(parent_eid) = song_parent.get_single() else {
-        // pomegranate
-        // should warn here if none
+        warn!("should always have a song parent. when no song, use Song::NoSong");
         return;
     };
     let child = song_child.get_single_mut();
@@ -120,22 +116,19 @@ fn update_song(
     }
     if respawn {
         commands.entity(parent_eid).despawn_descendants();
-        // pomegranate
-        // commands.entity(parent_eid).with_children(|parent| {
-        //     parent.spawn((
-        //         AudioBundle {
-        //             source: asset_server.load(go_to.path()),
-        //             settings: PlaybackSettings {
-        //                 mode: PlaybackMode::Loop,
-        //                 volume: Volume::new(0.0),
-        //                 paused: false,
-        //                 ..default()
-        //             },
-        //         },
-        //         SongMarkerChild,
-        //         Name::new("song_child"),
-        //     ));
-        // });
+        commands.entity(parent_eid).with_children(|parent| {
+            parent.spawn((
+                AudioPlayer::new(ass.load(go_to.path())),
+                PlaybackSettings {
+                    mode: PlaybackMode::Loop,
+                    volume: Volume::new(0.0),
+                    paused: false,
+                    ..default()
+                },
+                SongMarkerChild,
+                Name::new("song_child"),
+            ));
+        });
         manager.current = go_to;
     }
     if stop_transition {

@@ -1,5 +1,3 @@
-use bevy::sprite::MaterialMesh2dBundle;
-
 use crate::prelude::*;
 
 #[derive(Resource, Default)]

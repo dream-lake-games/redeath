@@ -3,6 +3,7 @@ use crate::prelude::*;
 pub mod computed;
 pub mod cutscene_state;
 pub mod menu_state;
+pub mod setup;
 pub mod world_loading_state;
 pub mod world_state;
 
@@ -14,11 +15,12 @@ pub use world_state::*;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq, Reflect, States)]
 pub enum MetaState {
+    Setup,
     Menu(MenuState),
     World(WorldState),
     WorldLoading(WorldLoadingState),
 }
-impl_kind_computed_state!(MetaState, Menu, World, WorldLoading);
+impl_kind_computed_state!(MetaState, Setup, Menu, World, WorldLoading);
 pub trait CoreState: Sized {
     fn to_meta_state(self) -> MetaState;
 
@@ -79,8 +81,7 @@ impl Plugin for StatePlugin {
     fn build(&self, app: &mut App) {
         debug_resource!(app, State<MetaState>);
 
-        app.insert_state(MetaState::Menu(MenuState::Bevy));
-        // app.insert_state(MetaState::Menu(MenuState::Savefile));
+        app.insert_state(MetaState::Setup);
 
         app.insert_state(TransitionState::default());
         app.insert_state(PauseState::Unpaused);
@@ -98,5 +99,7 @@ impl Plugin for StatePlugin {
         app.add_computed_state::<LevelState>();
         app.add_computed_state::<PlayerMetaState>();
         app.add_computed_state::<LevelScrollStateKind>();
+
+        setup::register_setup(app);
     }
 }

@@ -39,28 +39,20 @@ impl Component for PauseText {
             let parent = world.resource::<PauseRoot>().eid();
             let content = world.get::<Self>(eid).unwrap().0.clone();
             world.commands().entity(eid).set_parent(parent);
-            // pomegranate
-            // let font_hand = world
-            //     .resource::<AssetServer>()
-            //     .load("fonts/KodeMono/KodeMono-Bold.ttf");
-            // world
-            //     .commands()
-            //     .spawn((
-            //         Text2dBundle {
-            //             text: Text::from_section(
-            //                 content,
-            //                 TextStyle {
-            //                     font_size: 24.0,
-            //                     font: font_hand,
-            //                     ..default()
-            //                 },
-            //             ),
-            //             transform: Transform::from_translation(Vec3::Z),
-            //             ..default()
-            //         },
-            //         MenuLayer::to_render_layers(),
-            //     ))
-            //     .set_parent(eid);
+            let font_hand = world
+                .resource::<AssetServer>()
+                .load("fonts/KodeMono/KodeMono-Bold.ttf");
+            world
+                .commands()
+                .spawn((
+                    Name::new("bause_button_text"),
+                    Text2d::new(content),
+                    TextFont::from_font(font_hand).with_font_size(24.0),
+                    Transform::from_translation(Vec3::Z),
+                    Visibility::Inherited,
+                    MenuLayer::to_render_layers(),
+                ))
+                .set_parent(eid);
         });
     }
 }
