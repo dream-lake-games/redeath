@@ -15,6 +15,7 @@ pub mod misc;
 pub mod my_ldtk;
 pub mod palette;
 pub mod pause;
+pub mod persistent_resource;
 pub mod physics;
 pub mod player;
 pub mod reaper;
@@ -29,8 +30,8 @@ pub mod world;
 pub mod prelude {
     pub use super::{
         anim::*, bgfg::*, camera::*, consts::*, convo::*, input::*, layer::*, lazy::*, light::*,
-        math::*, my_ldtk::*, palette::*, physics::*, player::*, reaper::*, root::*, savefile::*,
-        sound::*, state::*, transition::*, types::*, world::*,
+        math::*, my_ldtk::*, palette::*, persistent_resource::*, physics::*, player::*, reaper::*,
+        root::*, savefile::*, sound::*, state::*, transition::*, types::*, world::*,
     };
     pub use bevy::{
         color::palettes::tailwind,
@@ -51,6 +52,7 @@ pub mod prelude {
     pub use bevy_pkv::PkvStore;
     pub use rand::prelude::SliceRandom;
     pub use rand::{thread_rng, Rng};
+    pub use serde::{Deserialize, Serialize};
     pub use std::{ops::Range, time::Duration};
 }
 use bevy::{

@@ -150,6 +150,7 @@ impl_root_init!(
     CutsceneRoot,
     PauseRoot(ZIX_PAUSE),
     DebugRoot,
+    GamepadRoot,
 );
 
 impl_subroot_init!(

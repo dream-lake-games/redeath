@@ -19,7 +19,7 @@ fn toggle_crt(
     mut mat: ResMut<Assets<FinalPostProcessingMat>>,
     keyboard: Res<ButtonInput<KeyCode>>,
 ) {
-    if keyboard.just_pressed(KeyCode::KeyC) {
+    if keyboard.just_pressed(KeyCode::Equal) {
         for hand in &hands {
             let mat = mat.get_mut(hand.id()).unwrap();
             if mat.enabled > 0.0 {

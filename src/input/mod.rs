@@ -3,8 +3,6 @@
 //! Otherwise it'll be impossible to do keybindings or multiple input modes
 //! (Except some evil dev hacking keyboard stuff whoops)
 
-use bevy::input::gamepad::{GamepadConnection, GamepadEvent};
-
 use crate::prelude::*;
 
 use std::ops::Deref;
@@ -12,11 +10,11 @@ use std::ops::Deref;
 mod gamepad;
 mod keyboard;
 
-#[derive(Resource, Default)]
+#[derive(Resource, Default, Clone)]
 pub enum InputMode {
     #[default]
     Keyboard,
-    Gamepad(Gamepad),
+    Gamepad(Entity),
 }
 
 fn in_keyboard_mode(input_mode: Res<InputMode>) -> bool {
@@ -70,31 +68,20 @@ impl ButtInput {
     }
 }
 
-// pomegranate
-// fn update_input_mode(
-//     mut input_mode: ResMut<InputMode>,
-//     mut evr_gamepad: EventReader<GamepadEvent>,
-// ) {
-//     for ev in evr_gamepad.read() {
-//         // we only care about connection events
-//         let GamepadEvent::Connection(ev_conn) = ev else {
-//             continue;
-//         };
-//         match &ev_conn.connection {
-//             GamepadConnection::Connected(info) => {
-//                 debug!(
-//                     "New gamepad connected: {:?}, name: {}",
-//                     ev_conn.gamepad, info.name,
-//                 );
-//                 *input_mode = InputMode::Gamepad(ev_conn.gamepad);
-//             }
-//             GamepadConnection::Disconnected => {
-//                 debug!("Lost connection with gamepad: {:?}", ev_conn.gamepad);
-//                 *input_mode = InputMode::Keyboard;
-//             }
-//         }
-//     }
-// }
+fn update_input_mode(mut input_mode: ResMut<InputMode>, gamepads: Query<Entity, With<Gamepad>>) {
+    match input_mode.clone() {
+        InputMode::Keyboard => {
+            if !gamepads.is_empty() {
+                *input_mode = InputMode::Gamepad(gamepads.iter().next().unwrap());
+            }
+        }
+        InputMode::Gamepad(eid) => {
+            if !gamepads.contains(eid) {
+                *input_mode = InputMode::Keyboard;
+            }
+        }
+    }
+}
 
 pub(super) struct InputPlugin;
 impl Plugin for InputPlugin {
@@ -105,9 +92,9 @@ impl Plugin for InputPlugin {
         app.insert_resource(DirInput::default());
         app.insert_resource(ButtInput::default());
 
-        // app.add_systems(Update, update_input_mode.in_set(InputSet));
+        app.add_systems(Update, update_input_mode.in_set(InputSet));
 
-        // gamepad::register_gamepad(app);
+        gamepad::register_gamepad(app);
         keyboard::register_keyboard(app);
     }
 }
