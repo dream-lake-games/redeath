@@ -79,6 +79,10 @@ mod playerlude {
     #[derive(Component, Clone, Debug, Reflect)]
     pub struct CanDash;
 
+    /// This component is present when time is paused, BEFORE a direction has been chosen
+    #[derive(Component, Clone, Debug, Reflect)]
+    pub struct DashSuspense;
+
     #[derive(Component, Clone, Debug, Reflect)]
     pub struct Dashing {
         pub time_left: f32,
@@ -94,6 +98,11 @@ mod playerlude {
     #[derive(Event, Clone, Debug, Reflect)]
     pub struct JumpEvent {
         pub kind: JumpKind,
+    }
+
+    #[derive(Event, Clone, Debug, Reflect)]
+    pub struct DashSuspenseEvent {
+        pub suspense_time: f32,
     }
 
     #[derive(Event, Clone, Debug, Reflect)]

@@ -64,7 +64,7 @@ impl SpeedrunTimerBundle {
     }
 }
 
-fn update_current_time(
+fn display_current_time(
     mut commands: Commands,
     mut text_q: Query<&mut Text2d, With<SpeedrunTimer>>,
     all_savefiles: Res<AllSavefiles>,
@@ -111,12 +111,16 @@ pub(super) fn register_speedrun_timer(app: &mut App) {
 
     app.add_systems(
         Update,
-        (update_time, update_current_time)
+        update_time
             .chain()
             .run_if(in_state(MetaStateKind::World))
             .run_if(in_state(PauseState::Unpaused))
-            .run_if(in_state(ConvoMetaState::None))
-            .run_if(in_state(CutsceneState::None)),
+            .run_if(in_state(CutsceneState::None))
+            .run_if(in_state(ConvoMetaState::None)),
     );
-    app.add_systems(Update, show_current_time.after(update_current_time));
+    app.add_systems(
+        Update,
+        display_current_time.run_if(in_state(MetaStateKind::World)),
+    );
+    app.add_systems(Update, show_current_time.after(display_current_time));
 }

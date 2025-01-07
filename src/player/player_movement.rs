@@ -19,6 +19,7 @@ struct PlayerMovementConsts {
     post_jump_time: f32,
     dash_speed: f32,
     dash_time: f32,
+    dash_suspense_time: f32,
     coyote_time: f32,
     /// If player holds jump, how much speed (roughly) should they have at end
     jump_max_speed: f32,
@@ -39,6 +40,7 @@ impl Default for PlayerMovementConsts {
             post_jump_time: 0.16,
             dash_speed: 160.0,
             dash_time: 0.15,
+            dash_suspense_time: 0.1,
             coyote_time: 0.1,
             jump_max_speed: 210.0,
             jump_max_time: 0.1,
@@ -258,39 +260,64 @@ fn update_can_dash_from_replenish(
 }
 
 fn maybe_start_dash(
-    mut player: Query<(Entity, &mut Dyno, &AnimMan<PlayerAnim>), (With<Player>, With<CanDash>)>,
+    mut player: Query<(Entity, &mut Dyno), (With<Player>, With<CanDash>)>,
     butt: Res<ButtInput>,
-    dir: Res<DirInput>,
     consts: Res<PlayerMovementConsts>,
     mut commands: Commands,
 ) {
-    let Ok((eid, mut dyno, anim)) = player.get_single_mut() else {
+    let Ok((eid, mut dyno)) = player.get_single_mut() else {
         // Means the player can't dash
         return;
     };
     if butt.just_pressed(ButtKind::B) {
-        let card_dir = if dir.as_vec2().length_squared() > 0.1 {
-            CardDir::from_vec2(dir.as_vec2())
-        } else {
-            if anim.get_flip_x() {
-                CardDir::W
-            } else {
-                CardDir::E
-            }
-        };
-        dyno.vel = card_dir.as_non_normal_vec2().normalize_or_zero() * consts.dash_speed;
-        commands.entity(eid).insert(Dashing {
-            time_left: consts.dash_time,
-        });
+        dyno.vel = Vec2::ZERO;
+        commands.entity(eid).insert((
+            Dashing {
+                time_left: consts.dash_time,
+            },
+            DashSuspense,
+        ));
         commands.entity(eid).remove::<CanDash>();
         commands.entity(eid).remove::<Gravity>();
         commands.entity(eid).remove::<CanRegularJump>();
         commands.entity(eid).remove::<CanWallJumpFromLeft>();
         commands.entity(eid).remove::<CanWallJumpFromRight>();
         commands.entity(eid).remove::<ResponsiveJump>();
-        let event = DashEvent { dir: card_dir };
+        let event = DashSuspenseEvent {
+            suspense_time: consts.dash_suspense_time,
+        };
         commands.trigger(event);
     }
+}
+
+fn maybe_resolve_dash_suspense(
+    mut player: Query<
+        (Entity, &mut Dyno, &AnimMan<PlayerAnim>),
+        (With<Player>, With<DashSuspense>),
+    >,
+    bullet_time: Res<BulletTime>,
+    dir_input: Res<DirInput>,
+    mut commands: Commands,
+    consts: Res<PlayerMovementConsts>,
+) {
+    let Ok((eid, mut dyno, anim)) = player.get_single_mut() else {
+        return;
+    };
+    if bullet_time.get_speed() == BulletTimeSpeed::Stopped {
+        return;
+    }
+    commands.entity(eid).remove::<DashSuspense>();
+    let card_dir = if dir_input.length_squared() > 0.2 {
+        CardDir::from_vec2(dir_input.as_vec2())
+    } else {
+        if anim.get_flip_x() {
+            CardDir::W
+        } else {
+            CardDir::E
+        }
+    };
+    dyno.vel = card_dir.as_non_normal_vec2().normalize_or_zero() * consts.dash_speed;
+    commands.trigger(DashEvent { dir: card_dir });
 }
 
 fn maybe_start_regular_jump(
@@ -606,6 +633,7 @@ pub(super) fn register_player_movement(app: &mut App) {
             update_can_dash_from_ground,
             update_can_dash_from_replenish,
             maybe_start_dash,
+            maybe_resolve_dash_suspense,
             maybe_start_regular_jump,
             maybe_start_wall_jump,
             move_horizontally,

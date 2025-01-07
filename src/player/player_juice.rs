@@ -10,8 +10,6 @@ struct PlayerJuiceConsts {
     impact_sound_mult: f32,
     // Time to do the global palette shift after dashing
     dash_global_shift_time: f32,
-    // How long to stop time after dashing
-    dash_stop_time_time: f32,
 }
 impl Default for PlayerJuiceConsts {
     fn default() -> Self {
@@ -20,14 +18,12 @@ impl Default for PlayerJuiceConsts {
             impact_sound_ceiling: 164.0,
             impact_sound_mult: 0.11,
             dash_global_shift_time: 0.2,
-            dash_stop_time_time: 0.1,
         }
     }
 }
 
-fn juice_after_dash(
-    trigger: Trigger<DashEvent>,
-    mut camera_shake: ResMut<CameraShake>,
+fn juice_dash_suspense(
+    trigger: Trigger<DashSuspenseEvent>,
     mut commands: Commands,
     player: Query<(&Pos, &AnimMan<PlayerAnim>), With<Player>>,
     world_detail_root: Res<WorldDetailRoot>,
@@ -35,6 +31,32 @@ fn juice_after_dash(
     consts: Res<PlayerJuiceConsts>,
     mut bullet_time: ResMut<BulletTime>,
 ) {
+    let event = trigger.event();
+
+    // Dash die
+    let (player_pos, player_anim) = player.single();
+    commands
+        .spawn(EphemeralAnim::new(
+            DashDieAnim::DashDie,
+            player_anim.get_flip_x(),
+            *player_pos,
+            ZIX_PLAYER + 1.0,
+        ))
+        .set_parent(world_detail_root.eid());
+
+    // Global shift
+    global_shift.add(consts.dash_global_shift_time / 2.0, 1);
+    global_shift.add(consts.dash_global_shift_time, 1);
+
+    // Storm
+    commands.spawn(SoundEffect::PlayerThunder);
+    commands.spawn(Lightning);
+
+    // Bullet time
+    bullet_time.set_temp(BulletTimeSpeed::Stopped, event.suspense_time);
+}
+
+fn juice_dash_post_suspense(trigger: Trigger<DashEvent>, mut camera_shake: ResMut<CameraShake>) {
     let event = trigger.event();
 
     // Camera shake
@@ -58,28 +80,6 @@ fn juice_after_dash(
         0..=0
     };
     camera_shake.shake(0.1, x_range, y_range);
-
-    // Dash die
-    let (player_pos, player_anim) = player.single();
-    commands
-        .spawn(EphemeralAnim::new(
-            DashDieAnim::DashDie,
-            player_anim.get_flip_x(),
-            *player_pos,
-            ZIX_PLAYER + 1.0,
-        ))
-        .set_parent(world_detail_root.eid());
-
-    // Global shift
-    global_shift.add(consts.dash_global_shift_time / 2.0, 1);
-    global_shift.add(consts.dash_global_shift_time, 1);
-
-    // Storm
-    commands.spawn(SoundEffect::PlayerThunder);
-    commands.spawn(Lightning);
-
-    // Bullet time
-    bullet_time.set_temp(BulletTimeSpeed::Stopped, consts.dash_stop_time_time);
 }
 
 fn juice_during_dash(
@@ -310,7 +310,8 @@ pub(super) fn register_player_juice(app: &mut App) {
     app.insert_resource(PlayerJuiceConsts::default());
     // debug_resource!(app, PlayerJuiceConsts);
 
-    app.add_observer(juice_after_dash);
+    app.add_observer(juice_dash_suspense);
+    app.add_observer(juice_dash_post_suspense);
     app.add_observer(juice_after_jump);
     app.add_observer(juice_animation_state_response);
     app.add_observer(juice_animation_ix_response);

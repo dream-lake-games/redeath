@@ -7,7 +7,7 @@ use crate::prelude::*;
 #[derive(ScheduleLabel, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BulletUpdate;
 
-#[derive(Clone, Copy, Debug, Reflect)]
+#[derive(Clone, Copy, Debug, Reflect, PartialEq, Eq)]
 pub enum BulletTimeSpeed {
     Normal,
     Slow,
@@ -99,6 +99,10 @@ impl BulletTime {
                 }
             }
         }
+    }
+
+    pub fn get_speed(&self) -> BulletTimeSpeed {
+        self.mode.to_speed()
     }
 }
 
