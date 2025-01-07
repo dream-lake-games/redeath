@@ -58,13 +58,17 @@ pub struct ButtInput {
     // A little cursed but it's fine
     pressed: HashMap<ButtKind, bool>,
     just_pressed: HashMap<ButtKind, bool>,
+    buffered_just_pressed: HashMap<ButtKind, f32>,
 }
 impl ButtInput {
     pub fn pressed(&self, butt: ButtKind) -> bool {
-        self.pressed[&butt].clone()
+        self.pressed.get(&butt).cloned().unwrap_or(false)
     }
     pub fn just_pressed(&self, butt: ButtKind) -> bool {
-        self.just_pressed[&butt].clone()
+        self.just_pressed.get(&butt).cloned().unwrap_or(false)
+    }
+    pub fn buffered_just_pressed(&self, butt: ButtKind) -> bool {
+        self.buffered_just_pressed.contains_key(&butt)
     }
 }
 
@@ -83,6 +87,24 @@ fn update_input_mode(mut input_mode: ResMut<InputMode>, gamepads: Query<Entity, 
     }
 }
 
+const BUFFER_TIME: f32 = 0.1;
+fn update_buffered_shit(mut butt_input: ResMut<ButtInput>, time: Res<Time>) {
+    for butt in [ButtKind::A, ButtKind::B] {
+        if butt_input.just_pressed(butt) {
+            butt_input.buffered_just_pressed.insert(butt, BUFFER_TIME);
+        } else {
+            if let Some(mr) = butt_input.buffered_just_pressed.get_mut(&butt) {
+                *mr -= time.delta_secs();
+            }
+            if let Some(r) = butt_input.buffered_just_pressed.get(&butt) {
+                if *r <= 0.0 {
+                    butt_input.buffered_just_pressed.remove(&butt);
+                }
+            }
+        }
+    }
+}
+
 pub(super) struct InputPlugin;
 impl Plugin for InputPlugin {
     fn build(&self, app: &mut App) {
@@ -93,6 +115,7 @@ impl Plugin for InputPlugin {
         app.insert_resource(ButtInput::default());
 
         app.add_systems(Update, update_input_mode.in_set(InputSet));
+        app.add_systems(Update, update_buffered_shit.in_set(InputSet));
 
         gamepad::register_gamepad(app);
         keyboard::register_keyboard(app);

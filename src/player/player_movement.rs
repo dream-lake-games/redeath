@@ -269,7 +269,7 @@ fn maybe_start_dash(
         // Means the player can't dash
         return;
     };
-    if butt.just_pressed(ButtKind::B) {
+    if butt.buffered_just_pressed(ButtKind::B) {
         dyno.vel = Vec2::ZERO;
         commands.entity(eid).insert((
             Dashing {
@@ -330,7 +330,7 @@ fn maybe_start_regular_jump(
         // Means the player can't jump rn
         return;
     };
-    if butt.just_pressed(ButtKind::A) {
+    if butt.buffered_just_pressed(ButtKind::A) {
         let kind = JumpKind::Regular;
         commands.entity(eid).insert(PostJump {
             kind,
@@ -366,32 +366,30 @@ fn maybe_start_wall_jump(
         // Means the player can't wall jump rn
         return;
     };
-    if !butt.just_pressed(ButtKind::A) {
+    if !butt.buffered_just_pressed(ButtKind::A) {
         return;
     }
     let from_left = from_left.is_some();
-    if butt.just_pressed(ButtKind::A) {
-        let x_mul = if from_left { 1.0 } else { -1.0 };
-        dyno.vel.x = consts.max_hor_speed * x_mul;
-        let kind = if from_left {
-            JumpKind::FromLeftWall
-        } else {
-            JumpKind::FromRightWall
-        };
-        commands.entity(eid).insert(PostJump {
-            kind,
-            time_left: consts.post_jump_time,
-        });
-        commands.entity(eid).insert(ResponsiveJump::new(
-            consts.jump_max_speed,
-            consts.jump_max_time,
-        ));
-        commands.entity(eid).remove::<CanRegularJump>();
-        commands.entity(eid).remove::<CanWallJumpFromLeft>();
-        commands.entity(eid).remove::<CanWallJumpFromRight>();
-        let event = JumpEvent { kind };
-        commands.trigger(event);
-    }
+    let x_mul = if from_left { 1.0 } else { -1.0 };
+    dyno.vel.x = consts.max_hor_speed * x_mul;
+    let kind = if from_left {
+        JumpKind::FromLeftWall
+    } else {
+        JumpKind::FromRightWall
+    };
+    commands.entity(eid).insert(PostJump {
+        kind,
+        time_left: consts.post_jump_time,
+    });
+    commands.entity(eid).insert(ResponsiveJump::new(
+        consts.jump_max_speed,
+        consts.jump_max_time,
+    ));
+    commands.entity(eid).remove::<CanRegularJump>();
+    commands.entity(eid).remove::<CanWallJumpFromLeft>();
+    commands.entity(eid).remove::<CanWallJumpFromRight>();
+    let event = JumpEvent { kind };
+    commands.trigger(event);
 }
 
 fn move_horizontally(

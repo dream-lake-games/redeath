@@ -2,18 +2,21 @@
 
 BRAIN DUMP:
 
-- [ ] Input buffering
+- [x] Double check up + drift right does not go as far right as diagonal right
+- [x] Input buffering
+- [x] Ability to change dash direction until very last moment
+- [x] Celeste keybindings
+- [x] Controller support
+- [x] Fix chasing bug
+
+# 0.1.2
+
 - [ ] Wall jumps even more forgiving 
-- [ ] Ability to change dash direction until very last moment
 - [ ] Look into framerate limiting
 - [ ] More clear what is solid and what isn't
-- [ ] Fix chasing bug
 - [ ] Scythe shoot more obvious
 - [ ] Maybe make scythes go the same distance
-- [ ] Double check up + drift right does not go as far right as diagonal right
 - [ ] Wall kick without horizontal input does something different
-- [x] Celeste keybindings
-- [ ] Controller support
 
 OTHER STUFF:
 

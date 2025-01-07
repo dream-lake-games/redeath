@@ -1,5 +1,7 @@
 use crate::{input::in_keyboard_mode, prelude::*};
 
+use super::update_buffered_shit;
+
 #[derive(Resource, Reflect, Serialize, Deserialize)]
 pub struct BindingsKeyboard {
     up: KeyCode,
@@ -99,6 +101,7 @@ pub(super) fn register_keyboard(app: &mut App) {
         (hacky_prebuilts, update_input_from_keyboard)
             .chain()
             .in_set(InputSet)
-            .run_if(in_keyboard_mode),
+            .run_if(in_keyboard_mode)
+            .after(update_buffered_shit),
     );
 }

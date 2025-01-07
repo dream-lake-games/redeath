@@ -200,7 +200,7 @@ fn reset_eggs_helper(
         anim.set_state(EggAnim::Spin);
     }
     for (eid, slid) in ghosts {
-        if !slid.iid.eq(iid) {
+        if slid.iid.eq(iid) {
             continue;
         }
         commands.entity(eid).despawn_recursive();

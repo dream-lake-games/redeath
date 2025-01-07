@@ -1,6 +1,6 @@
 use crate::prelude::*;
 
-use super::in_gamepad_mode;
+use super::{in_gamepad_mode, update_buffered_shit};
 
 fn maintain_gamepad_root(
     ents: Query<Entity, (With<Gamepad>, Without<Parent>)>,
@@ -58,6 +58,7 @@ pub(super) fn register_gamepad(app: &mut App) {
         Update,
         (maintain_gamepad_root, update_input_from_gamepad)
             .in_set(InputSet)
-            .run_if(in_gamepad_mode),
+            .run_if(in_gamepad_mode)
+            .after(update_buffered_shit),
     );
 }
