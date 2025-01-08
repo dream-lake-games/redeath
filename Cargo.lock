@@ -4634,7 +4634,7 @@ dependencies = [
 
 [[package]]
 name = "redeath"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "bevy 0.15.1",
  "bevy-inspector-egui",
