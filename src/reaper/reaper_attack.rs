@@ -225,7 +225,7 @@ fn simple_throw(
                     attack.next_throw = None;
                     let time_to_do_shit = 0.7;
                     global_shift.add(time_to_do_shit, -1);
-                    global_shift.add(0.05, -2);
+                    global_shift.add(0.05, -1);
                     camera_shake.shake(time_to_do_shit, -1..=1, -1..=1);
                     commands
                         .entity(eid)
@@ -281,7 +281,7 @@ fn watch_reaper_anim_to_spawn_scythe(
         ))
         .set_parent(root.eid());
     global_shift.add(0.175, 1);
-    global_shift.add(0.25, 1);
+    // global_shift.add(0.25, 1);
     commands.spawn(SoundEffect::ReaperThrow);
 }
 

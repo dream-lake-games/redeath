@@ -188,28 +188,21 @@ fn observe_block_pops(
 }
 
 fn reset_eggs_helper(
-    iid: &str,
-    eggs: &mut Query<(&mut AnimMan<EggAnim>, &SpawnedLid)>,
+    eggs: &mut Query<&mut AnimMan<EggAnim>>,
     ghosts: &mut Query<(Entity, &SpawnedLid), With<AnimMan<EggGhostAnim>>>,
     commands: &mut Commands,
 ) {
-    for (mut anim, slid) in eggs {
-        if !slid.iid.eq(iid) {
-            continue;
-        }
+    for mut anim in eggs {
         anim.set_state(EggAnim::Spin);
     }
     for (eid, slid) in ghosts {
-        if slid.iid.eq(iid) {
-            continue;
-        }
         commands.entity(eid).despawn_recursive();
     }
 }
 
 fn maybe_reset_eggs(
-    trigger: Trigger<LevelChangeEvent>,
-    mut eggs: Query<(&mut AnimMan<EggAnim>, &SpawnedLid)>,
+    trigger: Trigger<EnterOrRespawnLevelEvent>,
+    mut eggs: Query<&mut AnimMan<EggAnim>>,
     mut ghosts: Query<(Entity, &SpawnedLid), With<AnimMan<EggGhostAnim>>>,
     mut commands: Commands,
     mut blocks: Query<(
@@ -220,35 +213,13 @@ fn maybe_reset_eggs(
     )>,
 ) {
     let iid = &trigger.event().iid;
-    reset_eggs_helper(iid, &mut eggs, &mut ghosts, &mut commands);
-    reset_egg_blocks(&iid, &mut blocks, &mut commands);
-}
-
-fn reset_eggs_after_dying(
-    level_selection: Option<Res<LevelSelection>>,
-    mut eggs: Query<(&mut AnimMan<EggAnim>, &SpawnedLid)>,
-    mut ghosts: Query<(Entity, &SpawnedLid), With<AnimMan<EggGhostAnim>>>,
-    mut commands: Commands,
-    mut blocks: Query<(
-        Entity,
-        &mut AnimMan<EggBlockAnim>,
-        &SpawnedLid,
-        Option<&StaticTxCtrl>,
-    )>,
-) {
-    let Some(level_selection) = level_selection else {
-        // Idk man this comes up when I try to backspace hot reload while the player is dead
-        return;
-    };
-    let iid = level_selection.to_iid();
-    reset_eggs_helper(&iid, &mut eggs, &mut ghosts, &mut commands);
+    reset_eggs_helper(&mut eggs, &mut ghosts, &mut commands);
     reset_egg_blocks(&iid, &mut blocks, &mut commands);
 }
 
 pub(super) fn register_egg(app: &mut App) {
     app.add_observer(observe_block_pops);
     app.add_observer(maybe_reset_eggs);
-    app.add_systems(OnExit(PlayerMetaState::Dying), reset_eggs_after_dying);
 
     app.add_plugins(MyLdtkEntityPlugin::<EggBundle>::new("Entities", "Egg"));
     app.add_systems(

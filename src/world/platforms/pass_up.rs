@@ -19,7 +19,7 @@ impl PassUpBundle {
 impl MyLdtkIntCell for PassUpBundle {
     type Root = PlatformRoot;
     type RenderLayers = StaticLayer;
-    type LeftoverRenderLayers = DummyLayer;
+    type LeftoverRenderLayers = StaticLayer;
     fn from_ldtk(pos: Pos, _value: i32) -> Self {
         Self::new(pos)
     }

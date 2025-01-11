@@ -41,8 +41,14 @@ Jumps and dashes are now buffered for 0.1s as well. This should make it a little
 
 Fixed a bug where collecting an egg, leaving the level, then reentering the level would sometimes crash the game.
 
+## What's next?
+
+The next patch will also be mostly quality of life fixes. After that, I'm going to focus on the lighting system, bloom, rain, and particle effects to hopefully make the world more eye-catching.
+
 # 0.1.2
 
+- [ ] Improve lighting FPS
+    - [ ] Divide the lights like I do the on-screen calcs
 - [ ] Wall jumps even more forgiving 
 - [ ] Look into framerate limiting
 - [ ] More clear what is solid and what isn't

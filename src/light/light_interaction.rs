@@ -1,3 +1,5 @@
+use bevy::render::{primitives::Aabb, view::NoFrustumCulling};
+
 use crate::prelude::*;
 
 #[derive(Resource, Default)]
@@ -73,27 +75,93 @@ fn hbox_to_blocked_quads(source: Vec2, hbox: &HBox) -> [BlockedQuad; 4] {
     ]
 }
 
+fn hbox_to_blocked_mesh(source: Vec2, hbox: &HBox) {
+    let mut inner_points = vec![];
+    let mut outer_points = vec![];
+
+    let get_blocked = |p: Vec2| -> Vec2 { p + (p - source).normalize_or_zero() * MAX_LIGHT_RADIUS };
+
+    let mut points = Vec::<Vec2>::new();
+    let mut tris = Vec::<[u32; 3]>::new();
+
+    for line in hbox_to_solid_lines(hbox) {
+        if points.is_empty() {
+            // The first quad is special
+            points.extend([line.a, get_blocked(line.a), get_blocked(line.b), line.b]);
+        } else {
+            // TODO
+        }
+    }
+
+    for line in hbox_to_solid_lines(hbox) {
+        inner_points.push(line.a);
+        inner_points.push(line.b);
+        outer_points.push(get_blocked(line.a));
+        outer_points.push(get_blocked(line.b));
+    }
+    // Kinda cursed ngl
+    let polygon = Polygon::<11>::new([
+        inner_points[0],
+        inner_points[1],
+        inner_points[2],
+        inner_points[3],
+        inner_points[0],
+        outer_points[0],
+        outer_points[1],
+        outer_points[2],
+        outer_points[3],
+        outer_points[0],
+        inner_points[0],
+    ]);
+    // Mark is tired
+    // This is good but not great. It's super easy to triangulate this. I should just do that and use triangle list.
+    // let okay = Mesh::new(polygon, 1);
+    // polygon.into()
+}
+
 fn block_lights(
     mut black_mat: ResMut<BlackMatRes>,
     mut mats: ResMut<Assets<ColorMaterial>>,
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     light_root: Res<LightRoot>,
-    old: Query<Entity, With<TemporaryLightMesh>>,
+    old: Query<(Entity, &Mesh2d), With<TemporaryLightMesh>>,
     pos_q: Query<&Pos>,
     sources: Query<(Entity, &LightClaimed)>,
-    blocker_ctrls: Query<&StaticTxCtrl, With<Onscreen>>,
+    blocker_ctrls: Query<&StaticTxCtrl, Without<Offscreen>>,
     blocker_comps: Query<&StaticTxComp>,
 ) {
-    // Delete the old meshes
-    for eid in &old {
-        commands.entity(eid).despawn_recursive();
-    }
-    // Make sure we have the black mat
     if black_mat.0.is_none() {
         black_mat.0 = Some(mats.add(Color::BLACK));
     }
     let black_mat = black_mat.0.clone().unwrap();
+
+    let mut old_iter = old.iter();
+    let mut make_or_reuse_mesh = |rl: RenderLayers, triangle: Triangle2d| {
+        if let Some((eid, mesh)) = old_iter.next() {
+            let Some(mr) = meshes.get_mut(mesh.id()) else {
+                return;
+            };
+            let Some(test) = Aabb::enclosing(triangle.vertices.map(|p| p.extend(0.0))) else {
+                return;
+            };
+            *mr = triangle.into();
+            commands.entity(eid).insert((test, rl));
+        } else {
+            commands
+                .spawn((
+                    Name::new("temporary_mesh"),
+                    Mesh2d(meshes.add(triangle).into()),
+                    MeshMaterial2d(black_mat.clone()),
+                    Transform::from_translation(Vec3::Z * 100.0),
+                    Visibility::Inherited,
+                    rl,
+                    TemporaryLightMesh,
+                ))
+                .set_parent(light_root.eid());
+        }
+    };
+
     for (source_eid, light) in &sources {
         let source_pos = pos_q.get(source_eid).unwrap().as_vec2();
         for stx_ctrl in &blocker_ctrls {
@@ -103,7 +171,7 @@ fn block_lights(
                 };
                 let blocker_pos = pos_q.get(stx_comp.ctrl).unwrap();
                 let blocker_hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
-                if blocker_hbox.manhattan_distance_to_point(source_pos) > light.radius {
+                if blocker_hbox.manhattan_distance_to_point(source_pos) > light.radius / 2.0 {
                     continue;
                 }
                 if blocker_hbox.manhattan_distance_to_point(source_pos) <= 0.001 {
@@ -117,22 +185,22 @@ fn block_lights(
                 let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
                 let blocked_quads = hbox_to_blocked_quads(source_pos, &hbox);
                 for quad in blocked_quads {
-                    for triangle in quad.to_triangles() {
-                        commands
-                            .spawn((
-                                Name::new("temporary_mesh"),
-                                Mesh2d(meshes.add(triangle)),
-                                MeshMaterial2d(black_mat.clone()),
-                                Transform::from_translation(Vec3::Z * 100.0),
-                                Visibility::Inherited,
-                                light.to_render_layers(),
-                                TemporaryLightMesh,
-                            ))
-                            .set_parent(light_root.eid());
+                    /// Mark is tired
+                    /// Just lowering the number of meshes is promising
+                    /// Try write a function that just makes ONE mesh instead of a bunch of six quads and then
+                    /// triangles, yuck
+                    /// Should also feel confident using the performance hotspot stuff and the debug mut stuff
+                    for triangle in quad.to_triangles().into_iter() {
+                        make_or_reuse_mesh(light.to_render_layers(), triangle);
                     }
                 }
             }
         }
+    }
+
+    drop(make_or_reuse_mesh);
+    while let Some((eid, _)) = old_iter.next() {
+        commands.entity(eid).despawn_recursive();
     }
 }
 

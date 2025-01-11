@@ -10,6 +10,7 @@ use super::MyLdtkChild;
 pub trait MyLdtkIntCell: Bundle {
     type Root: RootKind;
     type RenderLayers: Layer;
+    /// TODO: This field is really problematic ugh
     type LeftoverRenderLayers: Layer;
     fn from_ldtk(pos: Pos, value: i32) -> Self;
 }

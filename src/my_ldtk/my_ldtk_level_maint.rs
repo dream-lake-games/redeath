@@ -44,7 +44,11 @@ fn update_my_level_rects(
 }
 
 /// Updates the `SpawnLid(In)Active` components
+/// NOTE: The event here is an optimization. This actually gets pretty expensive, and we only need to do it on level change
+#[derive(Event)]
+struct DoHandleSpawnedLids;
 fn handle_spawned_lids(
+    _trigger: Trigger<DoHandleSpawnedLids>,
     mut commands: Commands,
     ents: Query<(Entity, &SpawnedLid)>,
     selection: Option<Res<LevelSelection>>,
@@ -156,6 +160,7 @@ fn watch_level_selection(
     match (level_selection.as_ref(), last_level_selection.as_mut()) {
         (Some(ls), Some(lls)) => {
             if ls.to_iid() != lls.0 {
+                commands.trigger(DoHandleSpawnedLids);
                 commands.trigger(LevelChangeEvent {
                     iid: ls.to_iid(),
                     last_iid: Some(lls.0.clone()),
@@ -165,6 +170,7 @@ fn watch_level_selection(
         }
         (Some(ls), None) => match my_ldtk_load.into_inner() {
             MyLdtkLoadState::Loaded => {
+                commands.trigger(DoHandleSpawnedLids);
                 commands.trigger(LevelChangeEvent {
                     iid: ls.to_iid(),
                     last_iid: None,
@@ -210,7 +216,7 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
     app.add_systems(Update, update_my_level_rects.in_set(MyLdtkLevelMaint));
     app.add_systems(
         Update,
-        (handle_spawned_lids, handle_physical_lids)
+        (handle_physical_lids)
             .after(update_my_level_rects)
             .in_set(MyLdtkLevelMaint)
             .run_if(in_state(MetaStateKind::World).or(in_state(MetaStateKind::Menu))),
@@ -225,6 +231,7 @@ pub(super) fn register_my_ldtk_level_maint(app: &mut App) {
     );
 
     // Enter or respawn
+    app.add_observer(handle_spawned_lids);
     app.add_observer(do_enter_or_respawn_level_change);
     app.add_systems(
         OnEnter(PlayerMetaState::Spawning),

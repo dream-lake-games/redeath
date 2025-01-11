@@ -240,7 +240,10 @@ fn update_can_dash_from_ground(
 }
 
 fn update_can_dash_from_replenish(
-    player: Query<(Entity, &TriggerRxCtrl), (With<Player>, Without<CanDash>)>,
+    player: Query<
+        (Entity, &TriggerRxCtrl),
+        (With<Player>, Without<CanDash>, Without<DashSuspense>),
+    >,
     trigger_colls: Res<TriggerColls>,
     mut commands: Commands,
 ) {

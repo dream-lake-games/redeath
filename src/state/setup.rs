@@ -12,8 +12,8 @@ use crate::prelude::*;
 
 /// Rn this just makes it so it'll spend one frame in setup then move on
 fn update(mut next_meta_state: ResMut<NextState<MetaState>>) {
-    // next_meta_state.set(MenuState::Bevy.to_meta_state());
-    next_meta_state.set(MenuState::Savefile.to_meta_state());
+    next_meta_state.set(MenuState::Bevy.to_meta_state());
+    // next_meta_state.set(MenuState::Savefile.to_meta_state());
 }
 
 pub(super) fn register_setup(app: &mut App) {

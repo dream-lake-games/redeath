@@ -116,7 +116,7 @@ struct PlankFallParentBundle {
 impl MyLdtkIntCell for PlankFallParentBundle {
     type Root = PlatformRoot;
     type RenderLayers = DummyLayer;
-    type LeftoverRenderLayers = DummyLayer;
+    type LeftoverRenderLayers = StaticLayer;
     fn from_ldtk(pos: Pos, _value: i32) -> Self {
         Self {
             name: Name::new("plank_fall_parent"),

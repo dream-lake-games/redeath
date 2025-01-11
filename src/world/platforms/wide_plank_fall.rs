@@ -119,7 +119,7 @@ struct WidePlankFallParentBundle {
 impl MyLdtkIntCell for WidePlankFallParentBundle {
     type Root = PlatformRoot;
     type RenderLayers = DummyLayer;
-    type LeftoverRenderLayers = DummyLayer;
+    type LeftoverRenderLayers = StaticLayer;
     fn from_ldtk(pos: Pos, _value: i32) -> Self {
         Self {
             name: Name::new("wide_plank_fall_parent"),

@@ -16,7 +16,7 @@ struct SwitchBlockBundle {
 impl MyLdtkIntCell for SwitchBlockBundle {
     type Root = PlatformRoot;
     type RenderLayers = DummyLayer;
-    type LeftoverRenderLayers = DummyLayer;
+    type LeftoverRenderLayers = StaticLayer;
     fn from_ldtk(pos: Pos, value: i32) -> Self {
         let anim = if value == 4 {
             SwitchBlockAnim::On
