@@ -195,7 +195,7 @@ fn reset_eggs_helper(
     for mut anim in eggs {
         anim.set_state(EggAnim::Spin);
     }
-    for (eid, slid) in ghosts {
+    for (eid, _slid) in ghosts {
         commands.entity(eid).despawn_recursive();
     }
 }

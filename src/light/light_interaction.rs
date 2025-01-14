@@ -1,4 +1,10 @@
-use bevy::render::{primitives::Aabb, view::NoFrustumCulling};
+use bevy::{
+    asset::RenderAssetUsages,
+    render::{
+        mesh::{Indices, PrimitiveTopology},
+        primitives::Aabb,
+    },
+};
 
 use crate::prelude::*;
 
@@ -11,21 +17,6 @@ struct TemporaryLightMesh;
 struct SolidLine {
     a: Vec2,
     b: Vec2,
-}
-
-struct BlockedQuad {
-    a: Vec2,
-    b: Vec2,
-    c: Vec2,
-    d: Vec2,
-}
-impl BlockedQuad {
-    fn to_triangles(self) -> [Triangle2d; 2] {
-        [
-            Triangle2d::new(self.a, self.b, self.c),
-            Triangle2d::new(self.c, self.d, self.a),
-        ]
-    }
 }
 
 fn hbox_to_solid_lines(hbox: &HBox) -> [SolidLine; 4] {
@@ -53,70 +44,65 @@ fn hbox_to_solid_lines(hbox: &HBox) -> [SolidLine; 4] {
     ]
 }
 
-fn get_blocked_quad(source: Vec2, solid_line: SolidLine) -> BlockedQuad {
-    let get_blocked = |p: Vec2| -> Vec2 { p + (p - source).normalize_or_zero() * MAX_LIGHT_RADIUS };
-    let blocked_a = get_blocked(solid_line.a);
-    let blocked_b = get_blocked(solid_line.b);
-    BlockedQuad {
-        a: solid_line.a,
-        b: solid_line.b,
-        c: blocked_b,
-        d: blocked_a,
-    }
-}
-
-fn hbox_to_blocked_quads(source: Vec2, hbox: &HBox) -> [BlockedQuad; 4] {
-    let [l1, l2, l3, l4] = hbox_to_solid_lines(hbox);
-    [
-        get_blocked_quad(source, l1),
-        get_blocked_quad(source, l2),
-        get_blocked_quad(source, l3),
-        get_blocked_quad(source, l4),
-    ]
-}
-
-fn hbox_to_blocked_mesh(source: Vec2, hbox: &HBox) {
-    let mut inner_points = vec![];
-    let mut outer_points = vec![];
-
+fn hbox_to_blocked_mesh(source: Vec2, hbox: &HBox) -> (Mesh, Aabb) {
     let get_blocked = |p: Vec2| -> Vec2 { p + (p - source).normalize_or_zero() * MAX_LIGHT_RADIUS };
 
     let mut points = Vec::<Vec2>::new();
-    let mut tris = Vec::<[u32; 3]>::new();
+    let mut tris = Vec::<u32>::new();
 
     for line in hbox_to_solid_lines(hbox) {
-        if points.is_empty() {
-            // The first quad is special
-            points.extend([line.a, get_blocked(line.a), get_blocked(line.b), line.b]);
-        } else {
-            // TODO
-        }
+        let first_ix = points.len() as u32;
+        tris.extend([first_ix, first_ix + 1, first_ix + 2]);
+        tris.extend([first_ix + 2, first_ix + 3, first_ix]);
+        points.extend([line.a, get_blocked(line.a), get_blocked(line.b), line.b]);
     }
 
-    for line in hbox_to_solid_lines(hbox) {
-        inner_points.push(line.a);
-        inner_points.push(line.b);
-        outer_points.push(get_blocked(line.a));
-        outer_points.push(get_blocked(line.b));
+    let min_x = points
+        .iter()
+        .map(|p| p.x)
+        .min_by(|a, b| a.total_cmp(b))
+        .unwrap();
+    let min_y = points
+        .iter()
+        .map(|p| p.y)
+        .min_by(|a, b| a.total_cmp(b))
+        .unwrap();
+    let max_x = points
+        .iter()
+        .map(|p| p.x)
+        .max_by(|a, b| a.total_cmp(b))
+        .unwrap();
+    let max_y = points
+        .iter()
+        .map(|p| p.y)
+        .max_by(|a, b| a.total_cmp(b))
+        .unwrap();
+    let get_frac = |x: f32, min: f32, max: f32| (x - min) / (max - min);
+
+    let mut inserted_positions = vec![];
+    let mut inserted_uvs = vec![];
+    let mut inserted_normals = vec![];
+
+    for point in points.into_iter() {
+        inserted_positions.push([point.x, point.y, 0.0]);
+        inserted_uvs.push([
+            get_frac(point.x, min_x, max_x),
+            get_frac(point.y, min_y, max_y),
+        ]);
+        inserted_normals.push([0.0, 0.0, 1.0]);
     }
-    // Kinda cursed ngl
-    let polygon = Polygon::<11>::new([
-        inner_points[0],
-        inner_points[1],
-        inner_points[2],
-        inner_points[3],
-        inner_points[0],
-        outer_points[0],
-        outer_points[1],
-        outer_points[2],
-        outer_points[3],
-        outer_points[0],
-        inner_points[0],
-    ]);
-    // Mark is tired
-    // This is good but not great. It's super easy to triangulate this. I should just do that and use triangle list.
-    // let okay = Mesh::new(polygon, 1);
-    // polygon.into()
+
+    (
+        Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::default(),
+        )
+        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, inserted_positions)
+        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, inserted_uvs)
+        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, inserted_normals)
+        .with_inserted_indices(Indices::U32(tris)),
+        Aabb::enclosing([Vec3::new(min_x, min_y, 0.0), Vec3::new(max_x, max_y, 0.0)]).unwrap(),
+    )
 }
 
 fn block_lights(
@@ -137,21 +123,18 @@ fn block_lights(
     let black_mat = black_mat.0.clone().unwrap();
 
     let mut old_iter = old.iter();
-    let mut make_or_reuse_mesh = |rl: RenderLayers, triangle: Triangle2d| {
-        if let Some((eid, mesh)) = old_iter.next() {
-            let Some(mr) = meshes.get_mut(mesh.id()) else {
+    let mut make_or_reuse_mesh = |rl: RenderLayers, mesh: Mesh, aabb: Aabb| {
+        if let Some((eid, emesh)) = old_iter.next() {
+            let Some(mr) = meshes.get_mut(emesh.id()) else {
                 return;
             };
-            let Some(test) = Aabb::enclosing(triangle.vertices.map(|p| p.extend(0.0))) else {
-                return;
-            };
-            *mr = triangle.into();
-            commands.entity(eid).insert((test, rl));
+            *mr = mesh;
+            commands.entity(eid).insert((aabb, rl));
         } else {
             commands
                 .spawn((
                     Name::new("temporary_mesh"),
-                    Mesh2d(meshes.add(triangle).into()),
+                    Mesh2d(meshes.add(mesh).into()),
                     MeshMaterial2d(black_mat.clone()),
                     Transform::from_translation(Vec3::Z * 100.0),
                     Visibility::Inherited,
@@ -183,17 +166,8 @@ fn block_lights(
                     continue;
                 }
                 let hbox = stx_comp.hbox.translated(blocker_pos.x, blocker_pos.y);
-                let blocked_quads = hbox_to_blocked_quads(source_pos, &hbox);
-                for quad in blocked_quads {
-                    /// Mark is tired
-                    /// Just lowering the number of meshes is promising
-                    /// Try write a function that just makes ONE mesh instead of a bunch of six quads and then
-                    /// triangles, yuck
-                    /// Should also feel confident using the performance hotspot stuff and the debug mut stuff
-                    for triangle in quad.to_triangles().into_iter() {
-                        make_or_reuse_mesh(light.to_render_layers(), triangle);
-                    }
-                }
+                let (mesh, aabb) = hbox_to_blocked_mesh(source_pos, &hbox);
+                make_or_reuse_mesh(light.to_render_layers(), mesh, aabb);
             }
         }
     }
